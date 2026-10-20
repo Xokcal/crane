@@ -1,9 +1,12 @@
-#ifndef CRACODE_H
-#define CRACODE_H
+#ifndef cracode_h
+#define cracode_h
 
 #include <stdio.h>
 #include "../tool/xokmalloc/xokmalloc.h"
 #include "craparse.h"
+#include "cravm.h"
+
+typedef struct desclist desclist;
 
 typedef enum opcode{
   OP_PUSH,
@@ -15,20 +18,56 @@ typedef enum opcode{
   OP_STORE
 }opcode;
 
+typedef enum vartype{
+  TYPE_INT,
+  TYPE_STRING,
+  TYPE_FLOAT,
+  YTPE_DOUBLE,
+  TYPE_CHAR,
+  TYPE_LONG
+}vartype;
+
+typedef struct value{
+  vartype type;
+  union
+  {
+    int i;
+    float f;
+    char *s;
+    char c;
+    double d;
+    long l;
+  }v;
+}value;
+
 typedef struct bytecode{
   int *codes;
   int count;
   int size;
+  value *values;
+  int v_count;
+  int v_size;
 }bytecode;
 
 typedef struct varnamestk {
-    char **vn; 
-    int *slots;
-    int size;
-    int count;
-} varnamestk;
+  char **vn; 
+  int *slots;
+  int size;
+  int count;
+}varnamestk;
 
 vm*
 craC_bytecode_parse(XokMalloc *xm ,  desclist *dl);
+
+bytecode *bc_create(XokMalloc *xm, int init_size);
+
+void bc_free(XokMalloc *xm, bytecode *bc);
+
+int bc_expand(XokMalloc *xm, bytecode *bc);
+
+int bc_emit(XokMalloc *xm, bytecode *bc, int instr);
+
+int bc_add_constant(XokMalloc *xm, bytecode *bc, value v);
+
 
 #endif

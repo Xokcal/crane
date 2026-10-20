@@ -4,13 +4,15 @@
 #include <stdio.h>
 #include <string.h>
 #include "cgm_parse.h"
+#include "cracode.h"
 
 typedef enum cragramtype{
   GRAM_INT,
   GRAM_STRING,
   GRAM_FLOAT,
   GRAM_PRINTF,
-  GRAM_EMPTY
+  GRAM_EMPTY,
+  GRAM_VAR
 }cragramtype;
 
 typedef enum craasttype{
@@ -34,6 +36,7 @@ typedef struct craastdesc{
       struct craastdesc *left;    /* binop's left */
     } binop;
     struct assign{
+      char *type;
       char *name;     /* assign about of variable name */
       struct craastdesc *value;   /* assign value */
     } assign;

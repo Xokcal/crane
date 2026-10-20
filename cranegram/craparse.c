@@ -16,7 +16,12 @@
 static int
 t_convert_asttype(String *s)
 {
-  if(compare(s , "int"))return GRAM_INT;
+  if (compare(s, "int")     || 
+    compare(s, "float")     || 
+    compare(s, "double")    || 
+    compare(s, "char")      || 
+    compare(s, "long"))
+    return GRAM_VAR;
   if(compare(s , " "))return GRAM_EMPTY;
   if(compare(s , "\n"))return GRAM_EMPTY;
   if(compare(s , ";"))return GRAM_EMPTY;
@@ -131,13 +136,15 @@ craastdesc *make_binop(XokMalloc *xokMalloc, char *calcsign
 }
 
 
-craastdesc *make_assign(XokMalloc *xokMalloc , char *name , craastdesc *value)
+craastdesc *make_assign(XokMalloc *xokMalloc 
+, char *name , craastdesc *value , char *type)
 {
   craastdesc *node = (craastdesc *)
   xalloc_XokMalloc(xokMalloc , sizeof(craastdesc));
   node->kind = AST_ASSIGN;
   node->as.assign.name = strdup(name);
   node->as.assign.value = value;
+  node->as.assign.type = strdup(type);
   return node;
 }
 
@@ -204,8 +211,8 @@ Cra_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree)
 ******************************************************************
 */
 static craastdesc*
-push_var_undefine(XokMalloc *xm , String *name)
-{return make_assign(xm , name->str , NULL);}
+push_var_undefine(XokMalloc *xm , String *name , String *type)
+{return make_assign(xm , name->str , NULL , type->str);}
 
 
 static craastdesc*
@@ -271,7 +278,7 @@ parse_value_main(pavstate ps)
 ** return single tree ,collect to tree arrays;
  */
 static craastdesc*
-int_desc(XokMalloc *xm , ParseFactor *pf)
+int_desc(XokMalloc *xm , ParseFactor *pf , String *type)
 {
   accept(pf , "int");   /* int type var */
   accept_empty(pf);   /* throught empty to variable name */
@@ -281,13 +288,15 @@ int_desc(XokMalloc *xm , ParseFactor *pf)
   accept_empty(pf); /* throught empty to '=' */
   int isEqu = accept(pf , "="); /* judge '=' */
   if(!isEqu){ /* if isEqu not's true , declare is 'int a;' */
-    craastdesc *undefinevar = push_var_undefine(xm , name);  /* undefine variable tackle */
+    craastdesc *undefinevar = 
+    push_var_undefine(xm , name , type);  /* undefine variable tackle */
     return undefinevar;
   }
   pavstate ps = pavstate_init(xm , pf);
   craastdesc *v = parse_value_main(ps); /* tackle after '=' value tree */
   //print_ast(v , 0);
-  craastdesc *desc = make_assign(xm , name->str , v); /* current 'desc' struction is:
+  craastdesc *desc = 
+  make_assign(xm , name->str , v , type->str); /* current 'desc' struction is:
   struct assign* = {var_name , struct binop* root} */
   return desc;
 }
@@ -311,8 +320,11 @@ craP_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
       //prinft_desc();
       break;
      }
-     case GRAM_INT:{
-      craastdesc *vd = int_desc(xm , &pf);
+     case GRAM_VAR:{
+      String *type = create_string(t->str);
+      craastdesc *vd = int_desc(xm , &pf , type);
+      LOG_C("TYPE----___________________TYPE__-__-_-______--_-_" , vd->as.assign.type);
+      string_free(type);
       print_ast(vd , 0);
       Cra_desclist_push(xm , dl , vd);
       break;
@@ -333,8 +345,8 @@ int main()
     desclist *dl = Cra_desclist_create(xm , 16); /* tree list */
     craP_token_parse(xm , tokens , dl);  /*  AST main parse */
     vm *vm = craC_bytecode_parse(xm , dl);
-    vm_run(vm);
-    // free setting struct
+    craV_execute(xm , vm);
+    /* free setting struct */
     Cra_desclist_free(xm , dl);
     free_XokMalloc(xm);
     return 0;

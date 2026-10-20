@@ -27,6 +27,8 @@ typedef enum vartype{
   TYPE_LONG
 }vartype;
 
+/* store crane var(int , float , long ,string,...)
+type value. struct type store var enum vartype */
 typedef struct value{
   vartype type;
   union

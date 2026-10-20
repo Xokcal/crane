@@ -154,6 +154,8 @@ sign_emit(XokMalloc *xm , char *s , bytecode *bc)
 }
 
 
+/* void *vv is value , vm by char *type judge 
+var type and push stack*/
 static void
 v_type_insert(char *type , value *v , void *vv)
 {
@@ -167,7 +169,8 @@ v_type_insert(char *type , value *v , void *vv)
   }
   if(strcmp(type , "string")==0){
     v->type = TYPE_STRING;
-    v->v.s = strdup((char*)vv);
+    /* remember freev.v.s(string) */
+    v->v.s = strdup((char*)vv); 
   }
   if(strcmp(type , "long")==0){
     v->type = TYPE_LONG;

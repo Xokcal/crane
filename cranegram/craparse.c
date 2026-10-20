@@ -308,32 +308,29 @@ int_desc(XokMalloc *xm , ParseFactor *pf , String *type)
 void
 craP_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
 {
-  ParseFactor pf = {ts , 0};
-  while(pf.curr < ts->count)
-  {
-   String *t = pf.tokens->tokens[pf.curr++];
-   printf("(t):%s\n" , t->str);
-   switch(t_convert_asttype(t))
-    {
-     case GRAM_EMPTY:{
-      pf.curr++;
-      break;
-     }
-     case GRAM_PRINTF:{
-      //prinft_desc();
-      break;
-     }
-     case GRAM_VAR:{
-      String *type = create_string(t->str);
-      craastdesc *vd = int_desc(xm , &pf , type);
-      LOG_C("TYPE----___________________TYPE__-__-_-______--_-_" , vd->as.assign.type);
-      string_free(type);
-      print_ast(vd , 0);
-      Cra_desclist_push(xm , dl , vd);
-      break;
-     }
-   }
+ ParseFactor pf = {ts , 0};
+ while(pf.curr < ts->count){
+  String *t = pf.tokens->tokens[pf.curr++];
+  printf("(t):%s\n" , t->str);
+  switch(t_convert_asttype(t)){
+    case GRAM_EMPTY:{
+     pf.curr++;
+     break;
+    }
+    case GRAM_PRINTF:{
+     //prinft_desc();
+     break;
+    }
+    case GRAM_VAR:{
+     String *type = create_string(t->str);
+     craastdesc *vd = int_desc(xm , &pf , type);
+     string_free(type);
+     print_ast(vd , 0);
+     Cra_desclist_push(xm , dl , vd);
+     break;
+    }
   }
+ }
 }
 
 

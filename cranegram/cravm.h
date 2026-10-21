@@ -5,6 +5,11 @@
 #include "../tool/xokmalloc/xokmalloc.h"
 #include "cracode.h"
 
+#define calc_add(p1 , p2)(*(p1)) + (*(p2))
+#define calc_sub(p1 , p2)(*(p1)) - (*(p2))
+#define calc_mul(p1 , p2)(*(p1)) * (*(p2))
+#define calc_divi(p1 , p2)(*(p1)) / (*(p2))
+
 typedef struct bytecode bytecode;
 typedef struct varnamestk varnamestk;
 typedef struct value value;
@@ -17,15 +22,15 @@ typedef struct vm{
   var names package */
   varnamestk *vns;
   /* sp: struct 
-  vm.stack index */
+  vm.vs index */
   int sp;
   /* pc: struct bytecode
    bc codes index */
-  int pc;
-  /* vm stack, tackle 
+  int ci;
+  /* vm vs stack, tackle 
   codes and parse */
   value *vs;
-  int vs_idx;
+  int vsi;
   int size;
 }vm;
 

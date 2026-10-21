@@ -18,6 +18,7 @@
     #define LOG_C(front , content) printf("[DEBUG] [%s] %s\n" , (front) , (content))
     #define LOG_CHR(front , content) printf("[DEBUG] [%s] %c\n" , (front) , (content))
     #define LOG_I(front , content) printf("[DEBUG] [%s] %d\n" , (front) , (content))
+    #define cra_error(point) printf("%s cra error XCE note position: %s" , __TIME__ , (point));
 #endif
 
 #define EXTRE_CHECK_CHAR_LEN 2

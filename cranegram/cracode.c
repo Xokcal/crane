@@ -13,6 +13,36 @@
 
 #define BC_DEFAULT_SIZE 16
 
+
+/* void *vv is value , vm by char *type judge 
+var type and push stack*/
+static void
+v_type_insert(char *type , value *v , void *vv)
+{
+  if(strcmp(type , "int")==0){
+    v->type = TYPE_INT;
+    v->v.i = *(int*)vv;
+  }
+  if(strcmp(type , "float")==0){
+    v->type = TYPE_FLOAT;
+    v->v.f = *(float*)vv;
+  }
+  if(strcmp(type , "string")==0){
+    v->type = TYPE_STRING;
+    /* remember freev.v.s(string) */
+    v->v.s = strdup((char*)vv);
+  }
+  if(strcmp(type , "long")==0){
+    v->type = TYPE_LONG;
+    v->v.l = *(long*)vv;
+  }
+  if(strcmp(type , "char")==0){
+    v->type = TYPE_CHAR;
+    v->v.c = *(char*)vv;
+  }
+}
+
+
 bytecode *
 bc_create(XokMalloc *xm, int init_size)
 {
@@ -154,35 +184,6 @@ sign_emit(XokMalloc *xm , char *s , bytecode *bc)
 }
 
 
-/* void *vv is value , vm by char *type judge 
-var type and push stack*/
-static void
-v_type_insert(char *type , value *v , void *vv)
-{
-  if(strcmp(type , "int")==0){
-    v->type = TYPE_INT;
-    v->v.i = *(int*)vv;
-  }
-  if(strcmp(type , "float")==0){
-    v->type = TYPE_FLOAT;
-    v->v.f = *(float*)vv;
-  }
-  if(strcmp(type , "string")==0){
-    v->type = TYPE_STRING;
-    /* remember freev.v.s(string) */
-    v->v.s = strdup((char*)vv); 
-  }
-  if(strcmp(type , "long")==0){
-    v->type = TYPE_LONG;
-    v->v.l = *(long*)vv;
-  }
-  if(strcmp(type , "char")==0){
-    v->type = TYPE_CHAR;
-    v->v.c = *(char*)vv;
-  }
-}
-
-
 static void
 assign_encode(XokMalloc *xm, craastdesc *node ,
 bytecode *bc , char *type)
@@ -231,7 +232,7 @@ craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
     craastdesc *curdesc = dl->desclist[dl_c];
     switch(curdesc->kind){
       case AST_ASSIGN:{
-        vnstk_push(xm , vns , curdesc->as.varname , dl_c);
+        vnstk_push(xm , vns , curdesc->as.assign.name , dl_c);
         assign_code(xm , curdesc , bc);
         bc_emit(xm , bc , OP_STORE);
         bc_emit(xm , bc , dl_c);

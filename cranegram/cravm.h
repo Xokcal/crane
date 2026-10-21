@@ -30,7 +30,7 @@ typedef struct vm{
   /* vm vs stack, tackle 
   codes and parse */
   value *vs;
-  int vsi;
+  int vni;
   int size;
 }vm;
 

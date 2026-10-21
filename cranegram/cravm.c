@@ -25,6 +25,15 @@ vm_free(XokMalloc *xm, vm *v){
  (vm)->vs[(vm)->sp - 2] = (res);\
  (vm)->sp = (vm)->sp - 1;
 
+#define get_vname(vm)\
+ (vm)->vns->vn[(vm)->bc->codes[(vm)->ci]]
+
+#define get_stack_res(vm)\
+ (vm)->vs[(vm)->sp - 1].v.i
+
+#define clear_sp(vm)\
+ (vm)->sp = 0;
+
 vm *
 vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns, int size)
 {
@@ -38,7 +47,7 @@ vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns, int size)
  v->sp = 0;
  v->ci = 0;
  v->size = size;
- v->vsi = 0;
+ v->vni = 0;
  return v;
 }
 
@@ -109,11 +118,16 @@ craV_execute(XokMalloc *xm , vm *vm)
    vmcase(OP_ADD){
     opadd_executor(vm , "+");
     vm->ci++;
-    LOG_I("_________result" , vm->vs[vm->sp - 1].v.i);
+    LOG_I("_________result" , get_stack_res(vm));
     vmbreak;
    }
    vmcase(OP_STORE){
-    
+    vm->ci++;
+    char *vname = get_vname(vm);
+    LOG_C("vname+++" , vname);
+    LOG_I("res******" , get_stack_res(vm));
+    vm->ci++;
+    clear_sp(vm);
     vmbreak;
    }
    vmdefault{

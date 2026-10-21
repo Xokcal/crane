@@ -9,13 +9,41 @@
 #define BYTECODE_DEFAULT_SIZE 16
 #define BYTECODE_GROW_FACTOR  2
 #define craC_codes_log(bc) \
-  for(int i = 0; i < (bc)->count; i++) LOG_I("BC" , (bc)->codes[i]);
+  for(int i = 0; i < (bc)->count; i++) log_i("BC" , (bc)->codes[i]);
 
 #define BC_DEFAULT_SIZE 16
 
 
-/* void *vv is value , vm by char *type judge 
-var type and push stack*/
+/*
+** by struct vartype convert to char* origin type
+** like: {TYPE_INT ---> "int"},{TYPE_STRING ---> "string"}
+*/
+const char*
+typetostr(vartype type)
+{
+ switch (type) {
+  case TYPE_INT:    
+   return "int";
+  case TYPE_STRING: 
+   return "string";
+  case TYPE_FLOAT:  
+   return "float";
+  case TYPE_DOUBLE: 
+   return "double";
+  case TYPE_CHAR:   
+   return "char";
+  case TYPE_LONG:   
+   return "long";
+  default:          
+   return "unknown";
+ }
+}
+
+
+/* 
+** void *vv is value , vm by char *type judge 
+** var type and push stack
+*/
 static void
 v_type_insert(char *type , value *v , void *vv)
 {
@@ -40,6 +68,65 @@ v_type_insert(char *type , value *v , void *vv)
     v->type = TYPE_CHAR;
     v->v.c = *(char*)vv;
   }
+}
+
+
+#define TYPES_DEFAULT_SIZE 16
+#define TYPES_GROW_FACTOR  2
+
+
+static Ttypes *
+types_create(XokMalloc *xm, int init_size)
+{
+ if (init_size <= 0) init_size = TYPES_DEFAULT_SIZE;
+ Ttypes *t = (Ttypes *)xalloc_XokMalloc(xm, sizeof(Ttypes));
+ if (!t) return NULL;
+ t->types = (char **)xalloc_XokMalloc(xm, sizeof(char *) * init_size);
+ if (!t->types)
+  return NULL;
+ t->size  = init_size;
+ t->count = 0;
+ return t;
+}
+
+static void
+types_free(XokMalloc *xm, Ttypes *t)
+{
+ if (!t) return;
+ if (t->types) {
+  for (int i = 0; i < t->count; i++) {
+   if (t->types[i]) free(t->types[i]);
+  }
+  free(t->types);
+ free(t);
+ }
+}
+
+/* 扩容 */
+static int
+types_expand(XokMalloc *xm, Ttypes *t)
+{
+ if (!t) return 0;
+ int new_size = t->size * TYPES_GROW_FACTOR;
+ char **new_types = (char **)xalloc_XokMalloc(xm, sizeof(char *) * new_size);
+ if (!new_types) return 0;
+ memcpy(new_types, t->types, sizeof(char *) * t->count);
+ free(t->types);
+ t->types = new_types;
+ t->size  = new_size;
+ return 1;
+}
+
+
+static int
+types_push(XokMalloc *xm, Ttypes *t, const char *type_str)
+{
+ if (!t || !type_str) return 0;
+ if (t->count >= t->size)
+  if (!types_expand(xm, t)) return 0;
+ t->types[t->count] = strdup(type_str);
+ t->count++;
+ return 1;
 }
 
 
@@ -192,11 +279,12 @@ bytecode *bc , char *type)
     is AST_NUM, if is binop node don't push*/
     LOG("encode en num ADD!!!!");
     value v;
-    LOG_I("num" , node->as.num);
+    log_i("num" , node->as.num);
     v_type_insert(type , &v , &node->as.num);
-    LOG_I("v" , v.v.i);
+    log_i("v" , v.v.i);
     bc_emit(xm, bc, OP_PUSH);
     bc_emit(xm , bc , bc->v_count);
+    /* push struct value stack */
     bc_add_constant(xm, bc , v);
     return;
   }
@@ -225,31 +313,37 @@ assign_code(XokMalloc *xm , craastdesc *desc , bytecode *bc)
 vm*
 craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
 {
-  int dl_c = 0;
-  bytecode *bc = bc_create(xm , BYTECODE_DEFAULT_SIZE);
-  varnamestk *vns = vnstk_create(xm , 16);
-  while(dl_c < dl->count){
-    craastdesc *curdesc = dl->desclist[dl_c];
-    switch(curdesc->kind){
-      case AST_ASSIGN:{
-        vnstk_push(xm , vns , curdesc->as.assign.name , dl_c);
-        assign_code(xm , curdesc , bc);
-        bc_emit(xm , bc , OP_STORE);
-        bc_emit(xm , bc , dl_c);
-        LOG_I("bc.values.v[1]" , bc->values[0].v.i);
-        LOG_I("bc.values.v[2]" , bc->values[1].v.i);
-        dl_c++;
-        break;
-      }
-      case AST_EMPTY:{
-        break;
-      }
-      default:{
-        break;
-      }
-    }
+ int dl_c = 0,
+ t_idx = 0;
+ Ttypes *types = types_create(xm , TYPES_DEFAULT_SIZE);
+ bytecode *bc = bc_create(xm , BYTECODE_DEFAULT_SIZE);
+ varnamestk *vns = vnstk_create(xm , 16);
+ while(dl_c < dl->count){
+  craastdesc *curdesc = dl->desclist[dl_c];
+  switch(curdesc->kind){
+   case AST_ASSIGN:{
+    vnstk_push(xm , vns , curdesc->as.assign.name , dl_c);
+    assign_code(xm , curdesc , bc);
+    bc_emit(xm , bc , OP_STORE);
+    bc_emit(xm , bc , dl_c); /* variable name index */
+    char *type = curdesc->as.assign.type;
+    types_push(xm , types , type);
+    bc_emit(xm , bc , t_idx++); /* variable type index */
+    log_i("bc.values.v[1]" , bc->values[0].v.i);
+    log_i("bc.values.v[2]" , bc->values[1].v.i);
+    dl_c++;
+    break;
+   }
+   case AST_EMPTY:{
+     break;
+   }
+   default:{
+     break;
+   }
   }
-  bc_emit(xm , bc , OP_HALT);
-  craC_codes_log(bc);
-  return vm_create(xm , bc , vns , 160);
+ }
+ bc_emit(xm , bc , OP_HALT);
+ craC_codes_log(bc);
+ return vm_create(xm , bc , vns , 160);
 }
+

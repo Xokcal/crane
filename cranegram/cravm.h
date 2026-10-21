@@ -34,6 +34,11 @@ typedef struct vm{
   int size;
 }vm;
 
+typedef struct vmmap{
+  Hashmap *vmap; /* variable map store  */
+}vmmap;
+
+
 vm *vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns, int size);
 
 void vm_free(XokMalloc *xm, vm *v);
@@ -42,6 +47,6 @@ void vm_free(XokMalloc *xm, vm *v);
 ** @param XokMaloc *xm
 ** @param vm *vm
 */
-void craV_execute(XokMalloc *xm , vm *vm);
+void craV_execute(XokMalloc *xm , Hashmap *vmap , vm *vm);
 
 #endif

@@ -276,9 +276,14 @@ parse_value_main(pavstate ps)
   has collected all tackled node tree */
 }
 
+
 /* 
 ** Crane 'int' grammar fule , parse to craastdesc tree.
-** return single tree ,collect to tree arrays;
+** return single tree ,collect to tree arrays.
+** about [int a = 10 + 2;](define) && [int a;](undefine) &&
+** [type a[10] = {typev1 , typev2 , typev3,...typev10}](array var type)...
+** contain type have {int , long , long long , char , char*(string),
+** float , double , bite}.
  */
 static craastdesc*
 int_desc(XokMalloc *xm , ParseFactor *pf , String *type)
@@ -371,7 +376,7 @@ int main()
   desclist *dl = Cra_desclist_create(xm , 16); /* tree list */
   craP_token_parse(xm , tokens , dl);  /*  AST main parse */
   vm *vm = craC_bytecode_parse(xm , dl);
-  craV_execute(xm , vm);
+  craV_execute(xm , hmap , vm);
   /* free setting struct */
   Cra_desclist_free(xm , dl);
   free_XokMalloc(xm);

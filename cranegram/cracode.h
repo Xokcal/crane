@@ -9,54 +9,64 @@
 typedef struct desclist desclist;
 
 typedef enum opcode{
-  OP_PUSH,
-  OP_ADD,
-  OP_SUB,
-  OP_DIV,
-  OP_MUL,
-  OP_HALT,
-  OP_STORE
+ OP_PUSH,
+ OP_ADD,
+ OP_SUB,
+ OP_DIV,
+ OP_MUL,
+ OP_HALT,
+ OP_STORE
 }opcode;
 
 typedef enum vartype{
-  TYPE_INT,
-  TYPE_STRING,
-  TYPE_FLOAT,
-  YTPE_DOUBLE,
-  TYPE_CHAR,
-  TYPE_LONG
+ TYPE_INT,
+ TYPE_STRING,
+ TYPE_FLOAT,
+ TYPE_DOUBLE,
+ TYPE_CHAR,
+ TYPE_LONG
 }vartype;
 
 /* store crane var(int , float , long ,string,...)
 type value. struct type store var enum vartype */
 typedef struct value{
-  vartype type;
-  union
-  {
-    int i;
-    float f;
-    char *s;
-    char c;
-    double d;
-    long l;
-  }v;
+ vartype type;
+ union
+ {
+   int i;
+   float f;
+   char *s;
+   char c;
+   double d;
+   long l;
+ }v;
 }value;
 
 typedef struct bytecode{
-  int *codes;
-  int count;
-  int size;
-  value *values;
-  int v_count;
-  int v_size;
+ int *codes;
+ int count;
+ int size;
+ value *values;
+ int v_count;
+ int v_size;
 }bytecode;
 
 typedef struct varnamestk {
-  char **vn; 
-  int *slots;
-  int size;
-  int count;
+ char **vn; 
+ int *slots;
+ int size;
+ int count;
 }varnamestk;
+
+/*
+** store variables type when AST parse
+*/
+typedef struct Ttypes{
+ char **types;
+ int size;
+ int count;
+}Ttypes;
+
 
 vm*
 craC_bytecode_parse(XokMalloc *xm ,  desclist *dl);
@@ -71,5 +81,6 @@ int bc_emit(XokMalloc *xm, bytecode *bc, int instr);
 
 int bc_add_constant(XokMalloc *xm, bytecode *bc, value v);
 
+const char* typetostr(vartype type);
 
 #endif

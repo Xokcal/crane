@@ -30,7 +30,15 @@ typedef enum vartype{
 /* store crane var(int , float , long ,string,...)
 type value. struct type store var enum vartype */
 typedef struct value{
+  /* vartype enum type, use to match*/
  vartype type;
+ /* variable name like: int a = 10;
+                            | 
+                            `---------> name*/
+ char *vname;
+ /* authentic variable type,
+ like: {int, double, long, float, string} */
+ char *vtype;
  union
  {
    int i;

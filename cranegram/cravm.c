@@ -4,6 +4,8 @@
 #include "cravm.h"
 
 #define VM_DEFAULT_STACK_SIZE 1024
+#define VM_DEFAULT_VSLOTS_SIZE 200
+
 #define vmcase(op) case (op):
 #define vmswitch(op) switch(op)
 #define vmdefault default:
@@ -25,29 +27,40 @@ vm_free(XokMalloc *xm, vm *v){
  (vm)->vs[(vm)->sp - 2] = (res);\
  (vm)->sp = (vm)->sp - 1;
 
+ /* virtual machine current ci point codes reflect struct value*/
 #define get_codesv(vm)\
  (vm)->vns->vn[(vm)->bc->codes[(vm)->ci]]
 
+ /* virtual machine only value after calculate*/
 #define get_stack_res(vm)\
  (vm)->vs[(vm)->sp - 1].v.i
 
 #define clear_sp(vm)\
  (vm)->sp = 0;
 
+ /* virtual machine current ci point codes variable type */
+#define get_stack_type(vm)\
+ (vm)->tys->types[(vm)->bc->codes[(vm)->ci]]
+
 vm *
-vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns, int size)
-{
+vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns,
+                               Ttypes *tys, int size){
  if (size <= 0) size = VM_DEFAULT_STACK_SIZE;
  vm *v = (vm *)xalloc_XokMalloc(xm, sizeof(vm));
  if (!v) return NULL;
- v->vs = (value *)xalloc_XokMalloc(xm, sizeof(value) * size);
+ v->vs = (value *)xalloc_XokMalloc
+ (xm, sizeof(value) * size);
+ v->vslots = (value *)xalloc_XokMalloc
+ (xm, sizeof(value) * VM_DEFAULT_VSLOTS_SIZE);
  if (!v->vs) return NULL;
  v->bc = bc;
  v->vns = vns;
+ v->tys = tys;
  v->sp = 0;
  v->ci = 0;
  v->size = size;
  v->vni = 0;
+ v->vsi = 0;
  return v;
 }
 
@@ -55,9 +68,8 @@ vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns, int size)
 static dlong
 calc_executor(dlong *p1 , dlong *p2 , char *sign)
 {
- if(strcmp(sign , "+")==0){
+ if(strcmp(sign , "+")==0)
   return (dlong)calc_add(p1 , p2);
- }
  if(strcmp(sign , "-")==0)
   return (dlong)calc_sub(p1 , p2);
  if(strcmp(sign , "*")==0)
@@ -97,8 +109,7 @@ opcalc_executor(vm *vm , char *sign){
 }
 
 void
-craV_execute(XokMalloc *xm , Hashmap *vmap , vm *vm)
-{
+craV_execute(XokMalloc *xm , vm *vm){
  log_c("varName" , vm->vns->vn[0]);
  int *codes = vm->bc->codes;
  while(vm->ci < vm->bc->count){
@@ -117,17 +128,26 @@ craV_execute(XokMalloc *xm , Hashmap *vmap , vm *vm)
     vmbreak;
    }
    vmcase(OP_STORE){
+    value v;
     vm->ci++;
     char *vname = get_codesv(vm);
     log_c("vname+++" , vname);
     vm->ci++;
-    char *type = get_codesv(vm);
+    char *type = get_stack_type(vm);
     log_c("type+++" , type);
     log_i("res******" , get_stack_res(vm));
     vm->ci++;
+    v.vtype = strdup(type);
+    v.vname = strdup(vname);
+    v.v.i = get_stack_res(vm);
+    {
+     log("{");
+     logi("v" , v.v);
+     logc("vname" , v.vname);
+     logc("vtype" , v.vtype);
+     log("}");
+    }
     clear_sp(vm);
-    /*map_put(vmap , vname , 
-    create_string(typetostr()) , );*/
     vmbreak;
    }
    vmcase(OP_ADD){

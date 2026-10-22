@@ -13,25 +13,34 @@
 typedef struct bytecode bytecode;
 typedef struct varnamestk varnamestk;
 typedef struct value value;
+typedef struct Ttypes Ttypes;
 
 typedef struct vm{
-  /* struct bc: 
-  codes and values package */
-  bytecode *bc;
-  /* struct vns: 
-  var names package */
-  varnamestk *vns;
-  /* sp: struct 
-  vm.vs index */
-  int sp;
-  /* pc: struct bytecode
-   bc codes index */
-  int ci;
-  /* vm vs stack, tackle 
-  codes and parse */
-  value *vs;
-  int vni;
-  int size;
+ /* struct bc: 
+ codes and values package */
+ bytecode *bc;
+ /* struct vns: 
+ var names package */
+ varnamestk *vns;
+ /* struct types: 
+ var type package */
+ Ttypes *tys;
+ /* sp: struct 
+ vm.vs index */
+ int sp;
+ /* pc: struct bytecode
+  bc codes index */
+ int ci;
+ /* vm vs stack, tackle 
+ codes and parse */
+ value *vs;
+ /* variable struct value slots
+ use to search variable value */
+ value *vslots;
+ /* vslots variable index */
+ int vsi;
+ int vni;
+ int size;
 }vm;
 
 typedef struct vmmap{
@@ -39,14 +48,14 @@ typedef struct vmmap{
 }vmmap;
 
 
-vm *vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns, int size);
+vm *vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns,
+                                  Ttypes *tys, int size);
 
 void vm_free(XokMalloc *xm, vm *v);
 
-/* vm main executor, use struct vm parse codes to stack 
-** @param XokMaloc *xm
-** @param vm *vm
+/* 
+**vm main executor, use struct vm parse codes to stack 
 */
-void craV_execute(XokMalloc *xm , Hashmap *vmap , vm *vm);
+void craV_execute(XokMalloc *xm , vm *vm);
 
 #endif

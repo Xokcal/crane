@@ -376,7 +376,7 @@ int main()
   desclist *dl = Cra_desclist_create(xm , 16); /* tree list */
   craP_token_parse(xm , tokens , dl);  /*  AST main parse */
   vm *vm = craC_bytecode_parse(xm , dl);
-  craV_execute(xm , hmap , vm);
+  craV_execute(xm , vm);
   /* free setting struct */
   Cra_desclist_free(xm , dl);
   free_XokMalloc(xm);

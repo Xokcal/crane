@@ -23,6 +23,9 @@
     #define log_c(front , content) printf("[DEBUG] [%s] %s\n" , (front) , (content))
     #define log_cr(front , content) printf("[DEBUG] [%s] %c\n" , (front) , (content))
     #define log_i(front , content) printf("[DEBUG] [%s] %d\n" , (front) , (content))
+    #define logc(front , content) printf("[DEBUG] [%s] %s\n" , (front) , (content))
+    #define logcr(front , content) printf("[DEBUG] [%s] %c\n" , (front) , (content))
+    #define logi(front , content) printf("[DEBUG] [%s] %d\n" , (front) , (content))
 #endif
 
 #define EXTRE_CHECK_CHAR_LEN 2

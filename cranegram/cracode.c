@@ -344,6 +344,6 @@ craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
  }
  bc_emit(xm , bc , OP_HALT);
  craC_codes_log(bc);
- return vm_create(xm , bc , vns , 160);
+ return vm_create(xm, bc, vns, types, 160);
 }
 

@@ -5,6 +5,10 @@
 
 #define VM_DEFAULT_STACK_SIZE 1024
 #define VM_DEFAULT_VSLOTS_SIZE 200
+#define addsign "+"
+#define subsign "-"
+#define mulsign "*"
+#define divsign "/"
 
 #define vmcase(op) case (op):
 #define vmswitch(op) switch(op)
@@ -127,59 +131,51 @@ vmvslots_pop(vm *vm , char *n)
 }
 
 
+static void
+opstore_executor(vm *vm)
+{
+ value v;
+ vm->ci++;
+ v.vname = strdup(get_codesv(vm));
+ vm->ci++;
+ v.vtype = strdup(get_stack_type(vm));
+ vm->ci++;
+ v.v.i = get_stack_res(vm);
+ vmvslots_push(vm , v);
+ value *r = vmvslots_pop(vm , v.vname);
+ clear_sp(vm);
+}
+
+
 void 
 craV_execute(XokMalloc *xm , vm *vm)
 {
- log_c("varName" , vm->vns->vn[0]);
  int *codes = vm->bc->codes;
  while(vm->ci < vm->bc->count){
-  log_i("loop codes_idx:" , codes_idx(vm));
   vmswitch(codes_idx(vm)){
    vmcase(OP_PUSH){
-    log("___OP_PUSH");
-    log_i("" , vm->bc->values[0].v.i);
-    log_i("pc.value.v" , (vm)->bc->values[(vm)->ci].v.i);
     vm->ci++;
     oppush_executor(vm);
-    for(int i = 0; i < vm->sp; i++)
-     log_i("vm.vs.i",vm->vs[i].v.i);
-    log_i("en PC:" , vm->ci);
-    log_i("en vs_idx:" , vm->sp);
     vmbreak;
    }
    vmcase(OP_STORE){
-    value v;
-    vm->ci++;
-    char *vname = get_codesv(vm);
-    log_c("vname+++" , vname);
-    vm->ci++;
-    char *type = get_stack_type(vm);
-    log_c("type+++" , type);
-    log_i("res******" , get_stack_res(vm));
-    vm->ci++;
-    v.vtype = strdup(type);
-    v.vname = strdup(vname);
-    v.v.i = get_stack_res(vm);
-    {
-     log("{");
-     logi("v" , v.v);
-     logc("vname" , v.vname);
-     logc("vtype" , v.vtype);
-     log("}");
-    }
-    vmvslots_push(vm , v);
-    log("_________________________");
-    value *r = vmvslots_pop(vm , vname);
-    logi("result b" , r->v.i);
-    clear_sp(vm);
+    opstore_executor(vm);
     vmbreak;
    }
    vmcase(OP_ADD){
-    opcalc_executor(vm , "+");
+    opcalc_executor(vm , addsign);
     vmbreak;
    }
    vmcase(OP_SUB){
-    opcalc_executor(vm , "-");
+    opcalc_executor(vm , subsign);
+    vmbreak;
+   }
+   vmcase(OP_MUL){
+    opcalc_executor(vm , mulsign);
+    vmbreak;
+   }
+   vmcase(OP_DIV){
+    opcalc_executor(vm , divsign);
     vmbreak;
    }
    vmdefault{

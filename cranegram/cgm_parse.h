@@ -34,7 +34,7 @@
 typedef struct Hashmap Hashmap;
 
 
-static char *keys[] = {"printf" , "\"" , "\n" , "(" , ")" , ";" , "<" , ">" , "=" , "==" , "\'"
+static char *keys[] = {"print" , "\"" , "\n" , "(" , ")" , ";" , "<" , ">" , "=" , "==" , "\'"
                       , "fun" , "@" , "$" , "%" , "&" , "+" , "-" , "^" , "/" , "*" , "." , " "
                       , "int" , "float" , "string" , "%d" , "%f" , "%s"};
 

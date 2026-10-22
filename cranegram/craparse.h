@@ -12,7 +12,8 @@ typedef enum cragramtype{
   GRAM_FLOAT,
   GRAM_PRINTF,
   GRAM_EMPTY,
-  GRAM_VAR
+  GRAM_VAR,
+  GRAM_PRINT
 }cragramtype;
 
 typedef enum craasttype{

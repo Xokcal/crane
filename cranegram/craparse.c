@@ -28,6 +28,7 @@ t_convert_asttype(String *s)
   if(compare(s , " "))return GRAM_EMPTY;
   if(compare(s , "\n"))return GRAM_EMPTY;
   if(compare(s , ";"))return GRAM_EMPTY;
+  if(compare(s , "print"))return GRAM_PRINT;
 }
 
 
@@ -286,27 +287,34 @@ parse_value_main(pavstate ps)
 ** float , double , bite}.
  */
 static craastdesc*
-int_desc(XokMalloc *xm , ParseFactor *pf , String *type)
+var_desc(XokMalloc *xm , ParseFactor *pf , String *type)
 {
-  accept(pf , "int");   /* int type var */
-  accept_empty(pf);   /* throught empty to variable name */
-  String *name = craP_pf_currtoken(pf);
-  pf->curr++;
-  craastdesc* var = make_var(xm , name->str); /* variable's name */
-  accept_empty(pf); /* throught empty to '=' */
-  int isEqu = accept(pf , "="); /* judge '=' */
-  if(!isEqu){ /* if isEqu not's true , declare is 'int a;' */
-    craastdesc *undefinevar = 
-    push_var_undefine(xm , name , type);  /* undefine variable tackle */
-    return undefinevar;
-  }
-  pavstate ps = pavstate_init(xm , pf);
-  craastdesc *v = parse_value_main(ps); /* tackle after '=' value tree */
-  //print_ast(v , 0);
-  craastdesc *desc = 
-  make_assign(xm , name->str , v , type->str); /* current 'desc' struction is:
-  struct assign* = {var_name , struct binop* root} */
-  return desc;
+ accept(pf , "int");   /* int type var */
+ accept_empty(pf);   /* throught empty to variable name */
+ String *name = craP_pf_currtoken(pf);
+ pf->curr++;
+ craastdesc* var = make_var(xm , name->str); /* variable's name */
+ accept_empty(pf); /* throught empty to '=' */
+ int isEqu = accept(pf , "="); /* judge '=' */
+ if(!isEqu){ /* if isEqu not's true , declare is 'int a;' */
+  craastdesc *undefinevar = 
+  push_var_undefine(xm , name , type);  /* undefine variable tackle */
+  return undefinevar;
+ }
+ pavstate ps = pavstate_init(xm , pf);
+ craastdesc *v = parse_value_main(ps); /* tackle after '=' value tree */
+ //print_ast(v , 0);
+ craastdesc *desc = 
+ make_assign(xm , name->str , v , type->str); /* current 'desc' struction is:
+ struct assign* = {var_name , struct binop* root} */
+ return desc;
+}
+
+
+static craastdesc*
+print_desc(XokMalloc *xm, ParseFactor *pf)
+{
+ 
 }
 
 
@@ -318,38 +326,37 @@ craP_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
   String *t = pf.tokens->tokens[pf.curr++];
   printf("(t):%s\n" , t->str);
   switch(t_convert_asttype(t)){
-    case GRAM_EMPTY:{
-     pf.curr++;
-     break;
-    }
-    case GRAM_PRINTF:{
-     //prinft_desc();
-     break;
-    }
-    case GRAM_VAR:{
-     String *type = create_string(t->str);
-     craastdesc *vd = int_desc(xm , &pf , type);
-     string_free(type);
-     print_ast(vd , 0);
-     Cra_desclist_push(xm , dl , vd);
-     break;
-    }
+   case GRAM_PRINT:{
+    print_desc(xm , &pf);
+   }
+   case GRAM_EMPTY:{
+    pf.curr++;
+    break;
+   }
+   case GRAM_PRINTF:{
+    //prinft_desc();
+    break;
+   }
+   case GRAM_VAR:{
+    String *type = create_string(t->str);
+    craastdesc *vd = var_desc(xm , &pf , type);
+    string_free(type);
+    print_ast(vd , 0);
+    Cra_desclist_push(xm , dl , vd);
+    break;
+   }
   }
  }
 }
 
-
 #define CRANE_VERSION   "1.0.0"
 #define CRANE_AUTHOR    "Xokcal"
 #define CRANE_BUILD     __DATE__ " " __TIME__
-
-
 #define craP_crane_logo \
 "   ___ ___    _   _  _ ___ \n" \
 "  / __| _ \\  /_\\ | \\| | __|\n" \
 " | (__|   / / _ \\| .` | _| \n" \
 "  \\___|_|_\\/_/ \\_\\_|\\_|___|\n"
-
 
 void print_welcome(void) {
     printf("\033[36m%s\033[0m\n", craP_crane_logo);
@@ -369,7 +376,7 @@ int main()
   String *origin_str = open_file("Crane/test.cr");
   TOKENSB *tokens = tokens_parse(origin_str);
   for(int i = 0; i < tokens->count ; i++){
-      printf("%s" , tokens->tokens[i]->str);
+      printf("%s\n" , tokens->tokens[i]->str);
   }printf("\n");
   XokMalloc *xm = create_XokMalloc();
   Hashmap *hmap = create_hashmap(); /* gloab variable*/

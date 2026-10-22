@@ -17,11 +17,6 @@
 #define dlong long long
 #define voidunfind -1
 
-void
-vm_free(XokMalloc *xm, vm *v){
- if (!v) return; if (v->vs)v->vs = NULL;
-}
-
 /* instruct OP_PUSH execute */
 #define oppush_executor(vm) \
  (vm)->vs[(vm)->sp++] = (vm)->bc->values[(vm)->bc->codes[(vm)->ci++]]
@@ -51,6 +46,24 @@ vm_free(XokMalloc *xm, vm *v){
 /* virtual machine vslots push value*/
 #define vmvslots_push(vm , v)\
  (vm)->vslots[(vm)->vsi++] = (v);
+
+
+inline void vm_free(XokMalloc *xm, vm *v){
+ if (!v) return;
+  if (v->vs) {
+   free(v->vs); 
+   v->vs = NULL;
+  }
+  if (v->vslots) {
+   for (int i = 0; i < v->vsi; i++) {
+       if (v->vslots[i].vname) free(v->vslots[i].vname);
+       if (v->vslots[i].vtype) free(v->vslots[i].vtype);
+   }
+   free(v->vslots);
+   v->vslots = NULL;
+  }
+   free(v);
+}
 
 vm *
 vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns,
@@ -143,6 +156,11 @@ opstore_executor(vm *vm)
  v.v.i = get_stack_res(vm);
  vmvslots_push(vm , v);
  value *r = vmvslots_pop(vm , v.vname);
+ #define vmprint
+#ifdef vmprint
+ log("_________________");
+ printf("%d\n" , r->v.i);
+#endif
  clear_sp(vm);
 }
 
@@ -178,10 +196,14 @@ craV_execute(XokMalloc *xm , vm *vm)
     opcalc_executor(vm , divsign);
     vmbreak;
    }
+   vmcase(OP_HALT){
+    goto vmterminal;
+   }
    vmdefault{
     vm->ci++;
     vmbreak;
    }
   }
  }
+ vmterminal:
 }

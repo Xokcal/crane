@@ -37,7 +37,7 @@ typedef struct vm{
  /* variable struct value slots
  use to search variable value */
  value *vslots;
- /* vslots variable index */
+ /* value vslots variable index */
  int vsi;
  int vni;
  int size;
@@ -47,15 +47,13 @@ typedef struct vmmap{
   Hashmap *vmap; /* variable map store  */
 }vmmap;
 
-
 vm *vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns,
                                   Ttypes *tys, int size);
-
 void vm_free(XokMalloc *xm, vm *v);
-
-/* 
-**vm main executor, use struct vm parse codes to stack 
-*/
+/* vm main executor, use struct vm parse codes to stack */
 void craV_execute(XokMalloc *xm , vm *vm);
+value* vmvslots_pop(vm *vm , char *n);
+
+//#define vmgslotsv(vm , n , ty , T) (T*)vmvslots_popv((vm), (n), (ty));
 
 #endif

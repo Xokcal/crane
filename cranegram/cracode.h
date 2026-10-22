@@ -47,6 +47,7 @@ typedef struct value{
    char c;
    double d;
    long l;
+   long long ll;
  }v;
 }value;
 

@@ -11,12 +11,14 @@
 #define vmdefault default:
 #define vmbreak break
 #define dlong long long
+#define voidunfind -1
 
 void
 vm_free(XokMalloc *xm, vm *v){
  if (!v) return; if (v->vs)v->vs = NULL;
 }
 
+/* instruct OP_PUSH execute */
 #define oppush_executor(vm) \
  (vm)->vs[(vm)->sp++] = (vm)->bc->values[(vm)->bc->codes[(vm)->ci++]]
 
@@ -41,6 +43,10 @@ vm_free(XokMalloc *xm, vm *v){
  /* virtual machine current ci point codes variable type */
 #define get_stack_type(vm)\
  (vm)->tys->types[(vm)->bc->codes[(vm)->ci]]
+
+/* virtual machine vslots push value*/
+#define vmvslots_push(vm , v)\
+ (vm)->vslots[(vm)->vsi++] = (v);
 
 vm *
 vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns,
@@ -108,8 +114,22 @@ opcalc_executor(vm *vm , char *sign){
  }
 }
 
-void
-craV_execute(XokMalloc *xm , vm *vm){
+inline value *
+vmvslots_pop(vm *vm , char *n)
+{
+ int vsitemp = 0;
+ while(vsitemp < vm->vsi){
+  if(strcmp(vm->vslots[vsitemp].vname , n)==0)
+   return &(vm->vslots[vsitemp]);
+  vsitemp++;
+ }
+ return NULL;
+}
+
+
+void 
+craV_execute(XokMalloc *xm , vm *vm)
+{
  log_c("varName" , vm->vns->vn[0]);
  int *codes = vm->bc->codes;
  while(vm->ci < vm->bc->count){
@@ -147,6 +167,10 @@ craV_execute(XokMalloc *xm , vm *vm){
      logc("vtype" , v.vtype);
      log("}");
     }
+    vmvslots_push(vm , v);
+    log("_________________________");
+    value *r = vmvslots_pop(vm , vname);
+    logi("result b" , r->v.i);
     clear_sp(vm);
     vmbreak;
    }

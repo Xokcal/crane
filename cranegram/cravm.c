@@ -25,7 +25,7 @@ vm_free(XokMalloc *xm, vm *v){
  (vm)->vs[(vm)->sp - 2] = (res);\
  (vm)->sp = (vm)->sp - 1;
 
-#define get_vname(vm)\
+#define get_codesv(vm)\
  (vm)->vns->vn[(vm)->bc->codes[(vm)->ci]]
 
 #define get_stack_res(vm)\
@@ -118,8 +118,11 @@ craV_execute(XokMalloc *xm , Hashmap *vmap , vm *vm)
    }
    vmcase(OP_STORE){
     vm->ci++;
-    char *vname = get_vname(vm);
-    log_i("vname+++" , vname);
+    char *vname = get_codesv(vm);
+    log_c("vname+++" , vname);
+    vm->ci++;
+    char *type = get_codesv(vm);
+    log_c("type+++" , type);
     log_i("res******" , get_stack_res(vm));
     vm->ci++;
     clear_sp(vm);

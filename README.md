@@ -1,15 +1,9 @@
 <div align="center">
 
-  <pre>
-   _____ _____    ___   _   _ ______ 
-  / ____|  __ \  / _ \ | \ | |  ____|
- | |    | |__) |/ /_\ \|  \| | |__   
- | |    |  _  /|  _   | . ` |  __|  
- | |____| | \ \| |_| || |\  | |____ 
-  \_____|_|  \_\___/|_| \_|______|
-  </pre>
+<img src="./assets/logo.png" width="400" alt="Crane Logo" />
 
   <h1>Crane</h1>
+  <img alt="Language" src="https://img.shields.io/badge/language-C-blue.svg?style=flat-square" />
 
   <p><b>A lightweight programming language and stack-based Virtual Machine written from scratch in pure C.</b></p>
   

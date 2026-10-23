@@ -393,7 +393,8 @@ unkey_desc(XokMalloc *xm, ParseFactor *pf)
  accept_unkey(pf);
  accept_empty(pf);
  char *unkeytype = strdup(pfcurstr(pf));
- if(accept(unkeytype , acptlPH)){ /* "(" is function! */
+ if(!strcmp(unkeytype , acptlPH)){ /* "(" is function! */
+  pfnext(pf);
   do{
    accept_empty(pf);
    if(!strcmp(pfcurstr(pf) , acptDQ)){ /* is string */

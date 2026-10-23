@@ -57,7 +57,7 @@
 /* ************** common ******************* */
 #define craC_isstrvar(s) \
  !isnumber((s)) && !strcmp((s), acptDQ)==0 \
- && !strcmp((s), acptempty)==0
+ && !strcmp((s), acptempty)==0 && !cmpkey((s))
 
 
 static int
@@ -396,10 +396,69 @@ var_desc(XokMalloc *xm , ParseFactor *pf , String *type)
 }
 
 
-/* 
-** print("hello crane" , "A",count, 14);
-** count++
-*/
+static void
+desc_fn_str(ParseFactor *pf, craastdesc *desc, String *t)
+{
+ if(strcmp(pfcurstr(pf) , acptDQ)==0){ /* is string */
+  accept(pf , acptDQ); /* eat '|"' */
+  while(strcmp(pfcurstr(pf) , acptDQ) != 0){
+   cmptail(t, pfcurstr(pf)); /* main content */
+   pfnext(pf);
+  }
+  Tparam tp;
+  tp.pty = PRM_STRING;
+  tp.originstr = strdup(t->str);
+  descfnpushpusharg(desc, tp);
+  strclear(t);
+  accept(pf , acptDQ);
+  accept_empty(pf);
+ }
+}
+
+
+static void
+desc_fn_var(ParseFactor *pf, craastdesc *desc)
+{
+ if(craC_isstrvar(pfcurstr(pf))){ /* is var */
+  Tparam tp;
+  tp.pty = PRM_VAR;
+  tp.originstr = strdup(pfcurstr(pf));
+  descfnpushpusharg(desc, tp);
+  pfnext(pf);
+  accept_empty(pf);
+ }
+}
+
+
+static void
+desc_fn_number(ParseFactor *pf, craastdesc *desc)
+{
+ if(isnumber(pfcurstr(pf))){
+  Tparam tp;
+  tp.pty = PRM_NUMBER;
+  tp.originstr = strdup(pfcurstr(pf));
+  descfnpushpusharg(desc, tp);
+  pfnext(pf);
+  accept_empty(pf);
+ }
+}
+
+
+static craastdesc*
+unkey_desc_fn(ParseFactor *pf, craastdesc *desc
+                  , String *t, char *unkeytype){
+ if(!strcmp(unkeytype , acptlPH)){ /* "(" is function! */
+  pfnext(pf);
+  do{
+   accept_empty(pf);
+   desc_fn_str(pf , desc , t);
+   desc_fn_var(pf , desc);
+   desc_fn_number(pf , desc);
+  }while(testnext(pf, ","));
+ }
+}
+
+
 static craastdesc*
 unkey_desc(XokMalloc *xm, ParseFactor *pf)
 {
@@ -413,45 +472,7 @@ unkey_desc(XokMalloc *xm, ParseFactor *pf)
  accept_unkey(pf);
  accept_empty(pf);
  char *unkeytype = strdup(pfcurstr(pf));
- logc("{en} (" , unkeytype);
- if(strcmp(unkeytype , acptlPH)==0){ /* "(" is function! */
-  log("en is function____");
-  pfnext(pf);
-  do{
-   accept_empty(pf);
-   logc("________{pf}" , pfcurstr(pf));
-   if(strcmp(pfcurstr(pf) , acptDQ)==0){ /* is string */
-    log("{en str}");
-    accept(pf , acptDQ); /* eat |" */
-    while(strcmp(pfcurstr(pf) , acptDQ) != 0){
-     cmptail(t, pfcurstr(pf)); /* main content */
-     pfnext(pf);
-    }
-    Tparam tp;
-    tp.pty = PRM_STRING;
-    tp.originstr = strdup(t->str);
-    logc("{params}" , tp.originstr);
-    descfnpushpusharg(desc, tp);
-    strclear(t);
-    accept(pf , acptDQ);
-    accept_empty(pf);
-   }
-   else if(craC_isstrvar(pfcurstr(pf))){ /* is var */
-    log("{en unkey}");
-    Tparam tp;
-    tp.pty = PRM_VAR;
-    tp.originstr = strdup(pfcurstr(pf));
-    descfnpushpusharg(desc, tp);
-    pfnext(pf);
-    accept_empty(pf);
-    logc("params" , tp.originstr);
-   }
-  }while(testnext(pf, ","));
- }
- 
- for(int i = 0; i < desc->as.func.argsi; i++){
-  printf("\n__argsv__: %s\n" , desc->as.func.args[i].originstr);
- }
+ unkey_desc_fn(pf, desc, t, unkeytype);
  free(unkeytype);
  strfree(t);
  return desc;
@@ -468,16 +489,9 @@ craP_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
   switch(t_convert_asttype(t)){
    case GRAM_PRINT:{
     craastdesc *fd = unkey_desc(xm , &pf);
-    logc("_name" , fd->as.func.fname);
-    logi("_argsi" , fd->as.func.argsi);
-    logc("origin" , fd->as.func.args[0].originstr);
    }
    case GRAM_EMPTY:{
     pf.curr++;
-    break;
-   }
-   case GRAM_PRINTF:{
-    //prinft_desc();
     break;
    }
    case GRAM_VAR:{
@@ -519,7 +533,7 @@ int main()
   String *origin_str = open_file("Crane/test.cr");
   TOKENSB *tokens = tokens_parse(origin_str);
   for(int i = 0; i < tokens->count ; i++){
-      printf("%s\n" , tokens->tokens[i]->str);
+      //logc("token" , tokens->tokens[i]->str);
   }printf("\n");
   XokMalloc *xm = create_XokMalloc();
   Hashmap *hmap = create_hashmap(); /* gloab variable*/

@@ -77,6 +77,7 @@ typedef struct HAJIGA_ATM{
     String *ATM_SCREEN_0X1868632;
 }HAJIGA_ATM;
 
+int cmpkey(char *str);
 int isContainKeys(String *string);
 TOKENSB *tokens_parse(String *origin_file_string);
 KE token_to_ke(String *token);

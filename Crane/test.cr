@@ -1,1 +1,1 @@
-print(a, "hello crane!!", b, c, d);
+print(a, "hello crane!!", b, c, d, 520);

@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <!-- 画笔描边效果 -->
+    <style>
+      .outline { fill: #FFD13B; stroke: #2C2C2C; stroke-width: 8; stroke-linejoin: round; } <!-- 黄色描边 -->
+      .body { fill: #FFB1C1; stroke: #2C2C2C; stroke-width: 8; stroke-linejoin: round; }    <!-- 粉色主体 -->
+      .accent { fill: #6EE5D6; stroke: #2C2C2C; stroke-width: 8; stroke-linejoin: round; }  <!-- 青色腮红/鼻子 -->
+      .tail { fill: #8EE3F5; stroke: #2C2C2C; stroke-width: 8; stroke-linejoin: round; }    <!-- 蓝色尾巴 -->
+      .tail-fur { fill: #E6E6E6; stroke: #2C2C2C; stroke-width: 8; stroke-linejoin: round; }<!-- 灰白毛毛 -->
+      .eye { fill: #FFFFFF; stroke: #2C2C2C; stroke-width: 8; stroke-linejoin: round; }     <!-- 白色眼睛 -->
+    </style>
+  </defs>
+
+  <!-- 整体居中并稍微放大一点 -->
+  <g transform="translate(50, 50) scale(1.1)">
+    
+    <!-- 1. 黄色底层描边（稍微比粉色大一圈，做出手绘的错位边缘感） -->
+    <path class="outline" d="
+      M 70 310 
+      C 20 290, 20 230, 40 210 
+      L 110 200 
+      C 140 190, 150 140, 180 60 
+      C 190 30, 210 40, 230 90
+      L 280 170 
+      L 330 60
+      C 340 40, 360 40, 370 70
+      L 420 250
+      C 430 310, 360 350, 250 350
+      Z" 
+    />
+
+    <!-- 2. 粉色主体 -->
+    <path class="body" d="
+      M 80 300 
+      C 30 280, 30 230, 50 215 
+      L 115 205 
+      C 145 195, 155 145, 185 65 
+      C 190 45, 200 50, 220 100
+      L 275 180 
+      L 325 65
+      C 330 55, 340 55, 350 75
+      L 400 250
+      C 410 300, 350 340, 250 340
+      Z" 
+    />
+
+    <!-- 3. 左侧灰白色毛毛 + 蓝色尾巴 -->
+    <path class="tail" d="
+      M 60 220 
+      C 30 220, 20 270, 50 310 
+      C 80 330, 100 290, 100 250
+      Z" />
+    <path class="tail-fur" d="
+      M 60 220 
+      C 40 220, 40 250, 60 260
+      C 80 260, 80 220, 60 220 Z" />
+
+    <!-- 4. 两只白色的眼睛 -->
+    <rect class="eye" x="180" y="140" width="18" height="45" rx="9" transform="rotate(10, 180, 140)" />
+    <rect class="eye" x="310" y="145" width="18" height="45" rx="9" transform="rotate(-15, 310, 145)" />
+
+    <!-- 5. 青色的鼻子 -->
+    <rect class="accent" x="260" y="200" width="14" height="25" rx="7" />
+
+    <!-- 6. 下方两块青色腮红 -->
+    <rect class="accent" x="140" y="260" width="70" height="16" rx="8" transform="rotate(5, 140, 260)" />
+    <rect class="accent" x="320" y="270" width="70" height="16" rx="8" transform="rotate(-5, 320, 270)" />
+
+    <!-- 7. 右下角白色小爪子/斑纹 -->
+    <rect class="eye" x="380" y="260" width="16" height="45" rx="8" transform="rotate(-35, 380, 260)" />
+
+  </g>
+</svg>

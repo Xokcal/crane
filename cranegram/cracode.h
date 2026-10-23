@@ -24,7 +24,8 @@ typedef enum vartype{
  TYPE_FLOAT,
  TYPE_DOUBLE,
  TYPE_CHAR,
- TYPE_LONG
+ TYPE_LONG,
+ TYPE_UNKOWN
 }vartype;
 
 /* store crane var(int , float , long ,string,...)

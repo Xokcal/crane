@@ -6,6 +6,8 @@
 #include "cgm_parse.h"
 #include "cracode.h"
 
+typedef struct value value;
+
 typedef enum cragramtype{
   GRAM_INT,
   GRAM_STRING,
@@ -13,7 +15,8 @@ typedef enum cragramtype{
   GRAM_PRINTF,
   GRAM_EMPTY,
   GRAM_VAR,
-  GRAM_PRINT
+  GRAM_PRINT,
+  GRAM_UNKEY
 }cragramtype;
 
 typedef enum craasttype{
@@ -23,25 +26,46 @@ typedef enum craasttype{
   AST_NUM,
   AST_ASSIGN,
   AST_BINOP,
-  AST_EMPTY
+  AST_EMPTY,
+  AST_FUNC
 }craasttype;
 
+/* define param type like: {("hello", count, 10086, 3.1415)} */
+typedef enum paramtype{
+ PRM_STRING,
+ PRM_VAR,
+ PRM_NUMBER
+}paramtype;
+
+typedef struct Tparam{
+ paramtype pty;
+ char *originstr;
+}Tparam;
+
 typedef struct craastdesc{
-  craasttype kind;   /* ast's kind */
-  union{
-    char *varname;   /* ast's variable name */
-    int num;         /* ast's node number */
-    struct binop{ 
-      struct craastdesc *right;   /* binop'sright */
-      char *calcsign;      /* binop's calculate aign */
-      struct craastdesc *left;    /* binop's left */
-    } binop;
-    struct assign{
-      char *type;
-      char *name;     /* assign about of variable name */
-      struct craastdesc *value;   /* assign value */
-    } assign;
-  } as;
+ craasttype kind;   /* ast's kind */
+ union{
+  char *varname;   /* ast's variable name */
+  int num;         /* ast's node number */
+  struct binop{
+   struct craastdesc *right;   /* binop'sright */
+   char *calcsign;      /* binop's calculate aign */
+   struct craastdesc *left;    /* binop's left */
+  } binop;
+  struct assign{
+   char *type;
+   char *name;     /* assign about of variable name */
+   struct craastdesc *value;   /* assign value */
+  } assign;
+  struct func{
+   char *fname;
+   int argsi;
+   int fdesci;
+   struct craastdesc *fdescs;
+   struct Tparam *args;
+   /* modified array define .. */
+  }func;
+ } as;
 }craastdesc;
 
 typedef struct desclist{

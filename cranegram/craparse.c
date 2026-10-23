@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <ctype.h>
 #include "craparse.h"
 #include "../tool/xokmalloc/xokmalloc.h"
 #include "cgm_parse.h"
@@ -9,17 +10,43 @@
 #include "cracode.h"
 #include "cravm.h"
 
+#define acptkprint "print"
+#define acptkint "int"
+/* PH(parenthesee)*/
+#define acptlPH "("
+#define acptrPH ")"
+#define acptempty " "
+/* DQ(double quotaion)*/
+#define acptDQ "\""
+#define makefnTpysize 16
+#define makefnfdescssize 50
+/* ************** String func tackle ***************** */
+#define cmptail(s , tail) combine_tail((s), (tail))
+
+#define strclear(s) delete_all((s));
+
+#define strfree(s) string_free((s))
+/* ************** struct Parsefactor tackle *************** */
+#define pfcurstr(pf) \
+ (pf)->tokens->tokens[(pf)->curr]->str
+
 #define craP_ps_currtoken(ps) \
 (ps).pf->tokens->tokens[(ps).pf->curr]
+
 #define craP_pf_currtoken(pf) \
 (pf)->tokens->tokens[(pf)->curr]
 
+#define pfnext(pf) (pf)->curr++
+/* ************* descfn tackle *************** */
+#define descfnpushname(desc , name) \
+ (desc)->as.func.fname = (unkey);
 
-
+#define descfnpushpusharg(desc , tp)\
+ (desc)->as.func.args[desc->as.func.argsi++] = (tp);
 static int
 t_convert_asttype(String *s)
 {
-  if (compare(s, "int")     || 
+  if(compare(s, "int")     || 
     compare(s, "float")     || 
     compare(s, "double")    || 
     compare(s, "char")      || 
@@ -33,24 +60,51 @@ t_convert_asttype(String *s)
 
 
 static int
+isnumber(const char *str) {
+ if (str == NULL || *str == '\0') return 0;
+ while (*str != '\0') {
+  if (!isdigit(*str)) return 0;
+  str++;
+ }
+ return 1;
+}
+
+
+static int
 accept(ParseFactor *pf , char *name)
 {
-  if(compare(pf->tokens->tokens[pf->curr] , name)){
-    pf->curr++;
-    return 1;
-  }
-  return 0;
+ if(compare(pf->tokens->tokens[pf->curr] , name)){
+   pf->curr++;
+   return 1;
+ }
+ return 0;
 }
+
+
+static void
+accept_unkey(ParseFactor *pf){pf->curr++;}
+
 
 static void
 accept_empty(ParseFactor *pf)
 {
-  while(pf->curr < pf->tokens->count)
-  {
-    String *s = pf->tokens->tokens[pf->curr];
-    if(compare(s , " "))pf->curr++;
-    else return;
-  }
+ while(pf->curr < pf->tokens->count)
+ {
+   String *s = pf->tokens->tokens[pf->curr];
+   if(compare(s , " "))pf->curr++;
+   else return;
+ }
+}
+
+
+/* test whither have next like: {args, assign, ..}*/
+static int
+testnext(ParseFactor *pf , char *s)
+{
+ accept_empty(pf); /* check current pf not is empty key */
+ int bl = strcmp(pfcurstr(pf), s) == 0 ? 1 : 0;
+ pfnext(pf);
+ return bl;
 }
 
 
@@ -58,106 +112,120 @@ static void
 pav_clear_string(String *num_p1 , String *num_p2 
 , String *calcsign , String *calcsign2)
 {
-  delete_all(num_p1);
-  delete_all(num_p2);
-  delete_all(calcsign);
-  delete_all(calcsign2);
+ delete_all(num_p1);
+ delete_all(num_p2);
+ delete_all(calcsign);
+ delete_all(calcsign2);
 }
 
 
 static pavstate
 pavstate_init(XokMalloc *xm,ParseFactor *pf)
 {
-  pavstate pavs;
-  pavs.xm = xm;
-  pavs.pf = pf;
-  pavs.root = NULL;
-  return pavs;
+ pavstate pavs;
+ pavs.xm = xm;
+ pavs.pf = pf;
+ pavs.root = NULL;
+ return pavs;
 }
 
 
 static void
 print_ast(craastdesc *node, int depth)
 {
-  if (!node) {
-      printf("%*s(null)\n", depth * 2, "");
-      return;
-  }
-  printf("%*s", depth * 2, "");
-  switch (node->kind) {
-    case AST_NUM:
-      printf("NUM: %d\n", node->as.num);
-      break;
-    case AST_VAR:
-      printf("VAR: %s\n", node->as.varname);
-      break;
-    case AST_BINOP:
-      printf("BINOP: %s\n", node->as.binop.calcsign);
-      print_ast(node->as.binop.left,  depth + 1);
-      print_ast(node->as.binop.right, depth + 1);
-      break;
-    case AST_ASSIGN:
-      printf("ASSIGN: %s\n", node->as.assign.name);
-      print_ast(node->as.assign.value, depth + 1);
-      break;
-    default:
-      printf("UNKNOWN kind=%d\n", node->kind);
-      break;
-  }
+ if (!node) {
+  printf("%*s(null)\n", depth * 2, "");
+  return;
+ }
+ printf("%*s", depth * 2, "");
+ switch (node->kind) {
+  case AST_NUM:
+   printf("NUM: %d\n", node->as.num);
+   break;
+  case AST_VAR:
+   printf("VAR: %s\n", node->as.varname);
+   break;
+  case AST_BINOP:
+   printf("BINOP: %s\n", node->as.binop.calcsign);
+   print_ast(node->as.binop.left,  depth + 1);
+   print_ast(node->as.binop.right, depth + 1);
+   break;
+  case AST_ASSIGN:
+   printf("ASSIGN: %s\n", node->as.assign.name);
+   print_ast(node->as.assign.value, depth + 1);
+   break;
+  default:
+   printf("UNKNOWN kind=%d\n", node->kind);
+   break;
+ }
 }
 
-
+static
 craastdesc *make_var(XokMalloc *xokmalloc , char *name)
 {
-  craastdesc *node = (craastdesc *)
-  xalloc_XokMalloc(xokmalloc , sizeof(craastdesc));
-  node->kind = AST_VAR;
-  node->as.varname = strdup(name);  /* remember free node name */
-  return node;
+ craastdesc *node = (craastdesc *)
+ xalloc_XokMalloc(xokmalloc , sizeof(craastdesc));
+ node->kind = AST_VAR;
+ node->as.varname = strdup(name);  /* remember free node name */
+ return node;
 }
 
-
+static
 craastdesc *make_num(XokMalloc *xokMalloc ,  int n)
 {
-  craastdesc *node = (craastdesc *)
-  xalloc_XokMalloc(xokMalloc , sizeof(craastdesc));
-  node->kind = AST_NUM;
-  node->as.num = n;
-  return node;
+ craastdesc *node = (craastdesc *)
+ xalloc_XokMalloc(xokMalloc , sizeof(craastdesc));
+ node->kind = AST_NUM;
+ node->as.num = n;
+ return node;
 }
 
-
+static
 craastdesc *make_binop(XokMalloc *xokMalloc, char *calcsign 
     , craastdesc *left , craastdesc *right)
 {
-  craastdesc *node = (craastdesc *)
-  xalloc_XokMalloc(xokMalloc , sizeof(craastdesc));
-  node->kind = AST_BINOP;
-  node->as.binop.calcsign = strdup(calcsign); /* remember free node.left! */
-  node->as.binop.left = left; 
-  node->as.binop.right = right;
-  return node;
+ craastdesc *node = (craastdesc *)
+ xalloc_XokMalloc(xokMalloc , sizeof(craastdesc));
+ node->kind = AST_BINOP;
+ node->as.binop.calcsign = strdup(calcsign); /* remember free node.left! */
+ node->as.binop.left = left; 
+ node->as.binop.right = right;
+ return node;
 }
 
-
+static
 craastdesc *make_assign(XokMalloc *xokMalloc 
 , char *name , craastdesc *value , char *type)
 {
-  craastdesc *node = (craastdesc *)
-  xalloc_XokMalloc(xokMalloc , sizeof(craastdesc));
-  node->kind = AST_ASSIGN;
-  node->as.assign.name = strdup(name);
-  node->as.assign.value = value;
-  node->as.assign.type = strdup(type);
-  return node;
+ craastdesc *node = (craastdesc *)
+ xalloc_XokMalloc(xokMalloc , sizeof(craastdesc));
+ node->kind = AST_ASSIGN;
+ node->as.assign.name = strdup(name);
+ node->as.assign.value = value;
+ node->as.assign.type = strdup(type);
+ return node;
+}
+
+static
+craastdesc *make_func(XokMalloc *xokMalloc, char *name)
+{
+ craastdesc *node = (craastdesc *)
+ xalloc_XokMalloc(xokMalloc , sizeof(craastdesc));
+ node->as.func.args = (Tparam *)
+ xalloc_XokMalloc(xokMalloc , sizeof(Tparam) * makefnTpysize);
+ node->as.func.fdescs = (craastdesc *)
+ xalloc_XokMalloc(xokMalloc , sizeof(craastdesc) * makefnfdescssize);
+ node->kind = AST_FUNC;
+ node->as.func.fname = strdup(name);
+ node->as.func.argsi = 0;
+ node->as.func.fdesci = 0;
+ return node;
 }
 
 
 /*
 ****************** desclist cycle funtion**********************
 */
-
-
 #define DESCLIST_DEFAULT_SIZE 16
 #define DESCLIST_GROW_FACTOR  2
 
@@ -289,7 +357,7 @@ parse_value_main(pavstate ps)
 static craastdesc*
 var_desc(XokMalloc *xm , ParseFactor *pf , String *type)
 {
- accept(pf , "int");   /* int type var */
+ accept(pf , acptkint);   /* int type var */
  accept_empty(pf);   /* throught empty to variable name */
  String *name = craP_pf_currtoken(pf);
  pf->curr++;
@@ -311,10 +379,52 @@ var_desc(XokMalloc *xm , ParseFactor *pf , String *type)
 }
 
 
+/* 
+** print("hello crane" , "A",count, 14);
+** count++
+*/
 static craastdesc*
-print_desc(XokMalloc *xm, ParseFactor *pf)
+unkey_desc(XokMalloc *xm, ParseFactor *pf)
 {
+ craastdesc *desc;
+ String *t = create_string("");
+ char *unkey = strdup(pfcurstr(pf));
+ desc = make_func(xm, unkey);
+ accept_unkey(pf);
+ accept_empty(pf);
+ char *unkeytype = strdup(pfcurstr(pf));
+ if(accept(unkeytype , acptlPH)){ /* "(" is function! */
+  do{
+   accept_empty(pf);
+   if(!strcmp(pfcurstr(pf) , acptDQ)){ /* is string */
+    accept(pf , acptDQ); /* eat |" */
+    while(strcmp(pfcurstr(pf) , acptDQ) != 0){
+     cmptail(t, pfcurstr(pf)); /* main content */
+     pfnext(pf);
+    }
+    Tparam tp;
+    tp.pty = PRM_STRING;
+    tp.originstr = strdup(t->str);
+    descfnpushpusharg(desc, tp);
+    strclear(t);
+    accept(pf , acptDQ);
+    accept_empty(pf);
+   }
+   if(!isnumber(pfcurstr(pf))&&
+   !strcmp(pfcurstr(pf) , acptDQ)==0&&
+   !strcmp(pfcurstr(pf) , acptempty)){ /* is var */
+    Tparam tp;
+    tp.pty = PRM_VAR;
+    tp.originstr = strdup(pfcurstr(pf));
+    descfnpushpusharg(desc, tp);
+    pfnext(pf);
+    accept_empty(pf);
+   }
+  }while(testnext(pf, ","));
+ }
  
+ free(unkeytype);
+ strfree(t);
 }
 
 
@@ -327,7 +437,7 @@ craP_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
   printf("(t):%s\n" , t->str);
   switch(t_convert_asttype(t)){
    case GRAM_PRINT:{
-    print_desc(xm , &pf);
+    unkey_desc(xm , &pf);
    }
    case GRAM_EMPTY:{
     pf.curr++;

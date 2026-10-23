@@ -65,9 +65,9 @@ void combine_tail_char(String *origin , char nstr){
     for (int i = 0; i < string_len; ++i) {
         for (int j = 0; j < strlen(old); ++j)
             temp_old[j] = string->str[i + j];
-        temp_old[strlen(old)]       = '\0';
-        String *temp_old_string         = create_string(temp_old);
-        if(i        == string_len - strlen(old)){
+        temp_old[strlen(old)] = '\0';
+        String *temp_old_string = create_string(temp_old);
+        if(i == string_len - strlen(old)){
             if(!compare(temp_old_string , old)){
                 for (int j = i; j < string->length; ++j)
                     combine_tail_char(string_r , string->str[j]);
@@ -75,7 +75,7 @@ void combine_tail_char(String *origin , char nstr){
                 combine_tail(string_r , new);
             break;
         }
-        int is_compare      = compare(temp_old_string , old);
+        int is_compare = compare(temp_old_string , old);
         if(is_compare){
             place++;
             i += strlen(old) - 1;
@@ -151,8 +151,8 @@ String *substring_to_end(String *string , int start){
     be_copyer->str = malloc((copyer->length + 1) * sizeof(char));
     for (int i = 0; i < copyer->length; ++i)
         be_copyer->str[i] = copyer->str[i];
-    be_copyer->str[copyer->length]      = '\0';
-    be_copyer->length       = copyer->length;
+    be_copyer->str[copyer->length] = '\0';
+    be_copyer->length = copyer->length;
  }
 
 /**
@@ -164,7 +164,7 @@ String *substring(String *string , int start , int end){
     for (int i = 0; i < end - start; ++i)
         subr[i] = string->str[start + i];
     subr[end - start + 1] = '\0';
-    String *string_r        = create_string(subr);
+    String *string_r = create_string(subr);
     free(subr);
     return string_r;
 }

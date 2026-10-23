@@ -11,7 +11,7 @@
 #include "../tool/String/String.h"
 #include "../tool/xokmalloc/xokmalloc.h"
 
-#define CRA_DEBUG
+  #define CRA_DEBUG
 
 #ifdef CRA_DEBUG
     #define LOG(content) printf("[DEBUG] %s\n" , (content))
@@ -27,6 +27,18 @@
     #define logcr(front , content) printf("[DEBUG] [%s] %c\n" , (front) , (content))
     #define logi(front , content) printf("[DEBUG] [%s] %d\n" , (front) , (content))
 #endif
+//#define LOG(content)
+//#define LOG_C(front , content)
+//#define LOG_CHR(front , content)
+//#define LOG_I(front , content)
+//#define cra_error(point)
+//#define log(content)
+//#define log_c(front , content)
+//#define log_cr(front , content)
+//#define log_i(front , content)
+//#define logc(front , content)
+//#define logcr(front , content)
+//#define logi(front , content)
 
 #define EXTRE_CHECK_CHAR_LEN 2
 #define PLACEHOLD_KEYS_LEN 4
@@ -34,7 +46,7 @@
 typedef struct Hashmap Hashmap;
 
 
-static char *keys[] = {"print" , "\"" , "\n" , "(" , ")" , ";" , "<" , ">" , "=" , "==" , "\'"
+static char *keys[] = {"print" , "," , "\"" , "\n" , "(" , ")" , ";" , "<" , ">" , "=" , "==" , "\'"
                       , "fun" , "@" , "$" , "%" , "&" , "+" , "-" , "^" , "/" , "*" , "." , " "
                       , "int" , "float" , "string" , "%d" , "%f" , "%s"};
 

@@ -17175,3 +17175,173 @@ events:
         
       exitCode: 2
 ...
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "D:/develop/vs2022/c\u8bed\u8a00community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "D:/develop/vs2022/c\u8bed\u8a00community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "D:/develop/vs2022/c\u8bed\u8a00community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.31/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: C:/Mingw-w64/mingw64/bin/gcc.exe 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.exe"
+      
+      The C compiler identification is GNU, found in:
+        D:/我的C语言手搓合集/crane/build/CMakeFiles/3.31.6-msvc6/CompilerIdC/a.exe
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "D:/develop/vs2022/c\u8bed\u8a00community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "D:/develop/vs2022/c\u8bed\u8a00community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.31/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "D:/\u6211\u7684C\u8bed\u8a00\u624b\u6413\u5408\u96c6/crane/build/CMakeFiles/CMakeScratch/TryCompile-gle6cn"
+      binary: "D:/\u6211\u7684C\u8bed\u8a00\u624b\u6413\u5408\u96c6/crane/build/CMakeFiles/CMakeScratch/TryCompile-gle6cn"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/我的C语言手搓合集/crane/build/CMakeFiles/CMakeScratch/TryCompile-gle6cn'
+        
+        Run Build Command(s): D:/develop/vs2022/c语言community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe -E env VERBOSE=1 C:/Mingw-w64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_9d34a/fast
+        C:/Mingw-w64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_9d34a.dir\\build.make CMakeFiles/cmTC_9d34a.dir/build
+        mingw32-make[1]: Entering directory 'D:/我的C语言手搓合集/crane/build/CMakeFiles/CMakeScratch/TryCompile-gle6cn'
+        mingw32-make[1]: *** No rule to make target 'D:/develop/vs2022/c璇█community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.31/Modules/CMakeCCompilerABI.c', needed by 'CMakeFiles/cmTC_9d34a.dir/CMakeCCompilerABI.c.obj'.  Stop.
+        mingw32-make[1]: Leaving directory 'D:/我的C语言手搓合集/crane/build/CMakeFiles/CMakeScratch/TryCompile-gle6cn'
+        mingw32-make: *** [Makefile:133: cmTC_9d34a/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "D:/develop/vs2022/c\u8bed\u8a00community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.31/Modules/CMakeTestCCompiler.cmake:56 (try_compile)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Check for working C compiler: C:/Mingw-w64/mingw64/bin/gcc.exe"
+    directories:
+      source: "D:/\u6211\u7684C\u8bed\u8a00\u624b\u6413\u5408\u96c6/crane/build/CMakeFiles/CMakeScratch/TryCompile-7sn0xe"
+      binary: "D:/\u6211\u7684C\u8bed\u8a00\u624b\u6413\u5408\u96c6/crane/build/CMakeFiles/CMakeScratch/TryCompile-7sn0xe"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_C_COMPILER_WORKS"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/我的C语言手搓合集/crane/build/CMakeFiles/CMakeScratch/TryCompile-7sn0xe'
+        
+        Run Build Command(s): D:/develop/vs2022/c语言community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe -E env VERBOSE=1 C:/Mingw-w64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_a0be8/fast
+        C:/Mingw-w64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_a0be8.dir\\build.make CMakeFiles/cmTC_a0be8.dir/build
+        mingw32-make[1]: Entering directory 'D:/我的C语言手搓合集/crane/build/CMakeFiles/CMakeScratch/TryCompile-7sn0xe'
+        process_begin: CreateProcess(NULL, D:\\develop\\vs2022\\c璇█community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe -E cmake_echo_color --switch= --progress-dir=D:\\鎴戠殑C璇█鎵嬫悡鍚堥泦\\crane\\build\\CMakeFiles\\CMakeScratch\\TryCompile-7sn0xe\\CMakeFiles --progress-num=1 "Building C object CMakeFiles/cmTC_a0be8.dir/testCCompiler.c.obj", ...) failed.
+        make (e=2): 系统找不到指定的文件。
+        mingw32-make[1]: *** [CMakeFiles\\cmTC_a0be8.dir\\build.make:79: CMakeFiles/cmTC_a0be8.dir/testCCompiler.c.obj] Error 2
+        mingw32-make[1]: Leaving directory 'D:/我的C语言手搓合集/crane/build/CMakeFiles/CMakeScratch/TryCompile-7sn0xe'
+        mingw32-make: *** [Makefile:133: cmTC_a0be8/fast] Error 2
+        
+      exitCode: 2
+...
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "D:/develop/vs2022/c\u8bed\u8a00community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "D:/develop/vs2022/c\u8bed\u8a00community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "D:/develop/vs2022/c\u8bed\u8a00community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.31/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: C:/Mingw-w64/mingw64/bin/gcc.exe 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.exe"
+      
+      The C compiler identification is GNU, found in:
+        D:/我的C语言手搓合集/crane/build/CMakeFiles/3.31.6-msvc6/CompilerIdC/a.exe
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "D:/develop/vs2022/c\u8bed\u8a00community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "D:/develop/vs2022/c\u8bed\u8a00community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.31/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "D:/\u6211\u7684C\u8bed\u8a00\u624b\u6413\u5408\u96c6/crane/build/CMakeFiles/CMakeScratch/TryCompile-7ka5gt"
+      binary: "D:/\u6211\u7684C\u8bed\u8a00\u624b\u6413\u5408\u96c6/crane/build/CMakeFiles/CMakeScratch/TryCompile-7ka5gt"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/我的C语言手搓合集/crane/build/CMakeFiles/CMakeScratch/TryCompile-7ka5gt'
+        
+        Run Build Command(s): D:/develop/vs2022/c语言community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe -E env VERBOSE=1 C:/Mingw-w64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_6c8c9/fast
+        C:/Mingw-w64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_6c8c9.dir\\build.make CMakeFiles/cmTC_6c8c9.dir/build
+        mingw32-make[1]: Entering directory 'D:/我的C语言手搓合集/crane/build/CMakeFiles/CMakeScratch/TryCompile-7ka5gt'
+        mingw32-make[1]: *** No rule to make target 'D:/develop/vs2022/c璇█community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.31/Modules/CMakeCCompilerABI.c', needed by 'CMakeFiles/cmTC_6c8c9.dir/CMakeCCompilerABI.c.obj'.  Stop.
+        mingw32-make[1]: Leaving directory 'D:/我的C语言手搓合集/crane/build/CMakeFiles/CMakeScratch/TryCompile-7ka5gt'
+        mingw32-make: *** [Makefile:133: cmTC_6c8c9/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "D:/develop/vs2022/c\u8bed\u8a00community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.31/Modules/CMakeTestCCompiler.cmake:56 (try_compile)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Check for working C compiler: C:/Mingw-w64/mingw64/bin/gcc.exe"
+    directories:
+      source: "D:/\u6211\u7684C\u8bed\u8a00\u624b\u6413\u5408\u96c6/crane/build/CMakeFiles/CMakeScratch/TryCompile-kgblhh"
+      binary: "D:/\u6211\u7684C\u8bed\u8a00\u624b\u6413\u5408\u96c6/crane/build/CMakeFiles/CMakeScratch/TryCompile-kgblhh"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_C_COMPILER_WORKS"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/我的C语言手搓合集/crane/build/CMakeFiles/CMakeScratch/TryCompile-kgblhh'
+        
+        Run Build Command(s): D:/develop/vs2022/c语言community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe -E env VERBOSE=1 C:/Mingw-w64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_4a7d1/fast
+        C:/Mingw-w64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_4a7d1.dir\\build.make CMakeFiles/cmTC_4a7d1.dir/build
+        mingw32-make[1]: Entering directory 'D:/我的C语言手搓合集/crane/build/CMakeFiles/CMakeScratch/TryCompile-kgblhh'
+        process_begin: CreateProcess(NULL, D:\\develop\\vs2022\\c璇█community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe -E cmake_echo_color --switch= --progress-dir=D:\\鎴戠殑C璇█鎵嬫悡鍚堥泦\\crane\\build\\CMakeFiles\\CMakeScratch\\TryCompile-kgblhh\\CMakeFiles --progress-num=1 "Building C object CMakeFiles/cmTC_4a7d1.dir/testCCompiler.c.obj", ...) failed.
+        make (e=2): 系统找不到指定的文件。
+        mingw32-make[1]: *** [CMakeFiles\\cmTC_4a7d1.dir\\build.make:79: CMakeFiles/cmTC_4a7d1.dir/testCCompiler.c.obj] Error 2
+        mingw32-make[1]: Leaving directory 'D:/我的C语言手搓合集/crane/build/CMakeFiles/CMakeScratch/TryCompile-kgblhh'
+        mingw32-make: *** [Makefile:133: cmTC_4a7d1/fast] Error 2
+        
+      exitCode: 2
+...

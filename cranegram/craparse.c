@@ -11,14 +11,21 @@
 #include "cravm.h"
 
 #define acptkprint "print"
+
 #define acptkint "int"
+
 /* PH(parenthesee)*/
 #define acptlPH "("
+
 #define acptrPH ")"
+
 #define acptempty " "
+
 /* DQ(double quotaion)*/
 #define acptDQ "\""
+
 #define makefnTpysize 16
+
 #define makefnfdescssize 50
 /* ************** String func tackle ***************** */
 #define cmptail(s , tail) combine_tail((s), (tail))
@@ -37,12 +44,22 @@
 (pf)->tokens->tokens[(pf)->curr]
 
 #define pfnext(pf) (pf)->curr++
+
+#define pfback(pf) (pf)->curr--
+
 /* ************* descfn tackle *************** */
 #define descfnpushname(desc , name) \
  (desc)->as.func.fname = (unkey);
 
 #define descfnpushpusharg(desc , tp)\
  (desc)->as.func.args[desc->as.func.argsi++] = (tp);
+
+/* ************** common ******************* */
+#define craC_isstrvar(s) \
+ !isnumber((s)) && !strcmp((s), acptDQ)==0 \
+ && !strcmp((s), acptempty)==0
+
+
 static int
 t_convert_asttype(String *s)
 {
@@ -386,6 +403,9 @@ var_desc(XokMalloc *xm , ParseFactor *pf , String *type)
 static craastdesc*
 unkey_desc(XokMalloc *xm, ParseFactor *pf)
 {
+ /* parse_main function loop match token, 
+ slip current token when match*/
+ pfback(pf);
  craastdesc *desc;
  String *t = create_string("");
  char *unkey = strdup(pfcurstr(pf));
@@ -393,11 +413,15 @@ unkey_desc(XokMalloc *xm, ParseFactor *pf)
  accept_unkey(pf);
  accept_empty(pf);
  char *unkeytype = strdup(pfcurstr(pf));
- if(!strcmp(unkeytype , acptlPH)){ /* "(" is function! */
+ logc("{en} (" , unkeytype);
+ if(strcmp(unkeytype , acptlPH)==0){ /* "(" is function! */
+  log("en is function____");
   pfnext(pf);
   do{
    accept_empty(pf);
-   if(!strcmp(pfcurstr(pf) , acptDQ)){ /* is string */
+   logc("________{pf}" , pfcurstr(pf));
+   if(strcmp(pfcurstr(pf) , acptDQ)==0){ /* is string */
+    log("{en str}");
     accept(pf , acptDQ); /* eat |" */
     while(strcmp(pfcurstr(pf) , acptDQ) != 0){
      cmptail(t, pfcurstr(pf)); /* main content */
@@ -406,26 +430,31 @@ unkey_desc(XokMalloc *xm, ParseFactor *pf)
     Tparam tp;
     tp.pty = PRM_STRING;
     tp.originstr = strdup(t->str);
+    logc("{params}" , tp.originstr);
     descfnpushpusharg(desc, tp);
     strclear(t);
     accept(pf , acptDQ);
     accept_empty(pf);
    }
-   if(!isnumber(pfcurstr(pf))&&
-   !strcmp(pfcurstr(pf) , acptDQ)==0&&
-   !strcmp(pfcurstr(pf) , acptempty)){ /* is var */
+   else if(craC_isstrvar(pfcurstr(pf))){ /* is var */
+    log("{en unkey}");
     Tparam tp;
     tp.pty = PRM_VAR;
     tp.originstr = strdup(pfcurstr(pf));
     descfnpushpusharg(desc, tp);
     pfnext(pf);
     accept_empty(pf);
+    logc("params" , tp.originstr);
    }
   }while(testnext(pf, ","));
  }
  
+ for(int i = 0; i < desc->as.func.argsi; i++){
+  printf("\n__argsv__: %s\n" , desc->as.func.args[i].originstr);
+ }
  free(unkeytype);
  strfree(t);
+ return desc;
 }
 
 
@@ -438,7 +467,10 @@ craP_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
   printf("(t):%s\n" , t->str);
   switch(t_convert_asttype(t)){
    case GRAM_PRINT:{
-    unkey_desc(xm , &pf);
+    craastdesc *fd = unkey_desc(xm , &pf);
+    logc("_name" , fd->as.func.fname);
+    logi("_argsi" , fd->as.func.argsi);
+    logc("origin" , fd->as.func.args[0].originstr);
    }
    case GRAM_EMPTY:{
     pf.curr++;

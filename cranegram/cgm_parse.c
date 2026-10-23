@@ -16,7 +16,7 @@
 #include <string.h>
 
 int isContainKeys(String *string){
-    for (int i = 0; i < 29; ++i) {
+    for (int i = 0; i < 30; ++i) {
         if(compare(string , keys[i]) == 1)
             return 1;
     }
@@ -54,7 +54,7 @@ TOKENSB *tokens_parse(String *origin){
     String *extre_check_key = create_string("");
     int count = 0;
     for (int i = 0; i < origin->length; ++i) {
-        //LOG_CHR("---i---" , origin->str[i]);
+        LOG_CHR("---i---" , origin->str[i]);
         if(isExtreCheckChar(origin->str[i])){
             combine_tail_char(extre_check_key , origin->str[i]);
             combine_tail_char(extre_check_key , origin->str[i + 1]);
@@ -77,9 +77,9 @@ TOKENSB *tokens_parse(String *origin){
                 goto notAddBehind;
             }
             combine_tail_char(temp_longest_match , origin->str[i + longest_count]);
-            //LOG_C("[1]" , temp_longest_match->str);
+            LOG_C("[1]" , temp_longest_match->str);
             if(isContainKeys(temp_longest_match)){
-                //LOG("KEYS");
+                LOG("KEYS");
                 while(!(origin->str[i + (++longest_count)] == ' ') || (1 + longest_count) != origin->length){
                     combine_tail_char(temp_longest_match , origin->str[i + longest_count]);
                     if(!isContainKeys(temp_longest_match)){
@@ -88,7 +88,7 @@ TOKENSB *tokens_parse(String *origin){
                     }
                 }
                 tokens[count] = create_string("");
-                //LOG_C("---collect---/longest" , temp_longest_match->str);
+                LOG_C("---collect---/longest" , temp_longest_match->str);
                 combine_tail(tokens[count++] , temp_longest_match->str);
                 delete_all(temp);
                 delete_all(temp_longest_match);
@@ -97,7 +97,7 @@ TOKENSB *tokens_parse(String *origin){
             }
             notAddBehind:
             tokens[count] = create_string("");
-            //LOG_C("---collect---/keys" , temp->str);
+            LOG_C("---collect---/keys" , temp->str);
             combine_tail(tokens[count++] , temp->str);
             delete_all(temp);
             delete_all(temp_longest_match);
@@ -106,7 +106,7 @@ TOKENSB *tokens_parse(String *origin){
             combine_tail_char(temp_test , origin->str[i + 1]);
             if(isContainKeys(temp_test)){
                 tokens[count] = create_string("");
-                //LOG_C("---collect---/common" , temp->str);
+                LOG_C("---collect---/common" , temp->str);
                 combine_tail(tokens[count++] , temp->str);
                 delete_all(temp);
             }
@@ -114,7 +114,7 @@ TOKENSB *tokens_parse(String *origin){
             continue;
         }
     }
-    //printf("[count]%d\n" , count);
+    printf("[count]%d\n" , count);
     string_free(temp);
     string_free(temp_test);
     string_free(temp_longest_match);

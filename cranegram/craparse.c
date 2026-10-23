@@ -278,7 +278,7 @@ Cra_desclist_expand(XokMalloc *xm, desclist *dl)
   if (!new_arr) return 0;
   memcpy(new_arr, dl->desclist, sizeof(craastdesc *) * dl->count);
   dl->desclist = new_arr;
-  dl->size     = new_size;
+  dl->size = new_size;
   return 1;
 }
 
@@ -396,6 +396,11 @@ var_desc(XokMalloc *xm , ParseFactor *pf , String *type)
 }
 
 
+/*
+** function str prame type, record like: {"hello crane!"}
+** originstr = "hello crane!", and tackle print in virtual machine
+** package by struct Tparam.
+*/
 static void
 desc_fn_str(ParseFactor *pf, craastdesc *desc, String *t)
 {
@@ -458,21 +463,28 @@ unkey_desc_fn(ParseFactor *pf, craastdesc *desc
  }
 }
 
-
+/* 
+** unkey about like function, selfadd, selfsub,.. , 
+** the unkey need special tackle, unkey not is key, and
+** not is queto, parenthesee, .., so overall call these
+** is 'unkey'.
+*/
 static craastdesc*
 unkey_desc(XokMalloc *xm, ParseFactor *pf)
 {
  /* parse_main function loop match token, 
  slip current token when match*/
  pfback(pf);
- craastdesc *desc;
- String *t = create_string("");
- char *unkey = strdup(pfcurstr(pf));
+ craastdesc *desc; /* overall desc node */
+ String *t = create_string(""); /* str tool,
+  convenient to tackle str */
+ char *unkey = strdup(pfcurstr(pf)); /* store function name */
  desc = make_func(xm, unkey);
  accept_unkey(pf);
- accept_empty(pf);
- char *unkeytype = strdup(pfcurstr(pf));
- unkey_desc_fn(pf, desc, t, unkeytype);
+ accept_empty(pf); /* current is pf unkey next unempty token */
+ char *unkeytype = strdup(pfcurstr(pf)); /* store, use to 
+ judge unkey how about grammar type*/
+ unkey_desc_fn(pf, desc, t, unkeytype); /* priority judge function */
  free(unkeytype);
  strfree(t);
  return desc;

@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/logo.svg" width="430" alt="Crane Logo" />
+<img src="./assets/logo.svg" width="230" height="200" alt="Crane Logo" />
 
   <h1>Crane</h1>
   <img alt="Language" src="https://img.shields.io/badge/language-C-blue.svg?style=flat-square" />
@@ -43,6 +43,7 @@ Bytecode + Constant Pool
 Execution Result
 ```
 
+## Write some code
 ```cr
 int a = 3 * 2;
 int b = 9 * 2 + 8;

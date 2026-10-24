@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "cgm_parse.h"
+#include "cralex.h"
 #include "cracode.h"
 
 typedef struct value value;

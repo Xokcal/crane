@@ -81,7 +81,5 @@ typedef struct HAJIGA_ATM{
 
 int cmpkey(char *str);
 int isContainKeys(String *string);
-TOKENSB *tokens_parse(XokMalloc *txm, String *origin_file_string);
-KE token_to_ke(String *token);
-void __CRVM_RUN__(XokMalloc *xokmalloc , TOKENSB *tokens , int len , Hashmap *void_hashmap);
+const TOKENSB *tokens_parse(XokMalloc *txm, String *origin_file_string);
 #endif //CRANEC_CGM_PARSE_H

@@ -3,7 +3,7 @@
 #include "cracode.h"
 #include "../tool/xokmalloc/xokmalloc.h"
 #include "craparse.h"
-#include "cgm_parse.h"
+#include "cralex.h"
 #include "cravm.h"
 
 #define BYTECODE_DEFAULT_SIZE 16

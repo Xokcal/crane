@@ -9,6 +9,7 @@
 #include "cgm_file.h"
 #include "cracode.h"
 #include "cravm.h"
+#include "cracom.h"
 
 #define acptkprint "print"
 
@@ -20,6 +21,8 @@
 #define acptrPH ")"
 
 #define acptempty " "
+
+#define acptSemicolon ";"
 
 /* DQ(double quotaion)*/
 #define acptDQ "\""
@@ -422,7 +425,7 @@ stringargs(ParseFactor *pf, craastdesc *desc, String *t)
   #endif
   strclear(t); /* template String* delete all content. */
   pfnext(pf); /* slip '\"'. */
-  accept_empty(pf);/* current chould is ',' or ')'. */
+  accept_empty(pf);/* current chould is ',' or ')'. */ 
  }
 }
 
@@ -433,7 +436,7 @@ singletokenargs(ParseFactor *pf, craastdesc *desc)
  if(cmpkey(pfcurstr(pf)))return; /* could is ',' or crane key
  if the funtion have more args, and string args not is last args
  like print(a , "crane" , 13)
-                        `-----------------> ',' (be thought it was variable args). */
+                        `---------> ',' (be thought it was variable args). */
  Tparam tp;
  /* single string param about 'number', 'variable', 'enum', ..
  judge store param type by condition judgement. */
@@ -454,13 +457,14 @@ singletokenargs(ParseFactor *pf, craastdesc *desc)
 }
 
 
-static void
+static int
 unkey_desc_fn(ParseFactor *pf, craastdesc *desc
                   , String *t, char *unkeytype){
  if(!strcmp(unkeytype , acptlPH)){ /* "(" is function! */
   pfnext(pf);
   do{
-   if(!strcmp(pfcurstr(pf) , acptrPH))return; /* if function not 
+   if(!strcmp(pfcurstr(pf) , acptrPH))
+    return successcode; /* if function not 
    have args like: "print();", next token is ')' can return. */
    /* current is '(' next token */
    accept_empty(pf); /* confirm not is empty,
@@ -470,7 +474,10 @@ unkey_desc_fn(ParseFactor *pf, craastdesc *desc
   }while(testnext(pf, ",")); /* if have one or more args,
   at least loop one time, have ',' 
   execute next args and selfadd pf.curr. */
-  return;
+  if(accept(pf , acptSemicolon))
+   return successcode;
+  cra_error("function not have end!");
+  return errorcode;
  }
 }
 
@@ -488,6 +495,7 @@ unkey_desc(XokMalloc *xm, ParseFactor *pf)
  slip current token when match*/
  pfback(pf); /* slip current token when 'parse machine' 
  has matched switch instruct. if need instruct token pf need back(--) */
+ int unkeycode; /* accept unkey_desc return code*/
  craastdesc *desc; /* overall desc node */
  String *t = create_string(""); /* str tool,
  convenient to tackle str */
@@ -497,9 +505,10 @@ unkey_desc(XokMalloc *xm, ParseFactor *pf)
  accept_empty(pf); /* current is pf unkey next unempty token */
  char *unkeytype = strdup(pfcurstr(pf)); /* store, use to 
  judge unkey how about grammar type*/
- unkey_desc_fn(pf, desc, t, unkeytype); /* priority judge function */
+ unkeycode = unkey_desc_fn(pf, desc, t, unkeytype); /* priority judge function */
+ if(unkeycode == errorcode)return NULL;
  //#define descfuncprt
- #ifdef descfuncprt
+ #ifdef descfuncprt /* check desc.func's args variable name */
  // print(a, "hello crane!!", b, c, d, 520);
  logi("argsi" , desc->as.func.argsi);
  for(int i=0;i<desc->as.func.argsi;i++){
@@ -513,16 +522,21 @@ unkey_desc(XokMalloc *xm, ParseFactor *pf)
 }
 
 
-void
+int
 craP_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
 {
  ParseFactor pf = {ts , 0};
  while(pf.curr < ts->count){
   String *t = pf.tokens->tokens[pf.curr++];
-  //printf("(t):%s\n" , t->str);
+  //#define parseloopt
+  #ifdef parseloopt
+  logc("(t)" , t->str);
+  #endif
   switch(t_convert_asttype(t)){
    case GRAM_PRINT:{
     craastdesc *fd = unkey_desc(xm , &pf);
+    if(fd == NULL) return errorcode;
+    break;
    }
    case GRAM_EMPTY:{
     pf.curr++;

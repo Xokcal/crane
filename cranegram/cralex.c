@@ -54,7 +54,7 @@ isExtreCheckChar(char t){
 }
 
 
-const TOKENSB *
+TOKENSB *
 tokens_parse(XokMalloc *txm, String *origin)
 {
  String **tokens = (String**)xalloc_XokMalloc(txm, 2000000 * sizeof(String*));

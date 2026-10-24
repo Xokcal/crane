@@ -9,6 +9,7 @@
 #include "cgm_file.h"
 #include "cracode.h"
 #include "cravm.h"
+#include "cracom.h"
 
 
 #define CRANE_VERSION   "1.0.0"
@@ -34,6 +35,7 @@ void print_welcome(void) {
 
 int main()
 {
+  int parsecode;
   print_welcome();
   XokMalloc *txm = create_XokMalloc();
   String *origin_str = open_file("Crane/test.cr");
@@ -44,9 +46,12 @@ int main()
   XokMalloc *xm = create_XokMalloc();
   Hashmap *hmap = create_hashmap(); /* gloab variable*/
   desclist *dl = Cra_desclist_create(xm , 16); /* tree list */
-  craP_token_parse(xm , tokens , dl);  /*  AST main parse */
+  parsecode = craP_token_parse(xm , tokens , dl);  /*  AST main parse */
+  if(parsecode == errorcode)
+   goto executeError;
   vm *vm = craC_bytecode_parse(xm , dl);
   craV_execute(xm , vm);
+  executeError:
   /* free setting struct */
   Cra_desclist_free(xm , dl);
   free_XokMalloc(xm);

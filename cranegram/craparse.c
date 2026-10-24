@@ -397,71 +397,83 @@ var_desc(XokMalloc *xm , ParseFactor *pf , String *type)
 
 
 /*
-** function str prame type, record like: {"hello crane!"}
+** function str param type, record like: {"hello crane!"}
 ** originstr = "hello crane!", and tackle print in virtual machine
 ** package by struct Tparam.
 */
 static void
-desc_fn_str(ParseFactor *pf, craastdesc *desc, String *t)
+stringargs(ParseFactor *pf, craastdesc *desc, String *t)
 {
  if(strcmp(pfcurstr(pf) , acptDQ)==0){ /* is string */
   accept(pf , acptDQ); /* eat '|"' */
   while(strcmp(pfcurstr(pf) , acptDQ) != 0){
    cmptail(t, pfcurstr(pf)); /* main content */
    pfnext(pf);
-  }
+  }/* current pf.token is double 
+   parenthesee , need slip the token by pfnext() later */
   Tparam tp;
   tp.pty = PRM_STRING;
   tp.originstr = strdup(t->str);
-  descfnpushpusharg(desc, tp);
-  strclear(t);
-  accept(pf , acptDQ);
-  accept_empty(pf);
+  descfnpushpusharg(desc, tp); /* Tparam tp push desc
+  func args, and selfadd argsi. */
+  #define strorigin
+  #ifdef strorigin
+   logc("string origin string" , tp.originstr);
+  #endif
+  strclear(t); /* template String* delete all content. */
+  pfnext(pf); /* slip '\"'. */
+  accept_empty(pf);/* current chould is ',' or ')'. */
  }
 }
 
 
 static void
-desc_fn_var(ParseFactor *pf, craastdesc *desc)
+singletokenargs(ParseFactor *pf, craastdesc *desc)
 {
- if(craC_isstrvar(pfcurstr(pf))){ /* is var */
-  Tparam tp;
-  tp.pty = PRM_VAR;
-  tp.originstr = strdup(pfcurstr(pf));
-  descfnpushpusharg(desc, tp);
-  pfnext(pf);
-  accept_empty(pf);
- }
+ if(cmpkey(pfcurstr(pf)))return; /* could is ',' or crane key
+ if the funtion have more args, and string args not is last args
+ like print(a , "crane" , 13)
+                        `-----------------> ,(be thought it was variable args). */
+ Tparam tp;
+ /* single string param about 'number', 'variable', 'enum', ..
+ judge store param type by condition judgement. */
+ if(craC_isstrvar(pfcurstr(pf)))
+ tp.pty = PRM_VAR;
+ else if(isnumber(pfcurstr(pf)))
+ tp.pty = PRM_NUMBER;
+ tp.originstr = strdup(pfcurstr(pf)); /* store origin 
+  string, convert number type(int, long, float, double, 
+  ..) in virtual machine. */
+ #define singleorigin
+ #ifdef singleorigin
+  logc("single origin string" , tp.originstr);
+ #endif
+ descfnpushpusharg(desc, tp);
+ pfnext(pf);
+ accept_empty(pf);
 }
 
 
 static void
-desc_fn_number(ParseFactor *pf, craastdesc *desc)
-{
- if(isnumber(pfcurstr(pf))){
-  Tparam tp;
-  tp.pty = PRM_NUMBER;
-  tp.originstr = strdup(pfcurstr(pf));
-  descfnpushpusharg(desc, tp);
-  pfnext(pf);
-  accept_empty(pf);
- }
-}
-
-
-static craastdesc*
 unkey_desc_fn(ParseFactor *pf, craastdesc *desc
                   , String *t, char *unkeytype){
  if(!strcmp(unkeytype , acptlPH)){ /* "(" is function! */
   pfnext(pf);
   do{
-   accept_empty(pf);
-   desc_fn_str(pf , desc , t);
-   desc_fn_var(pf , desc);
-   desc_fn_number(pf , desc);
-  }while(testnext(pf, ","));
+   if(!strcmp(pfcurstr(pf) , acptrPH))return; /* if function not 
+   have args like: "print();", next token is ')' can return. */
+   /* current is '(' next token */
+   accept_empty(pf); /* confirm not is empty,
+    reach first param */
+   stringargs(pf , desc , t);
+   singletokenargs(pf , desc);
+  }while(testnext(pf, ",")); /* if have one or more args,
+  at least loop one time, have ',' 
+  execute next args and selfadd pf.curr. */
+  return;
  }
 }
+
 
 /* 
 ** unkey about like function, selfadd, selfsub,.. , 
@@ -474,7 +486,8 @@ unkey_desc(XokMalloc *xm, ParseFactor *pf)
 {
  /* parse_main function loop match token, 
  slip current token when match*/
- pfback(pf);
+ pfback(pf); /* slip current token when 'parse machine' 
+ has matched switch instruct. if need instruct token pf need back(--) */
  craastdesc *desc; /* overall desc node */
  String *t = create_string(""); /* str tool,
   convenient to tackle str */
@@ -485,6 +498,15 @@ unkey_desc(XokMalloc *xm, ParseFactor *pf)
  char *unkeytype = strdup(pfcurstr(pf)); /* store, use to 
  judge unkey how about grammar type*/
  unkey_desc_fn(pf, desc, t, unkeytype); /* priority judge function */
+ #define descfuncprt
+ #ifdef descfuncprt
+ // print(a, "hello crane!!", b, c, d, 520);
+ logi("argsi" , desc->as.func.argsi);
+ for(int i=0;i<desc->as.func.argsi;i++){
+  logc("function args origin",desc->as.func.args[i].originstr);
+  logi("function args type",desc->as.func.args[i].pty);
+ }
+ #endif
  free(unkeytype);
  strfree(t);
  return desc;
@@ -497,7 +519,7 @@ craP_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
  ParseFactor pf = {ts , 0};
  while(pf.curr < ts->count){
   String *t = pf.tokens->tokens[pf.curr++];
-  printf("(t):%s\n" , t->str);
+  //printf("(t):%s\n" , t->str);
   switch(t_convert_asttype(t)){
    case GRAM_PRINT:{
     craastdesc *fd = unkey_desc(xm , &pf);
@@ -542,10 +564,11 @@ void print_welcome(void) {
 int main()
 {
   print_welcome();
+  XokMalloc *txm = create_XokMalloc();
   String *origin_str = open_file("Crane/test.cr");
-  TOKENSB *tokens = tokens_parse(origin_str);
+  TOKENSB *tokens = tokens_parse(txm, origin_str);
   for(int i = 0; i < tokens->count ; i++){
-      //logc("token" , tokens->tokens[i]->str);
+      logc("token" , tokens->tokens[i]->str);
   }printf("\n");
   XokMalloc *xm = create_XokMalloc();
   Hashmap *hmap = create_hashmap(); /* gloab variable*/
@@ -556,5 +579,6 @@ int main()
   /* free setting struct */
   Cra_desclist_free(xm , dl);
   free_XokMalloc(xm);
+  free_XokMalloc(txm);
   return 0;
 }

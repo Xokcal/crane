@@ -11,6 +11,8 @@
 #include "../tool/String/String.h"
 #include "../tool/xokmalloc/xokmalloc.h"
 
+#define cratext(s) printf("%s" , (s));
+
   #define CRA_DEBUG
 
 #ifdef CRA_DEBUG
@@ -79,7 +81,7 @@ typedef struct HAJIGA_ATM{
 
 int cmpkey(char *str);
 int isContainKeys(String *string);
-TOKENSB *tokens_parse(String *origin_file_string);
+TOKENSB *tokens_parse(XokMalloc *txm, String *origin_file_string);
 KE token_to_ke(String *token);
 void __CRVM_RUN__(XokMalloc *xokmalloc , TOKENSB *tokens , int len , Hashmap *void_hashmap);
 #endif //CRANEC_CGM_PARSE_H

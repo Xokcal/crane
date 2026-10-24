@@ -14,6 +14,7 @@
 #include "../tool/xokmalloc/xokmalloc.h"
 #include "typevar.h"
 #include <string.h>
+#include "../tool/xokmalloc/xokmalloc.h"
 
 int isContainKeys(String *string){
     for (int i = 0; i < 30; ++i) {
@@ -55,8 +56,8 @@ isExtreCheckChar(char t){
 // gcc.exe cranegram/typevar.c cranegram/types.c cranegram/cgm_file.c cranegram/cgm_gramma.c cranegram/cgm_parse.c cranegram/cgm_printf.c tool/file/file.c tool/log/log.c tool/map/hashmap_int.c tool/String/String.c tool/xokmalloc/xokmalloc.c main.c -o main.exe
 
 
-TOKENSB *tokens_parse(String *origin){
-    String **tokens = (String**)malloc(2000000 * sizeof(String*));
+TOKENSB *tokens_parse(XokMalloc *txm, String *origin){
+    String **tokens = (String**)xalloc_XokMalloc(txm, 2000000 * sizeof(String*));
     String *temp = create_string("");
     String *temp_test = create_string("");
     String *temp_longest_match = create_string("");
@@ -123,11 +124,12 @@ TOKENSB *tokens_parse(String *origin){
             continue;
         }
     }
-    printf("[count]%d\n" , count);
+    //printf("[count]%d\n" , count);
     string_free(temp);
     string_free(temp_test);
     string_free(temp_longest_match);
-    TOKENSB *tokensb = (TOKENSB*)malloc(sizeof(TOKENSB));
+    string_free(extre_check_key);
+    TOKENSB *tokensb = (TOKENSB*)xalloc_XokMalloc(txm, sizeof(TOKENSB));
     tokensb->tokens = tokens;
     tokensb->count = count;
     return tokensb;

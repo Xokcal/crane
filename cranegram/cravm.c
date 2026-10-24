@@ -5,6 +5,7 @@
 
 #define VM_DEFAULT_STACK_SIZE 1024
 #define VM_DEFAULT_VSLOTS_SIZE 200
+#define importancelogsign "________________________"
 #define addsign "+"
 #define subsign "-"
 #define mulsign "*"
@@ -158,8 +159,8 @@ opstore_executor(vm *vm)
  value *r = vmvslots_pop(vm , v.vname);
  #define vmprint
 #ifdef vmprint
- log("_________________");
- printf("%d\n" , r->v.i);
+ log(importancelogsign);
+ logi("\n" , r->v.i);
 #endif
  clear_sp(vm);
 }

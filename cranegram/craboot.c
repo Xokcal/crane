@@ -36,7 +36,7 @@ void print_welcome(void) {
 int main()
 {
   int parsecode;
-  print_welcome();
+  //print_welcome();
   XokMalloc *txm = create_XokMalloc();
   String *origin_str = open_file("Crane/test.cr");
   TOKENSB *tokens = tokens_parse(txm, origin_str);

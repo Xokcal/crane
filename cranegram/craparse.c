@@ -62,7 +62,7 @@
  !isnumber((s)) && !strcmp((s), acptDQ)==0 \
  && !strcmp((s), acptempty)==0 && !cmpkey((s))
 
-
+ 
 static int
 t_convert_asttype(String *s)
 {
@@ -467,16 +467,14 @@ unkey_desc_fn(ParseFactor *pf, craastdesc *desc
     return successcode; /* if function not 
    have args like: "print();", next token is ')' can return. */
    /* current is '(' next token */
-   accept_empty(pf); /* confirm not is empty,
-    reach first param */
+   accept_empty(pf); /* confirm not is empty, reach first param */
    stringargs(pf , desc , t);
    singletokenargs(pf , desc);
-  }while(testnext(pf, ",")); /* if have one or more args,
-  at least loop one time, have ',' 
-  execute next args and selfadd pf.curr. */
+  }while(testnext(pf, ",")); /* if have one or more args, at least 
+  loop one time, have ',' execute next args and selfadd pf.curr. */
   if(accept(pf , acptSemicolon))
    return successcode;
-  cra_error("function not have end!");
+  craC_error("function not have end: \";\" ");
   return errorcode;
  }
 }
@@ -499,7 +497,7 @@ unkey_desc(XokMalloc *xm, ParseFactor *pf)
  craastdesc *desc; /* overall desc node */
  String *t = create_string(""); /* str tool,
  convenient to tackle str */
- char *unkey = strdup(pfcurstr(pf)); /* store function name */
+ char *unkey = strdup(pfcurstr(pf));/* store function name */
  desc = make_func(xm, unkey);
  accept_unkey(pf);
  accept_empty(pf); /* current is pf unkey next unempty token */

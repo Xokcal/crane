@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 /* crane error describe log*/
-#define craC_error(error) \
+#define craCM_error(error) \
  printf("%s:%s:\033[31merror\033[0m: %s", __FILE__, __TIME__, (error))
 
 #define errorcode 0xff

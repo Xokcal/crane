@@ -226,8 +226,8 @@ craastdesc *make_assign(XokMalloc *xokMalloc
  return node;
 }
 
-static
-craastdesc *make_func(XokMalloc *xokMalloc, char *name)
+static craastdesc*
+make_func(XokMalloc *xokMalloc, char *name)
 {
  craastdesc *node = (craastdesc *)
  xalloc_XokMalloc(xokMalloc , sizeof(craastdesc));
@@ -475,7 +475,7 @@ unkey_desc_fn(ParseFactor *pf, craastdesc *desc
   loop one time, have ',' execute next args and selfadd pf.curr. */
   if(accept(pf , acptSemicolon))
    return successcode;
-  craC_error("function not have end: \";\" ");
+  craCM_error("function not have end: \";\" ");
   return errorcode;
  }
 }
@@ -545,7 +545,7 @@ craP_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
     String *type = create_string(t->str);
     craastdesc *vd = var_desc(xm , &pf , type);
     string_free(type);
-    //#define astprint
+    #define astprint
     #ifdef astprint
     print_ast(vd , 0);
     #endif

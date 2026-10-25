@@ -15,7 +15,7 @@ typedef struct varnamestk varnamestk;
 typedef struct value value;
 typedef struct Ttypes Ttypes;
 
-typedef struct vm{
+typedef struct vmState{
  /* struct bc: 
  codes and values package */
  bytecode *bc;
@@ -41,18 +41,18 @@ typedef struct vm{
  int vsi;
  int vni;
  int size;
-}vm;
+}vmState;
 
 typedef struct vmmap{
   Hashmap *vmap; /* variable map store  */
 }vmmap;
 
-vm *vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns,
+vmState *vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns,
                                   Ttypes *tys, int size);
-void vm_free(XokMalloc *xm, vm *v);
-/* vm main executor, use struct vm parse codes to stack */
-void craV_execute(XokMalloc *xm , vm *vm);
-value* vmvslots_pop(vm *vm , char *n);
+void vm_free(XokMalloc *xm, vmState *v);
+/* vmState main executor, use struct vm parse codes to stack */
+void craV_execute(XokMalloc *xm , vmState *vm);
+value* vmvslots_pop(vmState *vm , char *n);
 
 //#define vmgslotsv(vm , n , ty , T) (T*)vmvslots_popv((vm), (n), (ty));
 

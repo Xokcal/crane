@@ -27,7 +27,8 @@ typedef enum craasttype{
   AST_ASSIGN,
   AST_BINOP,
   AST_EMPTY,
-  AST_FUNC
+  AST_FUNC,
+  AST_UNKEY
 }craasttype;
 
 /* define param type like: {("hello", count, 10086, 3.1415)} */

@@ -52,7 +52,7 @@ int main()
   parsecode = craP_token_parse(xm , tokens , dl);  /*  AST main parse */
   if(parsecode == errorcode)
    goto executeError;
-  vm *vm = craC_bytecode_parse(xm , dl);
+  vmState *vm = craC_bytecode_parse(xm , dl);
   craV_execute(xm , vm);
   executeError:
   /* free setting struct */

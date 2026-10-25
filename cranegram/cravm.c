@@ -49,7 +49,7 @@
  (vm)->vslots[(vm)->vsi++] = (v);
 
 
-inline void vm_free(XokMalloc *xm, vm *v){
+inline void vm_free(XokMalloc *xm, vmState *v){
  if (!v) return;
   if (v->vs) {
    free(v->vs); 
@@ -66,11 +66,11 @@ inline void vm_free(XokMalloc *xm, vm *v){
    free(v);
 }
 
-vm *
+vmState *
 vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns,
                                Ttypes *tys, int size){
  if (size <= 0) size = VM_DEFAULT_STACK_SIZE;
- vm *v = (vm *)xalloc_XokMalloc(xm, sizeof(vm));
+ vmState *v = (vmState *)xalloc_XokMalloc(xm, sizeof(vmState));
  if (!v) return NULL;
  v->vs = (value *)xalloc_XokMalloc
  (xm, sizeof(value) * size);
@@ -107,7 +107,7 @@ calc_executor(dlong *p1 , dlong *p2 , char *sign)
 
 
 static void
-opcalc_executor(vm *vm , char *sign){
+opcalc_executor(vmState *vm , char *sign){
  value res;
  dlong resi;
  value value1 = vm->vs[vm->sp - 2];
@@ -127,8 +127,8 @@ opcalc_executor(vm *vm , char *sign){
    //#define opaddr
    #ifdef opaddr
    log_i("opadd_result" , res.v.i);
-   calc_swrap(res , resi , vm);
    #endif
+   calc_swrap(res , resi , vm);
    vm->ci++;
    return;
   }
@@ -139,7 +139,7 @@ opcalc_executor(vm *vm , char *sign){
 }
 
 inline value *
-vmvslots_pop(vm *vm , char *n)
+vmvslots_pop(vmState *vm , char *n)
 {
  int vsitemp = 0;
  while(vsitemp < vm->vsi){
@@ -152,7 +152,7 @@ vmvslots_pop(vm *vm , char *n)
 
 
 static void
-opstore_executor(vm *vm)
+opstore_executor(vmState *vm)
 {
  value v;
  vm->ci++;
@@ -163,7 +163,7 @@ opstore_executor(vm *vm)
  v.v.i = get_stack_res(vm);
  vmvslots_push(vm , v);
  value *r = vmvslots_pop(vm , v.vname);
- //#define vmprint
+ #define vmprint
 #ifdef vmprint
  log(importancelogsign);
  logi("\n" , r->v.i);
@@ -173,7 +173,7 @@ opstore_executor(vm *vm)
 
 
 void 
-craV_execute(XokMalloc *xm , vm *vm)
+craV_execute(XokMalloc *xm , vmState *vm)
 {
  int *codes = vm->bc->codes;
  while(vm->ci < vm->bc->count){

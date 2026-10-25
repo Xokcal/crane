@@ -22,20 +22,13 @@ const char*
 typetostr(vartype type)
 {
  switch (type) {
-  case TYPE_INT:    
-   return "int";
-  case TYPE_STRING: 
-   return "string";
-  case TYPE_FLOAT:  
-   return "float";
-  case TYPE_DOUBLE: 
-   return "double";
-  case TYPE_CHAR:   
-   return "char";
-  case TYPE_LONG:   
-   return "long";
-  default:          
-   return "unknown";
+  case TYPE_INT:return "int";
+  case TYPE_STRING: return "string";
+  case TYPE_FLOAT:return "float";
+  case TYPE_DOUBLE:return "double";
+  case TYPE_CHAR:return "char";
+  case TYPE_LONG:return "long";
+  default:return "unknown";
  }
 }
 
@@ -68,6 +61,84 @@ v_type_insert(char *type , value *v , void *vv)
     v->type = TYPE_CHAR;
     v->v.c = *(char*)vv;
   }
+}
+
+
+#define TARGS_DEFAULT_SIZE 8
+#define TARGS_GROW_FACTOR  2
+
+
+
+/*
+** Targs is collect craparse.c's unkey[like:function->(print(a, b))]
+** (a), (b) args message, and push Targs by bytecode(index) get, and 
+** virtual machine tackle bytecode corresponding Tparam op 
+** instruct by bytecode(index).
+** struct Targs's create, contain Tparam array, size,..
+*/
+Targs *
+targs_create(XokMalloc *xm, int init_size)
+{
+ if (init_size <= 0) init_size = TARGS_DEFAULT_SIZE;
+ Targs *t = (Targs *)
+ xalloc_XokMalloc(xm, sizeof(Targs));
+ if (!t) return NULL;
+ t->args = (Tparam *)
+ xalloc_XokMalloc(xm, sizeof(Tparam) * init_size);
+ if (!t->args) {
+  return NULL;
+ }
+ t->size  = init_size;
+ t->count = 0;
+ return t;
+}
+
+
+void
+targs_free(XokMalloc *xm, Targs *t)
+{
+ if (!t) return;
+ if (t->args) {
+  for (int i = 0; i < t->count; i++) {
+   if (t->args[i].originstr) {
+    free(t->args[i].originstr);
+   }
+  }
+  free(t->args);
+ }
+ free(t);
+}
+
+
+int
+targs_expand(XokMalloc *xm, Targs *t)
+{
+ if (!t) return 0;
+ int new_size = t->size * TARGS_GROW_FACTOR;
+ Tparam *new_args = (Tparam *)
+ xalloc_XokMalloc(xm, sizeof(Tparam) * new_size);
+ if (!new_args) return 0;
+ memcpy(new_args, t->args, sizeof(Tparam) * t->count);
+ free(t->args);
+ t->args = new_args;
+ t->size = new_size;
+ return 1;
+}
+
+
+/*
+** targs stack push struct Tparam
+*/
+int
+targs_push(XokMalloc *xm, Targs *t, Tparam param)
+{
+ if (!t) return 0;
+ if (t->count >= t->size) {
+     if (!targs_expand(xm, t)) return 0;
+ }
+ t->args[t->count] = param;
+ t->count++;
+ return 1;
 }
 
 
@@ -185,7 +256,7 @@ bc_emit(XokMalloc *xm, bytecode *bc, int instr)
 {
   if (!bc) return 0;
   if (bc->count >= bc->size)
-      if (!bc_expand(xm, bc)) return 0;
+   if (!bc_expand(xm, bc)) return 0;
   bc->codes[bc->count++] = instr;
   return 1;
 }
@@ -262,7 +333,7 @@ vnstk_find(varnamestk *vs, const char *name)
 
 
 static int
-sign_emit(XokMalloc *xm , char *s , bytecode *bc)
+signemit(XokMalloc *xm , char *s , bytecode *bc)
 {
   if(strcmp(s , "+")==0)return bc_emit(xm , bc , OP_ADD);
   if(strcmp(s , "-")==0)return bc_emit(xm , bc , OP_SUB);
@@ -272,78 +343,100 @@ sign_emit(XokMalloc *xm , char *s , bytecode *bc)
 
 
 static void
-assign_encode(XokMalloc *xm, craastdesc *node ,
+assignencode(XokMalloc *xm, craastdesc *node ,
 bytecode *bc , char *type)
 {
-  if (node->kind == AST_NUM) { /* single tackle node
-    is AST_NUM, if is binop node don't push*/
-    LOG("encode en num ADD!!!!");
-    value v;
-    log_i("num" , node->as.num);
-    v_type_insert(type , &v , &node->as.num);
-    log_i("v" , v.v.i);
-    bc_emit(xm, bc, OP_PUSH);
-    bc_emit(xm , bc , bc->v_count);
-    /* push struct value stack */
-    bc_add_constant(xm, bc , v);
-    return;
-  }
-  if (node->kind == AST_BINOP) { /* left-right-mid recursion，
-    leftest is highest priority binop, priority tackle leftest binop
-    left-num and right-num, rightest is low priority, can tabckle later */
-    assign_encode(xm, node->as.binop.left, bc , type);
-    assign_encode(xm, node->as.binop.right, bc , type);
-    sign_emit(xm, node->as.binop.calcsign, bc);
-    return;
-  }
+ if (node->kind == AST_NUM) { /* single tackle node
+  is AST_NUM, if is binop node don't push*/
+  LOG("encode en num ADD!!!!");
+  value v;
+  log_i("num" , node->as.num);
+  v_type_insert(type , &v , &node->as.num);
+  log_i("v" , v.v.i);
+  bc_emit(xm, bc, OP_PUSH);
+  bc_emit(xm , bc , bc->v_count);
+  /* push struct value stack */
+  bc_add_constant(xm, bc , v);
   return;
+ }
+ if (node->kind == AST_BINOP) { /* left-right-mid recursion，
+  leftest is highest priority binop, priority tackle leftest binop
+  left-num and right-num, rightest is low priority, can tabckle later */
+  assignencode(xm, node->as.binop.left, bc , type);
+  assignencode(xm, node->as.binop.right, bc , type);
+  signemit(xm, node->as.binop.calcsign, bc);
+  return;
+ }
+ return;
 }
 
 
 static bytecode*
-assign_code(XokMalloc *xm , craastdesc *desc , bytecode *bc)
+assignencodeexe(XokMalloc *xm , craastdesc *desc , bytecode *bc)
 {
   craastdesc *value = desc->as.assign.value;
   char *type = desc->as.assign.type;
-  assign_encode(xm , value , bc , type);
+  assignencode(xm , value , bc , type);
   return bc;
 }
 
 
-vm*
+static void
+astassignexe(XokMalloc *xm, craastdesc *curdesc, Ttypes *types, 
+          bytecode *bc,varnamestk *vns, int *dl_c, int *t_idx){
+ vnstk_push(xm , vns , curdesc->as.assign.name , *dl_c);
+ assignencodeexe(xm , curdesc , bc);
+ bc_emit(xm , bc , OP_STORE);
+ bc_emit(xm , bc , (*dl_c)); /* variable name index */
+ char *type = curdesc->as.assign.type;
+ types_push(xm , types , type);
+ bc_emit(xm , bc , (*t_idx)++); /* variable type index */
+ #define v1v2
+ #ifdef v1v2
+ logi("bc.values.v[1]" , bc->values[0].v.i);
+ logi("bc.values.v[2]" , bc->values[1].v.i);
+ #endif
+ (*dl_c)++;
+}
+
+
+
+/*
+** by desc.func.type judge specific unkey type, first push 
+** codes op_func or op_undefvar or .. desc.func.Tparams push
+** Targs, and push codes store Targs has pushed index.
+*/
+static void
+astunkeyexe()
+{
+ 
+}
+
+
+vmState*
 craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
 {
- int dl_c = 0,
- t_idx = 0;
+ int dl_c = 0, /* desclist stack index */
+ t_idx = 0,    /*  */
+ argsi = 0;
  Ttypes *types = types_create(xm , TYPES_DEFAULT_SIZE);
  bytecode *bc = bc_create(xm , BYTECODE_DEFAULT_SIZE);
  varnamestk *vns = vnstk_create(xm , 16);
  while(dl_c < dl->count){
   craastdesc *curdesc = dl->desclist[dl_c];
   switch(curdesc->kind){
-   case AST_ASSIGN:{
-    vnstk_push(xm , vns , curdesc->as.assign.name , dl_c);
-    assign_code(xm , curdesc , bc);
-    bc_emit(xm , bc , OP_STORE);
-    bc_emit(xm , bc , dl_c); /* variable name index */
-    char *type = curdesc->as.assign.type;
-    types_push(xm , types , type);
-    bc_emit(xm , bc , t_idx++); /* variable type index */
-    log_i("bc.values.v[1]" , bc->values[0].v.i);
-    log_i("bc.values.v[2]" , bc->values[1].v.i);
-    dl_c++;
-    break;
-   }
-   case AST_EMPTY:{
-     break;
-   }
-   default:{
-     break;
-   }
+   case AST_ASSIGN:astassignexe(xm, curdesc, types,
+                           bc, vns, &dl_c, &t_idx);
+                           break;
+   case AST_EMPTY:astunkeyexe();break;
+   default:break;
   }
  }
  bc_emit(xm , bc , OP_HALT);
+ #define codeslog
+ #ifdef codeslog
  craC_codes_log(bc);
+ #endif
  return vm_create(xm, bc, vns, types, 160);
 }
 

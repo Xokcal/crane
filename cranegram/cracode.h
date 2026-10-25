@@ -77,8 +77,14 @@ typedef struct Ttypes{
  int count;
 }Ttypes;
 
+typedef struct Targs{
+ Tparam *args;
+ int size;
+ int count;
+}Targs;
 
-vm*
+
+vmState*
 craC_bytecode_parse(XokMalloc *xm ,  desclist *dl);
 
 bytecode *bc_create(XokMalloc *xm, int init_size);

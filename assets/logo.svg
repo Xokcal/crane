@@ -1,15 +1,42 @@
-<svg width="1000" height="1000" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
-  <!-- 外圈淡绿色圆环 -->
-  <circle cx="500" cy="500" r="260" fill="none" stroke="#b6f2bc" stroke-width="32"/>
-  <!-- 内部淡紫色圆 -->
-  <circle cx="500" cy="500" r="228" fill="#e8c6f9"/>
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- 外圆 -->
+  <circle
+    cx="200"
+    cy="200"
+    r="110"
+    fill="none"
+    stroke="#5B4FC4"
+    stroke-width="16"
+  />
+
+  <!-- 内圆 -->
+  <circle
+    cx="200"
+    cy="200"
+    r="94"
+    fill="#E94560"
+  />
+
   <!-- 文字 crane -->
-  <text x="500" y="520" font-family="Arial, sans-serif" font-size="96" fill="#20adb8" text-anchor="middle">crane</text>
-  <!-- 周围浅青小装饰短线 -->
-  <path d="M 370 130 Q 400 115 435 105" stroke="#97f0e1" stroke-width="28" stroke-linecap="round" fill="none"/>
-  <path d="M 220 235 Q 250 200 285 185" stroke="#97f0e1" stroke-width="28" stroke-linecap="round" fill="none"/>
-  <path d="M 155 395 Q 160 345 175 320" stroke="#97f0e1" stroke-width="28" stroke-linecap="round" fill="none"/>
-  <path d="M 135 500 Q 135 540 135 580" stroke="#97f0e1" stroke-width="28" stroke-linecap="round" fill="none"/>
-  <path d="M 170 680 Q 195 720 215 745" stroke="#97f0e1" stroke-width="28" stroke-linecap="round" fill="none"/>
-  <path d="M 280 800 Q 320 820 355 835" stroke="#97f0e1" stroke-width="28" stroke-linecap="round" fill="none"/>
+  <text
+    x="200"
+    y="212"
+    font-family="Arial, sans-serif"
+    font-size="44"
+    font-style="italic"
+    fill="#FFFFFF"
+    text-anchor="middle"
+    letter-spacing="1px"
+  >
+    crane
+  </text>
+
+  <!-- 左侧单弧线 -->
+  <path
+    d="M 80 140 A 120 120 0 0 0 80 260"
+    fill="none"
+    stroke="#2EC4B6"
+    stroke-width="12"
+    stroke-linecap="round"
+  />
 </svg>

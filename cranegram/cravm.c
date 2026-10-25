@@ -116,13 +116,19 @@ opcalc_executor(vm *vm , char *sign){
   vmcase(TYPE_INT){
    dlong v1 = (dlong)value1.v.i;
    dlong v2 = (dlong)value2.v.i;
+   //#define opaddv1v2
+   #ifdef opaddv1v2
    log_i("v1" , v1);
    log_i("v2" , v2);
+   #endif
    resi = calc_executor(&v1 , &v2 , sign);
    res.type = TYPE_INT;
    res.v.i = (int)resi;
+   //#define opaddr
+   #ifdef opaddr
    log_i("opadd_result" , res.v.i);
    calc_swrap(res , resi , vm);
+   #endif
    vm->ci++;
    return;
   }
@@ -157,7 +163,7 @@ opstore_executor(vm *vm)
  v.v.i = get_stack_res(vm);
  vmvslots_push(vm , v);
  value *r = vmvslots_pop(vm , v.vname);
- #define vmprint
+ //#define vmprint
 #ifdef vmprint
  log(importancelogsign);
  logi("\n" , r->v.i);

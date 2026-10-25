@@ -62,7 +62,7 @@
  !isnumber((s)) && !strcmp((s), acptDQ)==0 \
  && !strcmp((s), acptempty)==0 && !cmpkey((s))
 
- 
+
 static int
 t_convert_asttype(String *s)
 {
@@ -395,6 +395,7 @@ var_desc(XokMalloc *xm , ParseFactor *pf , String *type)
  craastdesc *desc = 
  make_assign(xm , name->str , v , type->str); /* current 'desc' struction is:
  struct assign* = {var_name , struct binop* root} */
+ 
  return desc;
 }
 
@@ -544,7 +545,10 @@ craP_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
     String *type = create_string(t->str);
     craastdesc *vd = var_desc(xm , &pf , type);
     string_free(type);
+    //#define astprint
+    #ifdef astprint
     print_ast(vd , 0);
+    #endif
     Cra_desclist_push(xm , dl , vd);
     break;
    }

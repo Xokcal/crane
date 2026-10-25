@@ -40,9 +40,12 @@ int main()
   XokMalloc *txm = create_XokMalloc();
   String *origin_str = open_file("Crane/test.cr");
   TOKENSB *tokens = tokens_parse(txm, origin_str);
+  //#define tsprint
+  #ifdef tsprint
   for(int i = 0; i < tokens->count ; i++){
       logc("token" , tokens->tokens[i]->str);
-  }printf("\n");
+  }
+  #endif
   XokMalloc *xm = create_XokMalloc();
   Hashmap *hmap = create_hashmap(); /* gloab variable*/
   desclist *dl = Cra_desclist_create(xm , 16); /* tree list */

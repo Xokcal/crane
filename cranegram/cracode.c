@@ -451,7 +451,7 @@ bytecode *bc , char *type)
 
 static void
 astassignexe(XokMalloc *xm, craastdesc *curdesc, Ttypes *types, 
-          bytecode *bc,varnamestk *vns, int *dl_c, int *t_idx){
+        bytecode *bc, varnamestk *vns, int *dl_c, int *t_idx){
  vnstk_push(xm , vns , curdesc->as.assign.name , *dl_c);
  craastdesc *value = curdesc->as.assign.value; /* get desc assign 
  value tree, just go parse tree to codes */
@@ -471,10 +471,9 @@ astassignexe(XokMalloc *xm, craastdesc *curdesc, Ttypes *types,
 }
 
 
-
 /*
-** by desc.func.type judge specific unkey type, first push 
-** codes op_func or op_undefvar or .. desc.func.Tparams push
+** by desc.call.type judge specific unkey type, first push 
+** codes op_func or op_undefvar or .. desc.call.Tparams push
 ** Targs, and push codes store Targs has pushed index.
 */
 static void
@@ -491,7 +490,7 @@ astcallexe(XokMalloc *xm, craastdesc *desc, Targs *targs,
  bc_emit(xm, bc, (*tcallsi)++);
  tcalls_push(xm, tcalls, getcallfname(desc));
  /* current codes like: { op_load:[p1],
-  op_load:[p2], op_call:[func] } */
+  op_load:[p2], op_call:[call] } */
  (*dl_c)++;
  //#define targsP
  #ifdef targsP

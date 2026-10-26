@@ -2,9 +2,13 @@
 #include "../tool/xokmalloc/xokmalloc.h"
 #include "cracode.h"
 #include "cravm.h"
+#include "crafunc.h"
+#include "cgm_gramma.h"
+#include "cracom.h"
 
 #define VM_DEFAULT_STACK_SIZE 1024
 #define VM_DEFAULT_VSLOTS_SIZE 200
+#define VM_DEFAULT_TEMPARGS_SIZE 200
 #define importancelogsign "________________________"
 #define addsign "+"
 #define subsign "-"
@@ -18,11 +22,20 @@
 #define dlong long long
 #define voidunfind -1
 
+/* ************ build-in function *********** */
+#define prints(s) printf("%s", (s))
+#define printi(i) printf("%d",(i))
+
 /* instruct OP_PUSH execute */
 #define oppush_executor(vm) \
  (vm)->vs[(vm)->sp++] = (vm)->bc->values[(vm)->bc->codes[(vm)->ci++]]
 
-#define codes_idx(vm) \
+/* instruct OP_LOAD execute */
+#define opload_executor(vm)\
+ (vm)->tempargs[(vm)->tempargsi++] = (vm)->targs->args[getcode((vm))]
+
+ /* current codes's bytecode */
+#define getcode(vm) \
  (vm)->bc->codes[(vm)->ci]
 
 #define calc_swrap(res , resi , vm)\
@@ -48,6 +61,17 @@
 #define vmvslots_push(vm , v)\
  (vm)->vslots[(vm)->vsi++] = (v);
 
+/* ********** virtual machine *********** */
+#define codenext(vm)\
+ (vm)->ci++;
+
+/* ************** String func tackle ***************** */
+#define cmptail(s , tail) combine_tail((s), (tail))
+
+#define strclear(s) delete_all((s));
+
+#define strfree(s) string_free((s))
+
 
 inline void vm_free(XokMalloc *xm, vmState *v){
  if (!v) return;
@@ -68,7 +92,7 @@ inline void vm_free(XokMalloc *xm, vmState *v){
 
 vmState *
 vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns,
-                               Ttypes *tys, int size){
+  Ttypes *tys, Targs *Targs, Tcalls *tcalls, int size){
  if (size <= 0) size = VM_DEFAULT_STACK_SIZE;
  vmState *v = (vmState *)xalloc_XokMalloc(xm, sizeof(vmState));
  if (!v) return NULL;
@@ -76,10 +100,15 @@ vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns,
  (xm, sizeof(value) * size);
  v->vslots = (value *)xalloc_XokMalloc
  (xm, sizeof(value) * VM_DEFAULT_VSLOTS_SIZE);
+ v->tempargs = (Tparam*)
+ xalloc_XokMalloc(xm, sizeof(Tparam) * VM_DEFAULT_TEMPARGS_SIZE);
  if (!v->vs) return NULL;
  v->bc = bc;
  v->vns = vns;
  v->tys = tys;
+ v->targs = Targs;
+ v->tempargsi = 0;
+ v->tcalls = tcalls;
  v->sp = 0;
  v->ci = 0;
  v->size = size;
@@ -138,6 +167,19 @@ opcalc_executor(vmState *vm , char *sign){
  }
 }
 
+
+static value
+find_value(vmState* vm, char *n)
+{
+ for(int i=0;i<vm->vsi;i++){
+  value v = vm->vslots[i];
+  if(!strcmp(n, v.vname))
+   return v;
+ }
+ craCM_error("var not have find!!");
+}
+
+
 inline value *
 vmvslots_pop(vmState *vm , char *n)
 {
@@ -154,8 +196,8 @@ vmvslots_pop(vmState *vm , char *n)
 static void
 opstore_executor(vmState *vm)
 {
- value v;
- vm->ci++;
+ value v; /* init value v, push stack later.*/
+ vm->ci++; /*  */
  v.vname = strdup(get_codesv(vm));
  vm->ci++;
  v.vtype = strdup(get_stack_type(vm));
@@ -163,12 +205,19 @@ opstore_executor(vmState *vm)
  v.v.i = get_stack_res(vm);
  vmvslots_push(vm , v);
  value *r = vmvslots_pop(vm , v.vname);
- #define vmprint
-#ifdef vmprint
- log(importancelogsign);
- logi("\n" , r->v.i);
-#endif
+ //#define vmprint
+ #ifdef vmprint
+  log(importancelogsign);
+  logi("\n" , r->v.i);
+ #endif
  clear_sp(vm);
+}
+
+
+static void
+buildin_func_executor()
+{
+ 
 }
 
 
@@ -177,9 +226,42 @@ craV_execute(XokMalloc *xm , vmState *vm)
 {
  int *codes = vm->bc->codes;
  while(vm->ci < vm->bc->count){
-  vmswitch(codes_idx(vm)){
+  vmswitch(getcode(vm)){
+   vmcase(OP_CALL){
+    codenext(vm);
+    char *callname = vm->tcalls->calls[getcode(vm)];
+    if(craF_isbuildinfunc(callname)){
+     if(!strcmp(callname, "print")){
+      for(int i=0;i<vm->tempargsi;i++){
+       Tparam tp = vm->tempargs[i];
+       switch(tp.pty)
+       {
+        case PRM_STRING:prints(tp.originstr);break;
+        case PRM_NUMBER:
+        String *number = create_string(tp.originstr);
+        int *r = str_convert_int(number);
+        printi(*r);
+        free(r);
+        strfree(number);
+        break;
+        case PRM_VAR:
+        value v = find_value(vm, tp.originstr);
+        printi(v.v.i);
+        break;
+        default:break;
+       }
+      }
+     }
+    }
+   }
+   vmcase(OP_LOAD){
+    codenext(vm);
+    opload_executor(vm);
+    codenext(vm);
+    vmbreak;
+   }
    vmcase(OP_PUSH){
-    vm->ci++;
+    codenext(vm);
     oppush_executor(vm);
     vmbreak;
    }
@@ -207,7 +289,7 @@ craV_execute(XokMalloc *xm , vmState *vm)
     goto vmterminal;
    }
    vmdefault{
-    vm->ci++;
+    codenext(vm);
     vmbreak;
    }
   }

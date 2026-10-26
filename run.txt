@@ -1,10 +1,13 @@
-gcc.exe cranegram/cracom.h cranegram/craboot.c cranegram/cravm.c cranegram/cracode.c cranegram/craparse.c cranegram/typevar.c cranegram/types.c cranegram/cgm_file.c cranegram/cgm_gramma.c cranegram/cralex.c cranegram/cgm_printf.c tool/file/file.c tool/log/log.c tool/map/hashmap_int.c tool/String/String.c tool/xokmalloc/xokmalloc.c  -o main.exe
+gcc.exe cranegram/crafunc.c cranegram/craboot.c cranegram/cravm.c cranegram/cracode.c cranegram/craparse.c cranegram/typevar.c cranegram/types.c cranegram/cgm_file.c cranegram/cgm_gramma.c cranegram/cralex.c cranegram/cgm_printf.c tool/file/file.c tool/log/log.c tool/map/hashmap_int.c tool/String/String.c tool/xokmalloc/xokmalloc.c  -o main.exe
 
-gcc.exe cranegram/craboot.c cranegram/cravm.c cranegram/cracode.c cranegram/craparse.c cranegram/typevar.c cranegram/types.c cranegram/cgm_file.c cranegram/cgm_gramma.c cranegram/cralex.c cranegram/cgm_printf.c tool/file/file.c tool/log/log.c tool/map/hashmap_int.c tool/String/String.c tool/xokmalloc/xokmalloc.c  -o main.exe
+gcc.exe cranegram/crafunc.c cranegram/craboot.c cranegram/cravm.c cranegram/cracode.c cranegram/craparse.c cranegram/typevar.c cranegram/types.c cranegram/cgm_file.c cranegram/cgm_gramma.c cranegram/cralex.c cranegram/cgm_printf.c tool/file/file.c tool/log/log.c tool/map/hashmap_int.c tool/String/String.c tool/xokmalloc/xokmalloc.c  -o main.exe
 
-gcc.exe cranegram/craboot.c cranegram/cravm.c cranegram/cracode.c cranegram/craparse.c cranegram/typevar.c cranegram/types.c cranegram/cgm_file.c cranegram/cgm_gramma.c cranegram/cralex.c cranegram/cgm_printf.c tool/file/file.c tool/log/log.c tool/map/hashmap_int.c tool/String/String.c tool/xokmalloc/xokmalloc.c  -o main.exe
+gcc.exe cranegram/crafunc.c cranegram/craboot.c cranegram/cravm.c cranegram/cracode.c cranegram/craparse.c cranegram/typevar.c cranegram/types.c cranegram/cgm_file.c cranegram/cgm_gramma.c cranegram/cralex.c cranegram/cgm_printf.c tool/file/file.c tool/log/log.c tool/map/hashmap_int.c tool/String/String.c tool/xokmalloc/xokmalloc.c  -o main.exe
 
-gcc.exe cranegram/craboot.c cranegram/cravm.c cranegram/cracode.c cranegram/craparse.c cranegram/typevar.c cranegram/types.c cranegram/cgm_file.c cranegram/cgm_gramma.c cranegram/cralex.c cranegram/cgm_printf.c tool/file/file.c tool/log/log.c tool/map/hashmap_int.c tool/String/String.c tool/xokmalloc/xokmalloc.c  -o main.exe
+gcc.exe cranegram/crafunc.c cranegram/craboot.c cranegram/cravm.c cranegram/cracode.c cranegram/craparse.c cranegram/typevar.c cranegram/types.c cranegram/cgm_file.c cranegram/cgm_gramma.c cranegram/cralex.c cranegram/cgm_printf.c tool/file/file.c tool/log/log.c tool/map/hashmap_int.c tool/String/String.c tool/xokmalloc/xokmalloc.c  -o main.exe
+
+gcc.exe cranegram/crafunc.c cranegram/craboot.c cranegram/cravm.c cranegram/cracode.c cranegram/craparse.c cranegram/typevar.c cranegram/types.c cranegram/cgm_file.c cranegram/cgm_gramma.c cranegram/cralex.c cranegram/cgm_printf.c tool/file/file.c tool/log/log.c tool/map/hashmap_int.c tool/String/String.c tool/xokmalloc/xokmalloc.c  -o main.exe
+
 
 mingw32-make run
 

@@ -28,7 +28,8 @@ typedef enum craasttype{
   AST_BINOP,
   AST_EMPTY,
   AST_FUNC,
-  AST_UNKEY
+  AST_UNKEY,
+  AST_CALL
 }craasttype;
 
 /* define param type like: {("hello", count, 10086, 3.1415)} */
@@ -50,22 +51,21 @@ typedef struct craastdesc{
   int num;         /* ast's node number */
   struct binop{
    struct craastdesc *right;   /* binop'sright */
-   char *calcsign;      /* binop's calculate aign */
    struct craastdesc *left;    /* binop's left */
+   char *calcsign;      /* binop's calculate aign */
   } binop;
   struct assign{
-   char *type;
-   char *name;     /* assign about of variable name */
    struct craastdesc *value;   /* assign value */
+   char *type;     /* origin text data type(str),
+   like: int a; --> store string "int"*/
+   char *name;     /* assign about of variable name */
   } assign;
-  struct func{
-   char *fname;
-   int argsi;
-   int fdesci;
-   struct craastdesc *fdescs;
-   struct Tparam *args;
+  struct call{
+   struct Tparam *args; /* args arrays */
+   char *fname;         /* function name */
+   int argsi;           /* args count */
    /* modified array define .. */
-  }func;
+  }call;
  } as;
 }craastdesc;
 
@@ -86,6 +86,8 @@ typedef struct AstDescArr{
   int size;
 }AstDescArr;
 
+/* parse state: xm(memery pool),
+pf(tokens), root(desc tree root) */
 typedef struct pavstate{
   XokMalloc *xm;
   ParseFactor *pf;
@@ -95,11 +97,11 @@ typedef struct pavstate{
 /* crane ast parse main funtion, xokMalloc is memory pool */
 int craP_token_parse(XokMalloc *xokMalloc , TOKENSB *tokens , desclist *dl);
 
-desclist *Cra_desclist_create(XokMalloc *xm, int init_size);
+desclist *craP_desclist_create(XokMalloc *xm, int init_size);
 
-void Cra_desclist_free(XokMalloc *xm, desclist *dl);
+void craP_desclist_free(XokMalloc *xm, desclist *dl);
 
-int Cra_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree);
+int craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree);
 
-int Cra_desclist_expand(XokMalloc *xm, desclist *dl);
+int craP_desclist_expand(XokMalloc *xm, desclist *dl);
 #endif

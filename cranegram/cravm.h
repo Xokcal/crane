@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "../tool/xokmalloc/xokmalloc.h"
 #include "cracode.h"
+#include "craparse.h"
 
 #define calc_add(p1 , p2)(*(p1)) + (*(p2))
 #define calc_sub(p1 , p2)(*(p1)) - (*(p2))
@@ -14,8 +15,13 @@ typedef struct bytecode bytecode;
 typedef struct varnamestk varnamestk;
 typedef struct value value;
 typedef struct Ttypes Ttypes;
+typedef struct Tparam Tparam;
+typedef struct Targs Targs;
+typedef struct Tcalls Tcalls;
 
 typedef struct vmState{
+ Tcalls *tcalls; /* call name stack */
+ Targs *targs; /* codes parse store all targs */
  /* struct bc: 
  codes and values package */
  bytecode *bc;
@@ -40,6 +46,8 @@ typedef struct vmState{
  /* value vslots variable index */
  int vsi;
  int vni;
+ Tparam *tempargs; /* temp args stack */
+ int tempargsi; /* temp args stack point */
  int size;
 }vmState;
 
@@ -48,7 +56,7 @@ typedef struct vmmap{
 }vmmap;
 
 vmState *vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns,
-                                  Ttypes *tys, int size);
+  Ttypes *tys, Targs *Targs, Tcalls *tcalls, int size);
 void vm_free(XokMalloc *xm, vmState *v);
 /* vmState main executor, use struct vm parse codes to stack */
 void craV_execute(XokMalloc *xm , vmState *vm);

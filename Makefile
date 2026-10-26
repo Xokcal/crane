@@ -12,6 +12,7 @@ SRCS = cranegram/cracode.c \
        cranegram/cralex.c \
        cranegram/cgm_printf.c \
        cranegram/craboot.c \
+       cranegram/crafunc.c \
        tool/file/file.c \
        tool/log/log.c \
        tool/map/hashmap_int.c \

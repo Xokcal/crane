@@ -48,15 +48,15 @@ int main()
   #endif
   XokMalloc *xm = create_XokMalloc();
   Hashmap *hmap = create_hashmap(); /* gloab variable*/
-  desclist *dl = Cra_desclist_create(xm , 16); /* tree list */
+  desclist *dl = craP_desclist_create(xm , 16); /* tree list */
   parsecode = craP_token_parse(xm , tokens , dl);  /*  AST main parse */
   if(parsecode == errorcode)
    goto executeError;
-  vmState *vm = craC_bytecode_parse(xm , dl);
-  craV_execute(xm , vm);
+  vmState *vmState = craC_bytecode_parse(xm , dl);
+  craV_execute(xm, vmState);
   executeError:
   /* free setting struct */
-  Cra_desclist_free(xm , dl);
+  craP_desclist_free(xm , dl);
   free_XokMalloc(xm);
   free_XokMalloc(txm);
   return 0;

@@ -7,15 +7,19 @@
 #include "cravm.h"
 
 typedef struct desclist desclist;
+typedef struct Tparam Tparam;
 
+/* virtual machine instruct */
 typedef enum opcode{
- OP_PUSH,
- OP_ADD,
- OP_SUB,
- OP_DIV,
- OP_MUL,
- OP_HALT,
- OP_STORE
+ OP_PUSH,    /* push Value* */
+ OP_ADD,     /* calculate add */
+ OP_SUB,     /* calculate sub */
+ OP_DIV,     /* calculate divide */
+ OP_MUL,     /* calculate multiply */
+ OP_HALT,    /* vm quit */
+ OP_STORE,   /* store variable */
+ OP_CALL,    /* execute function call */
+ OP_LOAD     /* args load */
 }opcode;
 
 typedef enum vartype{
@@ -77,12 +81,19 @@ typedef struct Ttypes{
  int count;
 }Ttypes;
 
+/* call args store stack */
 typedef struct Targs{
  Tparam *args;
  int size;
  int count;
 }Targs;
 
+/* call name store stack */
+typedef struct Tcalls{
+ char **calls;
+ int size;
+ int count;
+}Tcalls;
 
 vmState*
 craC_bytecode_parse(XokMalloc *xm ,  desclist *dl);

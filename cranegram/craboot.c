@@ -38,7 +38,7 @@ int main()
   int parsecode;
   //print_welcome();
   XokMalloc *txm = create_XokMalloc();
-  String *origin_str = open_file("Crane/test.cr");
+  String *origin_str = open_file("test/test.cr");
   TOKENSB *tokens = tokens_parse(txm, origin_str);
   //#define tsprint
   #ifdef tsprint

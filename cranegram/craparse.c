@@ -27,9 +27,9 @@
 /* DQ(double quotaion)*/
 #define acptDQ "\""
 
-#define makefnTpysize 16
+#define makefnTpysize 260
 
-#define makefnfdescssize 50
+#define makefnfdescssize 250
 /* ************** String func tackle ***************** */
 #define cmptail(s , tail) combine_tail((s), (tail))
 
@@ -78,6 +78,7 @@ t_convert_asttype(String *s)
     return GRAM_VAR;
   if(compare(s , " "))return GRAM_EMPTY;
   if(compare(s , "\n"))return GRAM_EMPTY;
+  if(compare(s , "\r"))return GRAM_EMPTY;
   if(compare(s , ";"))return GRAM_EMPTY;
   if(compare(s , "print"))return GRAM_PRINT;
 }
@@ -541,7 +542,6 @@ craP_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
     break;
    }
    case GRAM_EMPTY:{
-    pf.curr++;
     break;
    }
    case GRAM_VAR:{

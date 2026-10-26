@@ -7,8 +7,8 @@
 #include "cracom.h"
 
 #define VM_DEFAULT_STACK_SIZE 1024
-#define VM_DEFAULT_VSLOTS_SIZE 200
-#define VM_DEFAULT_TEMPARGS_SIZE 200
+#define VM_DEFAULT_VSLOTS_SIZE 300
+#define VM_DEFAULT_TEMPARGS_SIZE 300
 #define importancelogsign "________________________"
 #define addsign "+"
 #define subsign "-"
@@ -25,6 +25,7 @@
 /* ************ build-in function *********** */
 #define prints(s) printf("%s", (s))
 #define printi(i) printf("%d",(i))
+#define println printf("\n")
 
 /* instruct OP_PUSH execute */
 #define oppush_executor(vm) \
@@ -253,6 +254,10 @@ craV_execute(XokMalloc *xm , vmState *vm)
       }
      }
     }
+    println;
+    vm->tempargsi = 0;
+    codenext(vm);
+    vmbreak;
    }
    vmcase(OP_LOAD){
     codenext(vm);

@@ -6,7 +6,7 @@
 #include "cralex.h"
 #include "cravm.h"
 
-#define BYTECODE_DEFAULT_SIZE 16
+#define BYTECODE_DEFAULT_SIZE 10086
 #define BYTECODE_GROW_FACTOR  2
 #define craC_codes_log(bc) \
   for(int i = 0; i < (bc)->count; i++) log_i("BC" , (bc)->codes[i]);
@@ -18,7 +18,7 @@
 #define getcallfname(desc)\
  (desc)->as.call.fname
 
-#define BC_DEFAULT_SIZE 16
+#define BC_DEFAULT_SIZE 10086
 
 
 /*
@@ -71,7 +71,7 @@ v_type_insert(char *type , value *v , void *vv)
 }
 
 
-#define TCALLS_DEFAULT_SIZE 16
+#define TCALLS_DEFAULT_SIZE 200
 #define TCALLS_GROW_FACTOR  2
 
 
@@ -146,7 +146,7 @@ tcalls_pop(Tcalls *tc)
 }
 
 
-#define TARGS_DEFAULT_SIZE 8
+#define TARGS_DEFAULT_SIZE 200
 #define TARGS_GROW_FACTOR  2
 
 
@@ -223,7 +223,7 @@ targs_push(XokMalloc *xm, Targs *t, Tparam param)
 }
 
 
-#define TYPES_DEFAULT_SIZE 16
+#define TYPES_DEFAULT_SIZE 200
 #define TYPES_GROW_FACTOR  2
 
 

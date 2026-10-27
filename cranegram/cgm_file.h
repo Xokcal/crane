@@ -8,6 +8,6 @@
 #include "../tool/String/String.h"
 #include <stdio.h>
 String *open_file(char* URL);
-
+void write_file(const char *URL, char *contet);
 
 #endif //CRANEC_CGM_FILE_H

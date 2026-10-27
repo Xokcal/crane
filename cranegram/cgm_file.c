@@ -19,3 +19,10 @@ String *open_file(char* URL){
         combine_tail_char(tokens , buf[0]);
     return tokens;
 }
+
+void write_file(const char *URL, char *contet){
+ FILE *file = fopen(URL,"w");
+ if(file == NULL){printf("write_file open file error");}
+ fprintf(file, contet);
+ fclose(file);
+}

@@ -20,6 +20,13 @@
 
 #define BC_DEFAULT_SIZE 10086
 
+/* ************** String func tackle ***************** */
+
+#define strclear(s) delete_all((s))
+
+#define strfree(s) string_free((s))
+
+#define strcomcat(s, s2) combine_tail((s), (s2))
 
 /*
 ** by struct vartype convert to char* origin type
@@ -499,6 +506,106 @@ astcallexe(XokMalloc *xm, craastdesc *desc, Targs *targs,
  #endif
 }
 
+#include "cgm_file.h"
+
+static void
+op_comcatop(int op, String *s)
+{
+ if(op==0)strcomcat(s,"PUSH");
+ if(op==1)strcomcat(s,"ADD");
+ if(op==2)strcomcat(s,"SUB");
+ if(op==3)strcomcat(s,"DIV");
+ if(op==4)strcomcat(s,"MUL");
+ if(op==5)strcomcat(s,"EXIT");
+ if(op==6)strcomcat(s,"STORE");
+ if(op==7)strcomcat(s,"CALL");
+ if(op==8)strcomcat(s,"LOAD");
+}
+
+static void
+op_calcblank(int max, int self, String *s)
+{
+ for(int i=self;i<max;i++){
+  strcomcat(s, " ");
+ }
+}
+
+static void
+op_codeparse(int op, int preop, String *s, bytecode *bc,
+         varnamestk *vns, Tcalls *tcalls, Targs *targs){
+ String *blank = create_string("");
+ if(preop==0){
+  char buf[32];
+  snprintf(buf,sizeof(buf), "%d", bc->values[op].v.i);
+  char *p = buf;
+  op_calcblank(7, 4, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s, p);
+  strfree(blank);
+ }
+ if(preop==1){
+  op_calcblank(7, 3, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s, "+");
+  strfree(blank);}
+ if(preop==2){
+  op_calcblank(7, 3, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s, "-");
+  strfree(blank);}
+ if(preop==3){
+  op_calcblank(7, 3, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s, "/");
+  strfree(blank);}
+ if(preop==4){
+  op_calcblank(7, 3, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s, "*");
+  strfree(blank);}
+ if(preop==5){return;}
+ if(preop==6){
+  op_calcblank(7, 5, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s,(vns->vn[op]));
+  strfree(blank);}
+ if(preop==7){
+  op_calcblank(7, 4, blank);
+  strcomcat(s, blank->str);
+  strfree(blank);
+  strcomcat(s, (tcalls->calls[op]));}
+ if(preop==8){
+  op_calcblank(7, 4, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s, targs->args[op].originstr);
+  strfree(blank);}
+}
+
+static void
+op_visualization(bytecode *bc, varnamestk *vns,
+                 Tcalls *tcalls, Targs *targs){
+ String *s = create_string("");
+ int opi = 0;
+ int j = 0;
+ while(opi<bc->count){
+  int op = bc->codes[opi];
+  int preop = bc->codes[(opi)-1];
+  if(j==1){
+   op_codeparse(op, preop,
+   s, bc, vns, tcalls, targs);
+   strcomcat(s, "\n");
+   opi++;
+   j = 0;
+  }
+  else{
+   op_comcatop(op, s);
+   opi++;
+   j = 1;
+  }
+ }
+ write_file("test/vminstruct", s->str);
+}
+
 
 vmState*
 craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
@@ -526,9 +633,9 @@ craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
   }
  }
  bc_emit(xm , bc , OP_HALT);
- //#define codeslog
- #ifdef codeslog
- craC_codes_log(bc);
+ #define codesvisualization
+ #ifdef codesvisualization
+ op_visualization(bc, vns, tcalls, targs);
  #endif
  return vm_create(xm, bc, vns,
  types, targs, tcalls, 160);

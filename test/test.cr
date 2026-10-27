@@ -1,5 +1,5 @@
-int a = 1;
-int b = 2;
+int a = 3;
+int b = 6;
 
 print(b);
 print("hello crane!!", " a=" , a);

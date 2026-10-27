@@ -33,7 +33,7 @@
 /* ************** String func tackle ***************** */
 #define cmptail(s , tail) combine_tail((s), (tail))
 
-#define strclear(s) delete_all((s));
+#define strclear(s) delete_all((s))
 
 #define strfree(s) string_free((s))
 /* ************** struct Parsefactor tackle *************** */

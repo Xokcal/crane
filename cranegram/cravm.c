@@ -197,19 +197,20 @@ vmvslots_pop(vmState *vm , char *n)
 static void
 opstore_executor(vmState *vm)
 {
+ log("");
  value v; /* init value v, push stack later.*/
  vm->ci++; /*  */
  v.vname = strdup(get_codesv(vm));
- vm->ci++;
+ vm->ci = ((vm->ci) + 2);
  v.vtype = strdup(get_stack_type(vm));
  vm->ci++;
  v.v.i = get_stack_res(vm);
  vmvslots_push(vm , v);
- value *r = vmvslots_pop(vm , v.vname);
  //#define vmprint
  #ifdef vmprint
-  log(importancelogsign);
-  logi("\n" , r->v.i);
+ value *r = vmvslots_pop(vm , v.vname);
+ log(importancelogsign);
+ logi("\n" , r->v.i);
  #endif
  clear_sp(vm);
 }

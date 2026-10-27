@@ -2,11 +2,13 @@
 #include <stdlib.h>
 #include "xokmalloc.h"
 
+#define MEMPOOL_SIZE 100 * 1024 * 1024 * 3
+
 XokMalloc *
 create_XokMalloc()
 {
     XokMalloc *xokmalloc = (XokMalloc*)malloc(sizeof(XokMalloc));
-    xokmalloc->xok_pool = (void*)malloc((100 * 1024 * 1024) * sizeof(1));
+    xokmalloc->xok_pool = (void*)malloc((MEMPOOL_SIZE) * sizeof(1));
     xokmalloc->offset = sizeof(0);
     xokmalloc->count = 0;
     xokmalloc->base_address = xokmalloc->xok_pool;

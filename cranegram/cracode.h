@@ -19,7 +19,8 @@ typedef enum opcode{
  OP_HALT,    /* vm quit */
  OP_STORE,   /* store variable */
  OP_CALL,    /* execute function call */
- OP_LOAD     /* args load */
+ OP_LOAD,    /* args load */
+ OP_TYPE     /* store variable type */
 }opcode;
 
 typedef enum vartype{

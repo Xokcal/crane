@@ -153,7 +153,7 @@ tcalls_pop(Tcalls *tc)
 }
 
 
-#define TARGS_DEFAULT_SIZE 200
+#define TARGS_DEFAULT_SIZE 300
 #define TARGS_GROW_FACTOR  2
 
 
@@ -468,7 +468,10 @@ astassignexe(XokMalloc *xm, craastdesc *curdesc, Ttypes *types,
  bc_emit(xm , bc , (*dl_c)); /* variable name index */
  // char *type = curdesc->as.assign.type;
  types_push(xm , types , type); /* variable type store Ttype arrays */
- bc_emit(xm , bc , (*t_idx)++); /* variable type index */
+ /* need store variable type, like:{[STORE : a]->[int]} 
+ when STORE variable name opinstruct is end !!! */
+ bc_emit(xm, bc, OP_TYPE);
+ bc_emit(xm , bc , (*t_idx)++);
  //#define v1v2
  #ifdef v1v2
  logi("bc.values.v[1]" , bc->values[0].v.i);
@@ -520,6 +523,7 @@ op_comcatop(int op, String *s)
  if(op==6)strcomcat(s,"STORE");
  if(op==7)strcomcat(s,"CALL");
  if(op==8)strcomcat(s,"LOAD");
+ if(op==9)strcomcat(s,"TYPE");
 }
 
 static void
@@ -530,9 +534,9 @@ op_calcblank(int max, int self, String *s)
  }
 }
 
-static void
-op_codeparse(int op, int preop, String *s, bytecode *bc,
-         varnamestk *vns, Tcalls *tcalls, Targs *targs){
+static int
+op_codeparse(int op, int preop, int *opi, String *s, bytecode *bc,
+    varnamestk *vns, Tcalls *tcalls, Targs *targs, Ttypes *types){
  String *blank = create_string("");
  if(preop==0){
   char buf[32];
@@ -542,48 +546,71 @@ op_codeparse(int op, int preop, String *s, bytecode *bc,
   strcomcat(s, blank->str);
   strcomcat(s, p);
   strfree(blank);
+  return 0;
  }
  if(preop==1){
   op_calcblank(7, 3, blank);
   strcomcat(s, blank->str);
   strcomcat(s, "+");
-  strfree(blank);}
+  strfree(blank);
+  return 1;
+}
  if(preop==2){
   op_calcblank(7, 3, blank);
   strcomcat(s, blank->str);
   strcomcat(s, "-");
-  strfree(blank);}
+  strfree(blank);
+  return 1;
+}
  if(preop==3){
   op_calcblank(7, 3, blank);
   strcomcat(s, blank->str);
   strcomcat(s, "/");
-  strfree(blank);}
+  strfree(blank);
+  return 1;
+}
  if(preop==4){
   op_calcblank(7, 3, blank);
   strcomcat(s, blank->str);
   strcomcat(s, "*");
-  strfree(blank);}
- if(preop==5){return;}
+  strfree(blank);
+  return 1;
+}
+ if(preop==5){return 0;}
  if(preop==6){
   op_calcblank(7, 5, blank);
   strcomcat(s, blank->str);
   strcomcat(s,(vns->vn[op]));
-  strfree(blank);}
+  strclear(blank);
+  strfree(blank);
+  return 0;
+ }
  if(preop==7){
   op_calcblank(7, 4, blank);
   strcomcat(s, blank->str);
+  strcomcat(s, (tcalls->calls[op]));
   strfree(blank);
-  strcomcat(s, (tcalls->calls[op]));}
+  return 0;
+}
  if(preop==8){
   op_calcblank(7, 4, blank);
   strcomcat(s, blank->str);
   strcomcat(s, targs->args[op].originstr);
-  strfree(blank);}
+  strfree(blank);
+  return 0;
+}
+ if(preop==9){
+  op_calcblank(7, 4, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s, types->types[op]);
+  strfree(blank);
+  return 0;
+ }
 }
 
 static void
 op_visualization(bytecode *bc, varnamestk *vns,
-                 Tcalls *tcalls, Targs *targs){
+  Tcalls *tcalls, Targs *targs, Ttypes *types){
  String *s = create_string("");
  int opi = 0;
  int j = 0;
@@ -591,19 +618,27 @@ op_visualization(bytecode *bc, varnamestk *vns,
   int op = bc->codes[opi];
   int preop = bc->codes[(opi)-1];
   if(j==1){
-   op_codeparse(op, preop,
-   s, bc, vns, tcalls, targs);
+   int conver = op_codeparse(op, preop, &opi,
+   s, bc, vns, tcalls, targs, types);
    strcomcat(s, "\n");
    opi++;
    j = 0;
   }
-  else{
+  else{ // j = 0
    op_comcatop(op, s);
-   opi++;
-   j = 1;
+   if(op==1||op==2||op==3||op==4){
+    int conver = op_codeparse(op, preop, &opi,
+    s, bc, vns, tcalls, targs, types);
+    strcomcat(s, "\n");
+    j = 0;
+    opi++;
+   }else{
+    opi++;
+    j = 1;
+   }
   }
  }
- write_file("test/vminstruct", s->str);
+ write_file("test/vminstruct.lua", s->str);
 }
 
 
@@ -615,6 +650,7 @@ craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
  tcallsi = 0;
  Ttypes *types = types_create(xm , TYPES_DEFAULT_SIZE);
  bytecode *bc = bc_create(xm , BYTECODE_DEFAULT_SIZE);
+ logi("_______________",bc->v_size);
  varnamestk *vns = vnstk_create(xm , 16);
  Targs *targs = targs_create(xm, TARGS_DEFAULT_SIZE);
  Tcalls *tcalls = tcalls_create(xm, TCALLS_DEFAULT_SIZE);
@@ -635,7 +671,10 @@ craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
  bc_emit(xm , bc , OP_HALT);
  #define codesvisualization
  #ifdef codesvisualization
- op_visualization(bc, vns, tcalls, targs);
+ logi("count",bc->count);
+ op_visualization(bc, vns , tcalls, targs, types);
+ craC_codes_log(bc);
+ log("ss");
  #endif
  return vm_create(xm, bc, vns,
  types, targs, tcalls, 160);

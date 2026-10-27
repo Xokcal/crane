@@ -595,7 +595,12 @@ op_codeparse(int op, int preop, int *opi, String *s, bytecode *bc,
  if(preop==8){
   op_calcblank(7, 4, blank);
   strcomcat(s, blank->str);
-  strcomcat(s, targs->args[op].originstr);
+  if(targs->args[op].pty==PRM_STRING){
+   strcomcat(s, "\"");
+   strcomcat(s, targs->args[op].originstr);
+   strcomcat(s, "\"");
+  }else
+   strcomcat(s, targs->args[op].originstr);
   strfree(blank);
   return 0;
 }
@@ -627,7 +632,9 @@ op_visualization(bytecode *bc, varnamestk *vns,
   else{ // j = 0
    op_comcatop(op, s);
    if(op==1||op==2||op==3||op==4){
-    int conver = op_codeparse(op, preop, &opi,
+    logi("curop",op);
+    int curop = bc->codes[opi];
+    int conver = op_codeparse(op, op, &opi,
     s, bc, vns, tcalls, targs, types);
     strcomcat(s, "\n");
     j = 0;

@@ -1,24 +1,28 @@
 PUSH   102
 PUSH   2
-DIV    +
+DIV    /
 PUSH   31
-MUL    -
+MUL    *
 PUSH   22
-SUB    /
-PUSH   2
-ADD    *
+SUB    -
 STORE  a
 TYPE   int
-PUSH   12
+PUSH   1
 STORE  b
 TYPE   int
-LOAD   b=
+PUSH   2
+STORE  c
+TYPE   int
+LOAD   "b="
 LOAD   a
 CALL   print
-LOAD   a=
+LOAD   "a="
 LOAD   b
 CALL   print
-LOAD   hello crane !!
+LOAD   "c="
+LOAD   c
+CALL   print
+LOAD   "hello crane !!"
 LOAD   12
 LOAD   90
 LOAD   7989
@@ -26,15 +30,15 @@ LOAD   3323
 LOAD   542
 LOAD   7492
 CALL   print
-LOAD   &*SXA*T&C
+LOAD   "&*SXA*T&C"
 LOAD   a
 LOAD   b
 LOAD   b
 LOAD   a
 LOAD   90
 LOAD   32
-LOAD   *CHA()
-LOAD   牢大
-LOAD   ca
+LOAD   "*CHA()"
+LOAD   "牢大"
+LOAD   "ca"
 CALL   print
 EXIT

@@ -248,7 +248,7 @@ make_call(XokMalloc *xokMalloc, char *name)
 /*
 ****************** desclist cycle funtion**********************
 */
-#define DESCLIST_DEFAULT_SIZE 16
+#define DESCLIST_DEFAULT_SIZE 200
 #define DESCLIST_GROW_FACTOR  2
 
 desclist *

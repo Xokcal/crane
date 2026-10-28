@@ -6,9 +6,9 @@
 #include "cgm_gramma.h"
 #include "cracom.h"
 
-#define VM_DEFAULT_STACK_SIZE 1024
-#define VM_DEFAULT_VSLOTS_SIZE 300
-#define VM_DEFAULT_TEMPARGS_SIZE 300
+#define VM_DEFAULT_STACK_SIZE 300000
+#define VM_DEFAULT_VSLOTS_SIZE 300000
+#define VM_DEFAULT_TEMPARGS_SIZE 300000
 #define importancelogsign "________________________"
 #define addsign "+"
 #define subsign "-"
@@ -72,6 +72,19 @@
 #define strclear(s) delete_all((s));
 
 #define strfree(s) string_free((s))
+
+
+/* ************** define function **************** */
+#define prmnumberP(tp) \
+ String *number = create_string((tp).originstr); \
+ int *r = str_convert_int(number); \
+ printi(*r); \
+ free(r); \
+ strfree(number);
+
+ #define prmvarP(tp, vm) \
+ value v = find_value((vm), (tp).originstr); \
+ printi(v.v.i);
 
 
 inline void vm_free(XokMalloc *xm, vmState *v){
@@ -197,9 +210,8 @@ vmvslots_pop(vmState *vm , char *n)
 static void
 opstore_executor(vmState *vm)
 {
- log("");
  value v; /* init value v, push stack later.*/
- vm->ci++; /*  */
+ vm->ci++;
  v.vname = strdup(get_codesv(vm));
  vm->ci = ((vm->ci) + 2);
  v.vtype = strdup(get_stack_type(vm));
@@ -217,9 +229,27 @@ opstore_executor(vmState *vm)
 
 
 static void
-buildin_func_executor()
+opcallexecute(vmState *vm)
 {
- 
+ codenext(vm);
+ char *callname = vm->tcalls->calls[getcode(vm)];
+ if(craF_isbuildinfunc(callname)){
+  if(!strcmp(callname, "print")){
+   for(int i=0;i<vm->tempargsi;i++){
+    Tparam tp = vm->tempargs[i];
+    switch(tp.pty)
+    {
+     case PRM_STRING:prints(tp.originstr);break;
+     case PRM_NUMBER:prmnumberP(tp);break;
+     case PRM_VAR:prmvarP(tp, vm)break;
+     default:break;
+    }
+   }
+  }
+ }
+ println;
+ vm->tempargsi = 0;
+ codenext(vm);
 }
 
 
@@ -230,34 +260,7 @@ craV_execute(XokMalloc *xm , vmState *vm)
  while(vm->ci < vm->bc->count){
   vmswitch(getcode(vm)){
    vmcase(OP_CALL){
-    codenext(vm);
-    char *callname = vm->tcalls->calls[getcode(vm)];
-    if(craF_isbuildinfunc(callname)){
-     if(!strcmp(callname, "print")){
-      for(int i=0;i<vm->tempargsi;i++){
-       Tparam tp = vm->tempargs[i];
-       switch(tp.pty)
-       {
-        case PRM_STRING:prints(tp.originstr);break;
-        case PRM_NUMBER:
-        String *number = create_string(tp.originstr);
-        int *r = str_convert_int(number);
-        printi(*r);
-        free(r);
-        strfree(number);
-        break;
-        case PRM_VAR:
-        value v = find_value(vm, tp.originstr);
-        printi(v.v.i);
-        break;
-        default:break;
-       }
-      }
-     }
-    }
-    println;
-    vm->tempargsi = 0;
-    codenext(vm);
+    opcallexecute(vm);
     vmbreak;
    }
    vmcase(OP_LOAD){

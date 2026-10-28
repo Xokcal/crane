@@ -95,7 +95,7 @@ typedef struct pavstate{
 }pavstate;
 
 /* crane ast parse main funtion, xokMalloc is memory pool */
-int craP_token_parse(XokMalloc *xokMalloc , TOKENSB *tokens , desclist *dl);
+int craP_parsedesc(XokMalloc *xokMalloc , TOKENSB *tokens , desclist *dl);
 
 desclist *craP_desclist_create(XokMalloc *xm, int init_size);
 

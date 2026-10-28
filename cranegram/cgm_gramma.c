@@ -15,14 +15,14 @@ int v = 0;
 for (int i = 0; i < value_str->length; ++i) {
 switch (value_str->str[i]) {
 case '0':
-  v += 0;
-  if(i == value_str->length - 1) {
-      int *end_r = (int *)malloc(sizeof(int ));
-      *end_r = v;
-      return end_r;
-  }
-  v *= 10;
-  break;
+ v += 0;
+ if(i == value_str->length - 1) {
+  int *end_r = (int *)malloc(sizeof(int ));
+  *end_r = v;
+  return end_r;
+ }
+ v *= 10;
+ break;
 case '1':
   v += 1;
   if(i == value_str->length - 1) {

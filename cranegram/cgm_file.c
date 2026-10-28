@@ -7,17 +7,22 @@
 #include "../tool/String/String.h"
 #include "../tool/log/log.h"
 
-String *open_file(char* URL){
-    FILE *file = fopen(URL , "r");
-    if(file == NULL){
-        LOG_ERROR("open cr file fail." , "OPEN_FILE");
-        return NULL;
-    }
-    String *tokens = create_string("");
-    char buf[2];
-    while(fgets(buf , sizeof(buf) , file))
-        combine_tail_char(tokens , buf[0]);
-    return tokens;
+String *open_file(char *URL) {
+ FILE *file = fopen(URL, "rb");
+ if (!file) {
+  LOG_ERROR("open cr file fail.", "OPEN_FILE");
+  return NULL;
+ }
+ fseek(file, 0, SEEK_END);
+ long file_size = ftell(file);
+ fseek(file, 0, SEEK_SET);
+ char *buffer = (char *)malloc(file_size + 1);
+ fread(buffer, 1, file_size, file);
+ buffer[file_size] = '\0';
+ fclose(file);
+ String *tokens = create_string(buffer); 
+ free(buffer);
+ return tokens;
 }
 
 void write_file(const char *URL, char *contet){

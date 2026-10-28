@@ -11,16 +11,16 @@ typedef struct Tparam Tparam;
 
 /* virtual machine instruct */
 typedef enum opcode{
- OP_PUSH,    /* push Value* */
- OP_ADD,     /* calculate add */
- OP_SUB,     /* calculate sub */
- OP_DIV,     /* calculate divide */
- OP_MUL,     /* calculate multiply */
- OP_HALT,    /* vm quit */
- OP_STORE,   /* store variable */
- OP_CALL,    /* execute function call */
- OP_LOAD,    /* args load */
- OP_TYPE     /* store variable type */
+ OP_PUSH,    /* [0]push Value* */
+ OP_ADD,     /* [1]calculate add */
+ OP_SUB,     /* [2]calculate sub */
+ OP_DIV,     /* [3]calculate divide */
+ OP_MUL,     /* [4]calculate multiply */
+ OP_HALT,    /* [5]vm quit */
+ OP_STORE,   /* [6]store variable */
+ OP_CALL,    /* [7]execute function call */
+ OP_LOAD,    /* [8]args load */
+ OP_TYPE     /* [9]store variable type */
 }opcode;
 
 typedef enum vartype{

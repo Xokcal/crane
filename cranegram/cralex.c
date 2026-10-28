@@ -55,9 +55,9 @@ isExtreCheckChar(char t){
 
 
 TOKENSB *
-tokens_parse(XokMalloc *txm, String *origin)
+craL_lexexecute(XokMalloc *txm, String *origin)
 {
- String **tokens = (String**)xalloc_XokMalloc(txm, 2000000 * sizeof(String*));
+ String **tokens = (String**)xalloc_XokMalloc(txm, 200000 * sizeof(String*));
  String *temp = create_string("");
  String *temp_test = create_string("");
  String *temp_longest_match = create_string("");

@@ -5,8 +5,8 @@
 #include <stdlib.h>
 
 typedef struct String{
-    char *str;
     long length;
+    char *str;
 }String;
 
 typedef struct Splitor{

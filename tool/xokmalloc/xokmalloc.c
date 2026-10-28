@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "xokmalloc.h"
+#include "../../cranegram/cralex.h"
 
-#define MEMPOOL_SIZE 100 * 1024 * 1024 * 3
+#define MEMPOOL_SIZE 100 * 1024 * 1024
 
 XokMalloc *
 create_XokMalloc()
@@ -22,6 +23,10 @@ xalloc_XokMalloc(XokMalloc *xokmalloc , size_t size)
     xokmalloc->count++;
     void*p =  xokmalloc->xok_pool;
     xokmalloc->xok_pool = xokmalloc->xok_pool + size;
+    //#define checkmempool
+    #ifdef checkmempool
+    printf("[mem pool assign (size_t)]: %d  [all]: %d\n", xokmalloc->offset, MEMPOOL_SIZE);
+    #endif
     return p;
 }
 

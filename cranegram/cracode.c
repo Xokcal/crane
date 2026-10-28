@@ -6,7 +6,6 @@
 #include "cralex.h"
 #include "cravm.h"
 
-#define BYTECODE_DEFAULT_SIZE 10086
 #define BYTECODE_GROW_FACTOR  2
 #define craC_codes_log(bc) \
   for(int i = 0; i < (bc)->count; i++) log_i("BC" , (bc)->codes[i]);
@@ -18,7 +17,7 @@
 #define getcallfname(desc)\
  (desc)->as.call.fname
 
-#define BC_DEFAULT_SIZE 10086
+#define BC_DEFAULT_SIZE 300
 
 /* ************** String func tackle ***************** */
 
@@ -78,7 +77,7 @@ v_type_insert(char *type , value *v , void *vv)
 }
 
 
-#define TCALLS_DEFAULT_SIZE 200
+#define TCALLS_DEFAULT_SIZE 300
 #define TCALLS_GROW_FACTOR  2
 
 
@@ -121,10 +120,10 @@ tcalls_expand(XokMalloc *xm, Tcalls *tc)
 {
  if (!tc) return 0;
  int new_size = tc->size * TCALLS_GROW_FACTOR;
- char **new_calls = (char **)xalloc_XokMalloc(xm, sizeof(char *) * new_size);
+ char **new_calls = (char **)
+ xalloc_XokMalloc(xm, sizeof(char *) * new_size);
  if (!new_calls) return 0;
  memcpy(new_calls, tc->calls, sizeof(char *) * tc->count);
- free(tc->calls);
  tc->calls = new_calls;
  tc->size  = new_size;
  return 1;
@@ -136,7 +135,7 @@ tcalls_push(XokMalloc *xm, Tcalls *tc, const char *call_name)
 {
  if (!tc || !call_name)return 0;
  if (tc->count >= tc->size) {
-  if (!tcalls_expand(xm, tc)) return 0;
+  tcalls_expand(xm, tc);
  }
  tc->calls[tc->count] = strdup(call_name);
  tc->count++;
@@ -207,7 +206,6 @@ targs_expand(XokMalloc *xm, Targs *t)
  xalloc_XokMalloc(xm, sizeof(Tparam) * new_size);
  if (!new_args) return 0;
  memcpy(new_args, t->args, sizeof(Tparam) * t->count);
- free(t->args);
  t->args = new_args;
  t->size = new_size;
  return 1;
@@ -230,7 +228,7 @@ targs_push(XokMalloc *xm, Targs *t, Tparam param)
 }
 
 
-#define TYPES_DEFAULT_SIZE 200
+#define TYPES_DEFAULT_SIZE 300
 #define TYPES_GROW_FACTOR  2
 
 
@@ -270,7 +268,6 @@ types_expand(XokMalloc *xm, Ttypes *t)
  char **new_types = (char **)xalloc_XokMalloc(xm, sizeof(char *) * new_size);
  if (!new_types) return 0;
  memcpy(new_types, t->types, sizeof(char *) * t->count);
- free(t->types);
  t->types = new_types;
  t->size  = new_size;
  return 1;
@@ -458,14 +455,14 @@ bytecode *bc , char *type)
 
 static void
 astassignexe(XokMalloc *xm, craastdesc *curdesc, Ttypes *types, 
-        bytecode *bc, varnamestk *vns, int *dl_c, int *t_idx){
- vnstk_push(xm , vns , curdesc->as.assign.name , *dl_c);
+bytecode *bc, varnamestk *vns, int *dl_c, int *t_idx, int *vnsi){
+ vnstk_push(xm , vns , curdesc->as.assign.name , *vnsi);
  craastdesc *value = curdesc->as.assign.value; /* get desc assign 
  value tree, just go parse tree to codes */
  char *type = curdesc->as.assign.type; /* data type string information */
  assignencode(xm , value , bc , type);
  bc_emit(xm , bc , OP_STORE);
- bc_emit(xm , bc , (*dl_c)); /* variable name index */
+ bc_emit(xm , bc , (*vnsi)++); /* variable name index */
  // char *type = curdesc->as.assign.type;
  types_push(xm , types , type); /* variable type store Ttype arrays */
  /* need store variable type, like:{[STORE : a]->[int]} 
@@ -501,12 +498,12 @@ astcallexe(XokMalloc *xm, craastdesc *desc, Targs *targs,
  tcalls_push(xm, tcalls, getcallfname(desc));
  /* current codes like: { op_load:[p1],
   op_load:[p2], op_call:[call] } */
- (*dl_c)++;
  //#define targsP
  #ifdef targsP
  for(int i=0;i<targs->count;i++)
   logc("vm_Targs",targs->args[i].originstr);
  #endif
+ (*dl_c)++;
 }
 
 #include "cgm_file.h"
@@ -528,11 +525,7 @@ op_comcatop(int op, String *s)
 
 static void
 op_calcblank(int max, int self, String *s)
-{
- for(int i=self;i<max;i++){
-  strcomcat(s, " ");
- }
-}
+{for(int i=self;i<max;i++)strcomcat(s, " ");}
 
 static int
 op_codeparse(int op, int preop, int *opi, String *s, bytecode *bc,
@@ -615,7 +608,7 @@ op_codeparse(int op, int preop, int *opi, String *s, bytecode *bc,
 
 static void
 op_visualization(bytecode *bc, varnamestk *vns,
-  Tcalls *tcalls, Targs *targs, Ttypes *types){
+ Tcalls *tcalls, Targs *targs, Ttypes *types){
  String *s = create_string("");
  int opi = 0;
  int j = 0;
@@ -632,7 +625,6 @@ op_visualization(bytecode *bc, varnamestk *vns,
   else{ // j = 0
    op_comcatop(op, s);
    if(op==1||op==2||op==3||op==4){
-    logi("curop",op);
     int curop = bc->codes[opi];
     int conver = op_codeparse(op, op, &opi,
     s, bc, vns, tcalls, targs, types);
@@ -645,7 +637,7 @@ op_visualization(bytecode *bc, varnamestk *vns,
    }
   }
  }
- write_file("test/vminstruct.lua", s->str);
+ write_file("test/vmcodes.lua", s->str);
 }
 
 
@@ -653,12 +645,12 @@ vmState*
 craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
 {
  int dl_c = 0, /* desclist stack index */
- t_idx = 0,    /*  */
- tcallsi = 0;
+ t_idx = 0,
+ tcallsi = 0,
+ vnsi = 0;
  Ttypes *types = types_create(xm , TYPES_DEFAULT_SIZE);
- bytecode *bc = bc_create(xm , BYTECODE_DEFAULT_SIZE);
- logi("_______________",bc->v_size);
- varnamestk *vns = vnstk_create(xm , 16);
+ bytecode *bc = bc_create(xm , BC_DEFAULT_SIZE);
+ varnamestk *vns = vnstk_create(xm , 160000);
  Targs *targs = targs_create(xm, TARGS_DEFAULT_SIZE);
  Tcalls *tcalls = tcalls_create(xm, TCALLS_DEFAULT_SIZE);
  while(dl_c < dl->count){
@@ -666,22 +658,22 @@ craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
   switch(curdesc->kind){
    case AST_ASSIGN:{
     astassignexe(xm, curdesc, types,
-    bc, vns, &dl_c, &t_idx);break;
+    bc, vns, &dl_c, &t_idx, &vnsi);
+    break;
    }
    case AST_CALL:{
     astcallexe(xm, curdesc, targs,
-    tcalls, bc, &dl_c, &tcallsi);break;
+    tcalls, bc, &dl_c, &tcallsi);
+    break;
    }
    default:break;
   }
  }
  bc_emit(xm , bc , OP_HALT);
- #define codesvisualization
+ //#define codesvisualization
  #ifdef codesvisualization
- logi("count",bc->count);
  op_visualization(bc, vns , tcalls, targs, types);
- craC_codes_log(bc);
- log("ss");
+ //craC_codes_log(bc);
  #endif
  return vm_create(xm, bc, vns,
  types, targs, tcalls, 160);

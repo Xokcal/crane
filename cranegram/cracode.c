@@ -77,6 +77,150 @@ v_type_insert(char *type , value *v , void *vv)
 }
 
 
+#include "cgm_file.h"
+
+static void
+op_comcatop(int op, String *s)
+{
+ if(op==0)strcomcat(s,"PUSH");
+ if(op==1)strcomcat(s,"ADD");
+ if(op==2)strcomcat(s,"SUB");
+ if(op==3)strcomcat(s,"DIV");
+ if(op==4)strcomcat(s,"MUL");
+ if(op==5)strcomcat(s,"EXIT");
+ if(op==6)strcomcat(s,"STORE");
+ if(op==7)strcomcat(s,"CALL");
+ if(op==8)strcomcat(s,"LOAD");
+ if(op==9)strcomcat(s,"TYPE");
+ if(op==10)strcomcat(s,"VAR");
+}
+
+static void
+op_calcblank(int max, int self, String *s)
+{for(int i=self;i<max;i++)strcomcat(s, " ");}
+
+static int
+op_codeparse(int op, int preop, int *opi, String *s, bytecode *bc,
+    varnamestk *vns, Tcalls *tcalls, Targs *targs, Ttypes *types){
+ String *blank = create_string("");
+ if(preop==0){
+  char buf[32];
+  snprintf(buf,sizeof(buf), "%d", bc->values[op].v.i);
+  char *p = buf;
+  op_calcblank(7, 4, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s, p);
+  strfree(blank);
+  return 0;
+ }
+ if(preop==1){
+  op_calcblank(7, 3, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s, "+");
+  strfree(blank);
+  return 1;
+}
+ if(preop==2){
+  op_calcblank(7, 3, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s, "-");
+  strfree(blank);
+  return 1;
+}
+ if(preop==3){
+  op_calcblank(7, 3, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s, "/");
+  strfree(blank);
+  return 1;
+}
+ if(preop==4){
+  op_calcblank(7, 3, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s, "*");
+  strfree(blank);
+  return 1;
+}
+ if(preop==5){return 0;}
+ if(preop==6){
+  op_calcblank(7, 5, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s,(vns->vn[op]));
+  strclear(blank);
+  strfree(blank);
+  return 0;
+ }
+ if(preop==7){
+  op_calcblank(7, 4, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s, (tcalls->calls[op]));
+  strfree(blank);
+  return 0;
+}
+ if(preop==8){
+  op_calcblank(7, 4, blank);
+  strcomcat(s, blank->str);
+  if(targs->args[op].pty==PRM_STRING){
+   strcomcat(s, "\"");
+   strcomcat(s, targs->args[op].originstr);
+   strcomcat(s, "\"");
+  }else
+   strcomcat(s, targs->args[op].originstr);
+  strfree(blank);
+  return 0;
+}
+ if(preop==9){
+  op_calcblank(7, 4, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s, types->types[op]);
+  strfree(blank);
+  return 0;
+ }
+ if(preop==10){
+  op_calcblank(8, 4, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s, vns->vn[op]);
+  strfree(blank);
+  return 0;
+ }
+}
+
+
+static void
+op_visualization(bytecode *bc, varnamestk *vns,
+ Tcalls *tcalls, Targs *targs, Ttypes *types){
+ String *s = create_string("");
+ int opi = 0;
+ int j = 0;
+ while(opi<bc->count){
+  int op = bc->codes[opi];
+  int preop = bc->codes[(opi)-1];
+  if(j==1){
+   int conver = op_codeparse(op, preop, &opi,
+   s, bc, vns, tcalls, targs, types);
+   strcomcat(s, "\n");
+   opi++;
+   j = 0;
+  }
+  else{ // j = 0
+   op_comcatop(op, s);
+   if(op==1||op==2||op==3||op==4){
+    int curop = bc->codes[opi];
+    int conver = op_codeparse(op, op, &opi,
+    s, bc, vns, tcalls, targs, types);
+    strcomcat(s, "\n");
+    j = 0;
+    opi++;
+   }else{
+    opi++;
+    j = 1;
+   }
+  }
+ }
+ write_file("test/vmcodes.lua", s->str);
+}
+
+
 #define TCALLS_DEFAULT_SIZE 300
 #define TCALLS_GROW_FACTOR  2
 
@@ -428,9 +572,8 @@ signemit(XokMalloc *xm , char *s , bytecode *bc)
 
 
 static void
-assignencode(XokMalloc *xm, craastdesc *node ,
-bytecode *bc , char *type)
-{
+assignencode(XokMalloc *xm, craastdesc *node, varnamestk *vns,
+                        bytecode *bc , char *type, int *vnsi){
  if (node->kind == AST_NUM) { /* single tackle node
   is AST_NUM, if is binop node don't push*/
   value v;
@@ -441,11 +584,17 @@ bytecode *bc , char *type)
   bc_add_constant(xm, bc , v);
   return;
  }
+ if(node->kind == AST_LVNAME){
+  bc_emit(xm, bc, OP_PUSH_VAR);
+  vnstk_push(xm, vns, node->as.lvname, (*vnsi));
+  bc_emit(xm, bc, (*vnsi)++);
+  return;
+ }
  if (node->kind == AST_BINOP) { /* left-right-mid recursion，
   leftest is highest priority binop, priority tackle leftest binop
   left-num and right-num, rightest is low priority, can tabckle later */
-  assignencode(xm, node->as.binop.left, bc , type);
-  assignencode(xm, node->as.binop.right, bc , type);
+  assignencode(xm, node->as.binop.left, vns, bc , type, vnsi);
+  assignencode(xm, node->as.binop.right, vns, bc , type, vnsi);
   signemit(xm, node->as.binop.calcsign, bc);
   return;
  }
@@ -456,12 +605,12 @@ bytecode *bc , char *type)
 static void
 astassignexe(XokMalloc *xm, craastdesc *curdesc, Ttypes *types, 
 bytecode *bc, varnamestk *vns, int *dl_c, int *t_idx, int *vnsi){
- vnstk_push(xm , vns , curdesc->as.assign.name , *vnsi);
  craastdesc *value = curdesc->as.assign.value; /* get desc assign 
  value tree, just go parse tree to codes */
  char *type = curdesc->as.assign.type; /* data type string information */
- assignencode(xm , value , bc , type);
+ assignencode(xm , value , vns, bc , type, vnsi);
  bc_emit(xm , bc , OP_STORE);
+ vnstk_push(xm , vns , curdesc->as.assign.name , *vnsi);
  bc_emit(xm , bc , (*vnsi)++); /* variable name index */
  // char *type = curdesc->as.assign.type;
  types_push(xm , types , type); /* variable type store Ttype arrays */
@@ -506,141 +655,9 @@ astcallexe(XokMalloc *xm, craastdesc *desc, Targs *targs,
  (*dl_c)++;
 }
 
-#include "cgm_file.h"
-
-static void
-op_comcatop(int op, String *s)
-{
- if(op==0)strcomcat(s,"PUSH");
- if(op==1)strcomcat(s,"ADD");
- if(op==2)strcomcat(s,"SUB");
- if(op==3)strcomcat(s,"DIV");
- if(op==4)strcomcat(s,"MUL");
- if(op==5)strcomcat(s,"EXIT");
- if(op==6)strcomcat(s,"STORE");
- if(op==7)strcomcat(s,"CALL");
- if(op==8)strcomcat(s,"LOAD");
- if(op==9)strcomcat(s,"TYPE");
-}
-
-static void
-op_calcblank(int max, int self, String *s)
-{for(int i=self;i<max;i++)strcomcat(s, " ");}
-
-static int
-op_codeparse(int op, int preop, int *opi, String *s, bytecode *bc,
-    varnamestk *vns, Tcalls *tcalls, Targs *targs, Ttypes *types){
- String *blank = create_string("");
- if(preop==0){
-  char buf[32];
-  snprintf(buf,sizeof(buf), "%d", bc->values[op].v.i);
-  char *p = buf;
-  op_calcblank(7, 4, blank);
-  strcomcat(s, blank->str);
-  strcomcat(s, p);
-  strfree(blank);
-  return 0;
- }
- if(preop==1){
-  op_calcblank(7, 3, blank);
-  strcomcat(s, blank->str);
-  strcomcat(s, "+");
-  strfree(blank);
-  return 1;
-}
- if(preop==2){
-  op_calcblank(7, 3, blank);
-  strcomcat(s, blank->str);
-  strcomcat(s, "-");
-  strfree(blank);
-  return 1;
-}
- if(preop==3){
-  op_calcblank(7, 3, blank);
-  strcomcat(s, blank->str);
-  strcomcat(s, "/");
-  strfree(blank);
-  return 1;
-}
- if(preop==4){
-  op_calcblank(7, 3, blank);
-  strcomcat(s, blank->str);
-  strcomcat(s, "*");
-  strfree(blank);
-  return 1;
-}
- if(preop==5){return 0;}
- if(preop==6){
-  op_calcblank(7, 5, blank);
-  strcomcat(s, blank->str);
-  strcomcat(s,(vns->vn[op]));
-  strclear(blank);
-  strfree(blank);
-  return 0;
- }
- if(preop==7){
-  op_calcblank(7, 4, blank);
-  strcomcat(s, blank->str);
-  strcomcat(s, (tcalls->calls[op]));
-  strfree(blank);
-  return 0;
-}
- if(preop==8){
-  op_calcblank(7, 4, blank);
-  strcomcat(s, blank->str);
-  if(targs->args[op].pty==PRM_STRING){
-   strcomcat(s, "\"");
-   strcomcat(s, targs->args[op].originstr);
-   strcomcat(s, "\"");
-  }else
-   strcomcat(s, targs->args[op].originstr);
-  strfree(blank);
-  return 0;
-}
- if(preop==9){
-  op_calcblank(7, 4, blank);
-  strcomcat(s, blank->str);
-  strcomcat(s, types->types[op]);
-  strfree(blank);
-  return 0;
- }
-}
-
-static void
-op_visualization(bytecode *bc, varnamestk *vns,
- Tcalls *tcalls, Targs *targs, Ttypes *types){
- String *s = create_string("");
- int opi = 0;
- int j = 0;
- while(opi<bc->count){
-  int op = bc->codes[opi];
-  int preop = bc->codes[(opi)-1];
-  if(j==1){
-   int conver = op_codeparse(op, preop, &opi,
-   s, bc, vns, tcalls, targs, types);
-   strcomcat(s, "\n");
-   opi++;
-   j = 0;
-  }
-  else{ // j = 0
-   op_comcatop(op, s);
-   if(op==1||op==2||op==3||op==4){
-    int curop = bc->codes[opi];
-    int conver = op_codeparse(op, op, &opi,
-    s, bc, vns, tcalls, targs, types);
-    strcomcat(s, "\n");
-    j = 0;
-    opi++;
-   }else{
-    opi++;
-    j = 1;
-   }
-  }
- }
- write_file("test/vmcodes.lua", s->str);
-}
-
-
+/*
+** bytecode parse main execute.
+*/
 vmState*
 craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
 {
@@ -670,10 +687,10 @@ craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
   }
  }
  bc_emit(xm , bc , OP_HALT);
- #define codesvisualization
+ //#define codesvisualization
  #ifdef codesvisualization
+ craC_codes_log(bc);
  op_visualization(bc, vns , tcalls, targs, types);
- //craC_codes_log(bc);
  #endif
  return vm_create(xm, bc, vns,
  types, targs, tcalls, 160);

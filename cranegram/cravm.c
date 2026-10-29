@@ -27,17 +27,22 @@
 #define printi(i) printf("%d",(i))
 #define println printf("\n")
 
+/* ************ virtual machine ************* */
 /* instruct OP_PUSH execute */
 #define oppush_executor(vm) \
  (vm)->vs[(vm)->sp++] = (vm)->bc->values[(vm)->bc->codes[(vm)->ci++]]
 
+ /* instruct OP_PUSH_VAR execute */
+#define oppushvar_executor(vm) \
+ (vm)->vs[(vm)->sp++] = find_value((vm), (vm)->vns->vn[getcode((vm))])
+
+/* current codes's bytecode */
+#define getcode(vm) \
+ (vm)->bc->codes[(vm)->ci]
+
 /* instruct OP_LOAD execute */
 #define opload_executor(vm)\
  (vm)->tempargs[(vm)->tempargsi++] = (vm)->targs->args[getcode((vm))]
-
- /* current codes's bytecode */
-#define getcode(vm) \
- (vm)->bc->codes[(vm)->ci]
 
 #define calc_swrap(res , resi , vm)\
  (vm)->vs[(vm)->sp - 2] = (res);\
@@ -252,7 +257,6 @@ opcallexecute(vmState *vm)
  codenext(vm);
 }
 
-
 void 
 craV_execute(XokMalloc *xm , vmState *vm)
 {
@@ -266,6 +270,12 @@ craV_execute(XokMalloc *xm , vmState *vm)
    vmcase(OP_LOAD){
     codenext(vm);
     opload_executor(vm);
+    codenext(vm);
+    vmbreak;
+   }
+   vmcase(OP_PUSH_VAR){
+    codenext(vm);
+    oppushvar_executor(vm);
     codenext(vm);
     vmbreak;
    }

@@ -33,8 +33,8 @@
  (vm)->vs[(vm)->sp++] = (vm)->bc->values[(vm)->bc->codes[(vm)->ci++]]
 
  /* instruct OP_PUSH_VAR execute */
-#define oppushvar_executor(vm) \
- (vm)->vs[(vm)->sp++] = find_value((vm), (vm)->vns->vn[getcode((vm))])
+#define oppushvar_executor(vm, error) \
+ (vm)->vs[(vm)->sp++] = find_value((vm), (vm)->vns->vn[getcode((vm))], (error))
 
 /* current codes's bytecode */
 #define getcode(vm) \
@@ -80,7 +80,7 @@
 
 
 /* ************** define function **************** */
-#define prmnumberP(tp) \
+#define prmnumberP(tp, error) \
  String *number = create_string((tp).originstr); \
  int *r = str_convert_int(number); \
  printi(*r); \
@@ -88,7 +88,7 @@
  strfree(number);
 
  #define prmvarP(tp, vm) \
- value v = find_value((vm), (tp).originstr); \
+ value v = find_value((vm), (tp).originstr, (error)); \
  printi(v.v.i);
 
 
@@ -198,7 +198,7 @@ opcalc_executor(vmState *vm , char *sign){
 
 
 static value
-find_value(vmState* vm, char *n)
+find_value(vmState* vm, char *n, int *error)
 {
  for(int i=0;i<vm->vsi;i++){
   value v = vm->vslots[i];
@@ -206,6 +206,7 @@ find_value(vmState* vm, char *n)
    return v;
  }
  craCM_error("var not have find!!");
+ (*error) = 1;
 }
 
 
@@ -245,18 +246,19 @@ opstore_executor(vmState *vm)
 
 
 static void
-opcallexecute(vmState *vm)
+opcallexecute(vmState *vm, int *error)
 {
  codenext(vm);
  char *callname = vm->tcalls->calls[getcode(vm)];
  if(craF_isbuildinfunc(callname)){
   if(!strcmp(callname, "print")){
    for(int i=0;i<vm->tempargsi;i++){
+    if((*error)==1)return;
     Tparam tp = vm->tempargs[i];
     switch(tp.pty)
     {
      case PRM_STRING:prints(tp.originstr);break;
-     case PRM_NUMBER:prmnumberP(tp);break;
+     case PRM_NUMBER:prmnumberP(tp,error);break;
      case PRM_VAR:prmvarP(tp, vm)break;
      default:break;
     }
@@ -271,11 +273,14 @@ opcallexecute(vmState *vm)
 void 
 craV_execute(XokMalloc *xm , vmState *vm)
 {
+ int error = 0;
  int *codes = vm->bc->codes;
  while(vm->ci < vm->bc->count){
+  if(error == 1)
+   goto vmterminal;
   vmswitch(getcode(vm)){
    vmcase(OP_CALL){
-    opcallexecute(vm);
+    opcallexecute(vm, &error);
     vmbreak;
    }
    vmcase(OP_LOAD){
@@ -286,7 +291,7 @@ craV_execute(XokMalloc *xm , vmState *vm)
    }
    vmcase(OP_PUSH_VAR){
     codenext(vm);
-    oppushvar_executor(vm);
+    oppushvar_executor(vm, &error);
     codenext(vm);
     vmbreak;
    }

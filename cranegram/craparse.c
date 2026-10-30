@@ -150,6 +150,9 @@ pav_clear_string(String *num_p1 , String *num_p2
 }
 
 
+/*
+** parse
+*/
 static pavstate
 pavstate_init(XokMalloc *xm,ParseFactor *pf)
 {
@@ -326,11 +329,21 @@ craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree)
 *                      AST gramma parse                          *
 ******************************************************************
 */
+
+
+/*
+** variable is undefine status, parse to not have assign value's expdesc
+*/
 static craastdesc*
 push_var_undefine(XokMalloc *xm , String *name , String *type)
 {return make_assign(xm , name->str , NULL , type->str);}
 
 
+/*
+** assign value expdesc node parse factor, assign value's number, function, 
+** arrays index value,... parse to desc tree and return mid high priority
+** and low priority function tackle.
+*/
 static craastdesc*
 parse_factor(pavstate ps)
 {

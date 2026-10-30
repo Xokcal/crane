@@ -78,6 +78,13 @@ typedef struct craastdesc{
  } as;
 }craastdesc;
 
+#define HIGH_PRI_SIGN_SIZE 2
+#define LOW_PRI_SIGN_SIZE 2
+
+static char *highprisign[] = {"*" , "/"};
+
+static char *lowprisign[] = {"+" , "-"};
+
 typedef struct desclist{
   craastdesc **desclist;
   int size;

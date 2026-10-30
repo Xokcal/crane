@@ -16,6 +16,7 @@
 
 int main()
 {
+ setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  /* start time */
  clock_t start_time, end_time;
  double time_used;

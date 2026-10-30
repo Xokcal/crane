@@ -55,7 +55,7 @@
  (desc)->as.call.fname = (unkey);
 
 /* Tparam push desc.func args stack. */
-#define desccallpushpusharg(desc , tp)\
+#define callpushargs(desc , tp)\
  (desc)->as.call.args[desc->as.call.argsi++] = (tp);
 
 /* ************** common ******************* */
@@ -67,15 +67,38 @@
  craP_desclist_push((xm) , (dl) , (t));
 
 
+
+/*
+** judge current token char* whither is high priority 
+** sign or low priority sign.
+*/
 static int
-t_convert_asttype(String *s)
+ishighprioritysign(char *n)
 {
-  if(compare(s, "int")     || 
-    compare(s, "float")    || 
-    compare(s, "double")   || 
-    compare(s, "char")     || 
-    compare(s, "long"))
-    return GRAM_VAR;
+ for(int i=0;i<HIGH_PRI_SIGN_SIZE;i++){
+  if(strcmp(n, highprisign[i])==0)return 1;
+ }return 0;
+}
+
+
+static int
+islowprioritysign(char *n)
+{
+ for(int i=0;i<LOW_PRI_SIGN_SIZE;i++){
+  if(strcmp(n, lowprisign[i])==0)return 1;
+ }return 0;
+}
+
+
+/*
+** token convert enum asttype, return to tree parse switch. 
+*/
+static int
+tokentype(String *s)
+{
+  if(compare(s, "int")||compare(s, "float")
+  ||compare(s, "double")||compare(s, "char")
+  ||compare(s, "long"))return GRAM_VAR;
   if(compare(s , " "))return GRAM_EMPTY;
   if(compare(s , "\n"))return GRAM_EMPTY;
   if(compare(s , "\r"))return GRAM_EMPTY;
@@ -86,9 +109,7 @@ t_convert_asttype(String *s)
 
 
 /*
-** judge string whither is number
-** isnumber return 1;
-** nonumber return 0;
+** judge string whither is number: isnumber return 1, nonumber return 0.
 */
 static int
 isnumber(const char *str) {
@@ -101,7 +122,7 @@ isnumber(const char *str) {
 }
 
 
-static int
+static inline int
 accept(ParseFactor *pf , char *name)
 {
  if(compare(pf->tokens->tokens[pf->curr] , name)){
@@ -112,7 +133,7 @@ accept(ParseFactor *pf , char *name)
 }
 
 
-static void
+static inline void
 accept_unkey(ParseFactor *pf){pf->curr++;}
 
 
@@ -129,7 +150,7 @@ accept_empty(ParseFactor *pf)
 
 
 /* test whither have next like: {args, assign, ..}*/
-static int
+static inline int
 testnext(ParseFactor *pf , char *s)
 {
  accept_empty(pf); /* check current pf not is empty key */
@@ -139,21 +160,10 @@ testnext(ParseFactor *pf , char *s)
 }
 
 
-static void
-pav_clear_string(String *num_p1 , String *num_p2 
-, String *calcsign , String *calcsign2)
-{
- delete_all(num_p1);
- delete_all(num_p2);
- delete_all(calcsign);
- delete_all(calcsign2);
-}
-
-
 /*
-** parse
+** parse 
 */
-static pavstate
+static inline pavstate
 pavstate_init(XokMalloc *xm,ParseFactor *pf)
 {
  pavstate pavs;
@@ -173,26 +183,26 @@ print_ast(craastdesc *node, int depth)
  }
  printf("%*s", depth * 2, "");
  switch (node->kind) {
-  case AST_NUM:
-   printf("NUM: %d\n", node->as.num);
-   break;
-  case AST_LVNAME:
-   printf("LVNAME: %s\n", node->as.lvname);
-  case AST_VAR:
-   printf("VAR: %s\n", node->as.varname);
-   break;
-  case AST_BINOP:
-   printf("BINOP: %s\n", node->as.binop.calcsign);
-   print_ast(node->as.binop.left,  depth + 1);
-   print_ast(node->as.binop.right, depth + 1);
-   break;
-  case AST_ASSIGN:
-   printf("ASSIGN: %s\n", node->as.assign.name);
-   print_ast(node->as.assign.value, depth + 1);
-   break;
-  default:
-   printf("UNKNOWN kind=%d\n", node->kind);
-   break;
+ case AST_NUM:
+  printf("NUM: %d\n", node->as.num);
+  break;
+ case AST_LVNAME:
+  printf("LVNAME: %s\n", node->as.lvname);
+ case AST_VAR:
+  printf("VAR: %s\n", node->as.varname);
+  break;
+ case AST_BINOP:
+  printf("BINOP: %s\n", node->as.binop.calcsign);
+  print_ast(node->as.binop.left,  depth + 1);
+  print_ast(node->as.binop.right, depth + 1);
+  break;
+ case AST_ASSIGN:
+  printf("ASSIGN: %s\n", node->as.assign.name);
+  print_ast(node->as.assign.value, depth + 1);
+  break;
+ default:
+  printf("UNKNOWN kind=%d\n", node->kind);
+  break;
  }
 }
 
@@ -210,8 +220,8 @@ make_var(XokMalloc *xokmalloc , char *name)
  return node;
 }
 
-static
-craastdesc *make_num(XokMalloc *xokMalloc ,  int n)
+static craastdesc* 
+make_num(XokMalloc *xokMalloc ,  int n)
 {
  craastdesc *node = (craastdesc *)
  xalloc_XokMalloc(xokMalloc , sizeof(craastdesc));
@@ -220,8 +230,8 @@ craastdesc *make_num(XokMalloc *xokMalloc ,  int n)
  return node;
 }
 
-static
-craastdesc *make_binop(XokMalloc *xokMalloc, char *calcsign 
+static craastdesc *
+make_binop(XokMalloc *xokMalloc, char *calcsign 
     , craastdesc *left , craastdesc *right)
 {
  craastdesc *node = (craastdesc *)
@@ -233,8 +243,8 @@ craastdesc *make_binop(XokMalloc *xokMalloc, char *calcsign
  return node;
 }
 
-static
-craastdesc *make_assign(XokMalloc *xokMalloc 
+static craastdesc*
+make_assign(XokMalloc *xokMalloc 
 , char *name , craastdesc *value , char *type)
 {
  craastdesc *node = (craastdesc *)
@@ -246,7 +256,7 @@ craastdesc *make_assign(XokMalloc *xokMalloc
  return node;
 }
 
-static craastdesc*
+static craastdesc* 
 make_call(XokMalloc *xokMalloc, char *name)
 {
  craastdesc *node = (craastdesc *)
@@ -273,9 +283,18 @@ make_lvalue(XokMalloc *xokmalloc , char *name)
 /*
 ****************** desclist cycle funtion**********************
 */
+
+/* struct create desclist init desc arrays size */
 #define DESCLIST_DEFAULT_SIZE 200
+
+/* struct expand number */
 #define DESCLIST_GROW_FACTOR  2
 
+/*
+** Create a description list with initial capacity 'init_size'.
+** A non-positive 'init_size' uses DESCLIST_DEFAULT_SIZE.
+** Returns NULL if allocation fails.
+*/
 desclist *
 craP_desclist_create(XokMalloc *xm, int init_size)
 {
@@ -283,59 +302,63 @@ craP_desclist_create(XokMalloc *xm, int init_size)
   desclist *dl = (desclist *)xalloc_XokMalloc(xm, sizeof(desclist));
   if (!dl) return NULL;
   dl->desclist = (craastdesc **)xalloc_XokMalloc(
-      xm, sizeof(craastdesc *) * init_size);
-  if (!dl->desclist)return NULL;
+  xm, sizeof(craastdesc *) * init_size);
+  if (!dl->desclist)return NULL; /* dl non-create return NULL */
   dl->size  = init_size;
   dl->count = 0;
   return dl;
 }
 
 
-void
+inline void
 craP_desclist_free(XokMalloc *xm, desclist *dl)
 {
-  if (!dl) return;if (dl->desclist)dl->desclist = NULL;
+  if (!dl) return;
+  if (dl->desclist)dl->desclist = NULL;
 }
 
 
+/*
+** Desc list expand size by (origin size * DESCLIST_GROW_FACTOR).
+** memcpy function copy dl's origin desclist and give to new desclist.
+** need't free origin desclist, it use xokmalloc pool. 
+*/
 int
 craP_desclist_expand(XokMalloc *xm, desclist *dl)
 {
   if (!dl) return 0;
   int new_size = dl->size * DESCLIST_GROW_FACTOR;
   craastdesc **new_arr = (craastdesc **)xalloc_XokMalloc(
-      xm, sizeof(craastdesc *) * new_size);
-  if (!new_arr) return 0;
+  xm, sizeof(craastdesc *) * new_size);
+  if (!new_arr) return 0; /* non-create return 0. */
   memcpy(new_arr, dl->desclist, sizeof(craastdesc *) * dl->count);
   dl->desclist = new_arr;
   dl->size = new_size;
-  return 1;
+  return 1; /* success return 1. */
 }
 
+
+
+/*
+** new desc tree push desclist stack, if dl count >= dl size
+** use desclist expand funtion.
+*/
 int
 craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree)
 {
   if (!dl) return 0;
   if (dl->count >= dl->size) {
-    if (!craP_desclist_expand(xm, dl))return 0;
-  }
+  if (!craP_desclist_expand(xm, dl))return 0;}
   dl->desclist[dl->count++] = tree;
   return 1;
 }
 
 
 /*
-******************************************************************
-*                      AST gramma parse                          *
-******************************************************************
-*/
-
-
-/*
 ** variable is undefine status, parse to not have assign value's expdesc
 */
 static craastdesc*
-push_var_undefine(XokMalloc *xm , String *name , String *type)
+pushvarundefine(XokMalloc *xm , String *name , String *type)
 {return make_assign(xm , name->str , NULL , type->str);}
 
 
@@ -364,6 +387,7 @@ parse_factor(pavstate ps)
 }
 
 
+
 static craastdesc*
 parse_mid(pavstate ps)
 {
@@ -372,8 +396,8 @@ parse_mid(pavstate ps)
  craastdesc *l = parse_factor(ps); /* is 'main node' in the funtion */
  String *cur = craP_ps_currtoken(ps);
  /* continuous tackle high priority condition */
- while(compare(cur , "*") || compare(cur , "/")){
-  ps.pf->curr++;
+ while(ishighprioritysign(cur->str)){
+  pfnext(ps.pf);
   accept_empty(ps.pf); /* current pf.token is calcsign */
   /* ps entry parse_factor ps root address convert, but previous
   ps root's desc result address is store to craastdesc *l */
@@ -389,6 +413,7 @@ parse_mid(pavstate ps)
 }
 
 
+
 static craastdesc*
 parse_value_main(pavstate ps)
 {
@@ -398,8 +423,8 @@ parse_value_main(pavstate ps)
  ps.root = parse_mid(ps); 
  /* drawer parse_mid() , current caculate sign */
  String *cur = craP_ps_currtoken(ps);
- while (compare(cur , "+") || compare(cur , "-")){
-  ps.pf->curr++;
+ while (islowprioritysign(cur->str)){
+  pfnext(ps.pf);
   accept_empty(ps.pf); /* current is match right number */
   craastdesc *r = parse_mid(ps);
   ps.root = make_binop(ps.xm , cur->str , ps.root , r);
@@ -413,12 +438,10 @@ parse_value_main(pavstate ps)
 }
 
 
-/* 
-** Crane 'int' grammar fule , parse to craastdesc tree. return single
-** tree ,collect to tree arrays. like [int a = 10 + 2;](define) && 
-** [int a;] (undefine) && [type a[10] = {typev1 , typev2 , typev3,...
-** typev10}] (array var type)..., contain type have {int , long , 
-** long long , char , char*(string), float , double , bite} so on.
+
+/*
+** variable parse to expdesc main function.
+** about differ variable type, and differ variable garmmar express type.
 */
 static craastdesc*
 var_desc(XokMalloc *xm , ParseFactor *pf, String *t)
@@ -433,7 +456,7 @@ var_desc(XokMalloc *xm , ParseFactor *pf, String *t)
  int isEqu = accept(pf , "=");  /* judge '=' */
  if(!isEqu){  /* if isEqu not's true , declare is 'int a;' */
   craastdesc *undefinevar = 
-  push_var_undefine(xm , name , type);  /* undefine variable tackle */
+  pushvarundefine(xm , name , type);  /* undefine variable tackle */
   return undefinevar;
  }
  pavstate ps = pavstate_init(xm , pf);
@@ -444,6 +467,7 @@ var_desc(XokMalloc *xm , ParseFactor *pf, String *t)
  strfree(t);
  return desc;
 }
+
 
 
 /*
@@ -465,7 +489,7 @@ stringargs(ParseFactor *pf, craastdesc *desc, String *t)
   tp.pty = PRM_STRING;
   tp.originstr = strdup(t->str);
   /* Tparam tp push desc func args, and selfadd argsi. */
-  desccallpushpusharg(desc, tp);
+  callpushargs(desc, tp);
   //#define strorigin
   #ifdef strorigin
    logc("string origin string" , tp.originstr);
@@ -484,7 +508,7 @@ singletokenargs(ParseFactor *pf, craastdesc *desc)
 /* could is ',' or crane key
  if the funtion have more args, and string args not is last args
  like print(a , "crane" , 13)
-                        `---------> ',' (be thought it was variable args). */
+                        `--------> ',' (be thought it was variable args). */
  if(cmpkey(pfcurstr(pf)))return; 
  Tparam tp;
  /* single string param about 'number', 'variable', 'enum', ..
@@ -496,7 +520,7 @@ singletokenargs(ParseFactor *pf, craastdesc *desc)
 /*  store origin string, convert number type(int, long, float, double, 
  ..) in virtual machine. */
  tp.originstr = strdup(pfcurstr(pf));
- desccallpushpusharg(desc, tp);
+ callpushargs(desc, tp);
  pfnext(pf);
  accept_empty(pf);
 }
@@ -510,13 +534,14 @@ unkey_desc_fn(ParseFactor *pf, craastdesc *desc
   pfnext(pf);
   do{
    if(!strcmp(pfcurstr(pf) , ")"))
-   /* if function not have args like: "print();", next token is ')' can return. */
+   /* if function not have args like: "print();"
+   , next token is ')' can return. */
    return successcode;
    /* current is '(' next token */
-   accept_empty(pf); /* confirm not is empty, reach first param */
+   accept_empty(pf);  /* confirm not is empty, reach first param */
    stringargs(pf , desc , t);
    singletokenargs(pf , desc);
-  }while(testnext(pf, ",")); /* if have one or more args, at least 
+  }while(testnext(pf, ","));  /* if have one or more args, at least 
   loop one time, have ',' execute next args and selfadd pf.curr. */
   if(accept(pf , acptSemicolon))
    return successcode;
@@ -526,29 +551,29 @@ unkey_desc_fn(ParseFactor *pf, craastdesc *desc
 }
 
 
+
 /* 
 ** unkey about like function, selfadd, selfsub,..,the unkey need 
 ** special tackle, unkey not is key, and not is queto, parenthesee,
-** .., so overall call these is 'unkey'
+** .., so overall call these is'unkey'.
 */
 static craastdesc*
 unkey_desc(XokMalloc *xm, ParseFactor *pf)
 {
- /* parse_main function loop match token, slip current
-  token when match slip current token when 'parse machine' has matched 
-  switch instruct. if need instruct token pf need back(--) */
- pfback(pf); 
+ pfback(pf);  /* current pf is slip key,
+ pf need back to previous index get varibale key */
  int unkeycode; /* accept unkey_desc return code*/
  craastdesc *desc; /* overall desc node */
  /* str tool, convenient to tackle str */
  String *t = create_string("");        
  char *unkey = strdup(pfcurstr(pf)); /* store function name */
- pfnext(pf); /* next is {'(', '++', '--', "+=", '-=', ...}, judge unkey specific type  */
+ pfnext(pf); /* next is {'(', '++', '--', "+=", '-=', ...}, 
+ judge unkey specific type  */
  if(!strcmp(pfcurstr(pf) , "("))
   desc = make_call(xm, unkey);
   /* store, use to judge unkey how about grammar type*/
  char *unkeytype = strdup(pfcurstr(pf)); 
- unkeycode = unkey_desc_fn(pf, desc, t, unkeytype);    /* priority judge function */
+ unkeycode = unkey_desc_fn(pf, desc, t, unkeytype); /* priority judge function */
  if(unkeycode == errorcode)return NULL;
  //#define descfuncprt
  #ifdef descfuncprt    /* check desc.func's args variable name */
@@ -563,6 +588,8 @@ unkey_desc(XokMalloc *xm, ParseFactor *pf)
  return desc;
 }
 
+
+
 /*
 ** crane parse ast main execute.
 */
@@ -572,7 +599,7 @@ craP_parsedesc(XokMalloc *xm , TOKENSB *ts , desclist *dl)
  ParseFactor pf = {ts , 0};  /* package tokens and index(curr) */
  while(pf.curr < ts->count){  /* ast parse executor main while */
   String *t = pf.tokens->tokens[pf.curr++];
-  switch(t_convert_asttype(t)){
+  switch(tokentype(t)){
    case GRAM_PRINT:{
     craastdesc *cd = unkey_desc(xm , &pf);
     pushdl(xm, dl, cd);

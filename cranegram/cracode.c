@@ -687,7 +687,7 @@ craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
   }
  }
  bc_emit(xm , bc , OP_HALT);
- //#define codesvisualization
+ #define codesvisualization
  #ifdef codesvisualization
  craC_codes_log(bc);
  op_visualization(bc, vns , tcalls, targs, types);

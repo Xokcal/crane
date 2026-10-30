@@ -156,6 +156,15 @@ calc_executor(dlong *p1 , dlong *p2 , char *sign)
 
 static void
 opcalc_executor(vmState *vm , char *sign){
+ //#define vscheck
+ #ifdef vscheck
+ log("-----------------{");
+ logi("000",vm->sp);
+ for(int i=0;i<vm->sp;i++){
+  logi("value___",vm->vs[i].v.i);
+ }
+ log("----------------}");
+ #endif
  value res;
  dlong resi;
  value value1 = vm->vs[vm->sp - 2];
@@ -181,6 +190,7 @@ opcalc_executor(vmState *vm , char *sign){
    return;
   }
   vmdefault{
+    vm->ci++;
     return;
   }
  }
@@ -222,6 +232,7 @@ opstore_executor(vmState *vm)
  v.vtype = strdup(get_stack_type(vm));
  vm->ci++;
  v.v.i = get_stack_res(vm);
+ v.type = TYPE_INT;
  vmvslots_push(vm , v);
  //#define vmprint
  #ifdef vmprint

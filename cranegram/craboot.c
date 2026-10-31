@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
 #include "craparse.h"
 #include "../tool/xokmalloc/xokmalloc.h"
 #include "cralex.h"
@@ -14,15 +16,20 @@
 
 #include <time.h>
 
+#define starttime\
+ clock_t start_time, end_time;\
+ double time_used;\
+ start_time = clock();
+
+#define endtime\
+ end_time = clock();\
+ time_used = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;\
+ printf("[%s][] execution consumption: %f s\n", __TIME__, time_used);
+ 
+
 int main()
 {
  setvbuf(stdout, NULL, _IOFBF, 1 << 20);
- /* start time */
- clock_t start_time, end_time;
- double time_used;
- // 1. 计时开始
- start_time = clock();
- /* ******** */
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
  String *origin_str = open_file("test/test.cr");
@@ -40,28 +47,11 @@ int main()
  if(parsecode == errorcode)
   goto executeError;
  vmState *vmState = craC_bytecode_parse(xm , dl);
-
- clock_t start_timev, end_timev;
- double time_usedv;
- // 1. 计时开始
- start_timev = clock();
  craV_execute(xm, vmState);
- /* end time */
- end_timev = clock();
- // 3. 计算耗时（秒）
- time_usedv = ((double)(end_timev - start_timev)) / CLOCKS_PER_SEC;
- // 4. 打印结果
- printf("\n[%s][crane vm] execution consumption: %f s\n", __TIME__, time_usedv);
  executeError:
  /* free setting struct */
  craP_desclist_free(xm , dl);
  free_XokMalloc(xm);
  free_XokMalloc(txm);
- /* end time */
- end_time = clock();
- // 3. 计算耗时（秒）
- time_used = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
- // 4. 打印结果
- printf("[%s][crane] execution consumption: %f s\n", __TIME__, time_used);
  return 0;
 }

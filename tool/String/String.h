@@ -6,6 +6,7 @@
 
 typedef struct String{
     long length;
+    long size;
     char *str;
 }String;
 

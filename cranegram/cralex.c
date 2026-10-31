@@ -53,16 +53,29 @@ isExtreCheckChar(char t){
     return 0;
 }
 
+#include <time.h>
+
+#define starttime\
+ clock_t start_time, end_time;\
+ double time_used;\
+ start_time = clock();
+
+#define endtime\
+ end_time = clock();\
+ time_used = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;\
+ printf("[%s][] execution consumption: %f s\n", __TIME__, time_used);
+
 
 TOKENSB *
 craL_lexexecute(XokMalloc *txm, String *origin)
 {
- String **tokens = (String**)xalloc_XokMalloc(txm, 200000 * sizeof(String*));
+ String **tokens = (String**)xalloc_XokMalloc(txm, 2000000 * sizeof(String*));
  String *temp = create_string("");
  String *temp_test = create_string("");
  String *temp_longest_match = create_string("");
  String *extre_check_key = create_string("");
  int count = 0;
+ starttime;
  for (int i = 0; i < origin->length; ++i) {
   //LOG_CHR("---i---" , origin->str[i]);
   if(isExtreCheckChar(origin->str[i])){
@@ -124,6 +137,7 @@ craL_lexexecute(XokMalloc *txm, String *origin)
    continue;
   }
  }
+ endtime;
  //printf("[count]%d\n" , count);
  string_free(temp);
  string_free(temp_test);

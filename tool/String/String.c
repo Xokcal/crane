@@ -6,6 +6,7 @@
 #include "String.h"
 #include <stdlib.h>
 #include <string.h>
+#include "../../cranegram/cralex.h"
 
 /**
  * 创建String结构体
@@ -13,44 +14,53 @@
 String* create_string(char* str){
     String *string = (String*)malloc(sizeof(String));
     string->length = strlen(str);
-    string->str = malloc((string->length + 1) * sizeof(char));
+    if(string->length >= 2){
+        string->str = malloc(string->length * sizeof(char));
+        string->size = string->length + 1;
+    }else{
+     string->str = malloc(2 * sizeof(char));
+     string->size = 2;
+    }
     for (int i = 0; i < string->length + 1; ++i)
         string->str[i] = str[i];
     return string;
 }
 
-/**
- * 结合String与char*类型字符串，在末尾。
- * */
-void combine_tail(String *origin , char* nstr){
-    int origin_len = strlen(origin->str);
-    int nstr_len = strlen(nstr);
-    char *combine_r_str = malloc((origin_len + nstr_len + 1) * sizeof(char));
-    for (int i = 0; i < origin_len; ++i)
-        combine_r_str[i] = origin->str[i];
-    for (int i = 0; i < nstr_len; ++i)
-        combine_r_str[origin_len + i] = nstr[i];
-    combine_r_str[(origin_len + nstr_len)] = '\0';
-    free(origin->str);
-    origin->str = combine_r_str;
-    origin->length = (origin_len + nstr_len);
+void combine_tail (String *o, char *s) {
+    size_t slen = strlen(s);
+    size_t need = o->length + slen + 1;
+    if (need > o->size) {
+        size_t newsize = o->size ? o->size : 16;
+        while (newsize < need) newsize *= 2;
+        char *p = realloc(o->str, newsize);
+        if (!p) return;
+        o->str = p;
+        o->size = newsize;
+    }
+    memcpy(o->str + o->length, s, slen);
+    o->length += slen;
+    o->str[o->length] = '\0';
 }
 
-
-void combine_tail_char(String *origin , char nstr){
-    // we   +    l
-    origin->length++; //2 -> 3
-    char* temp =  (char*)malloc((origin->length + 1) * sizeof(char)); // malloc(4)
-    for (int i = 0; i < origin->length - 1; ++i)
-        temp[i] = origin->str[i];
-    temp[origin->length - 1] = nstr;
-    temp[origin->length] = '\0';
-    free(origin->str);
-    origin->str = (char*)malloc((origin->length + 1) * sizeof(char));
-    for (int i = 0; i < origin->length ; ++i)
-        origin->str[i] = temp[i];
+void combine_tail_char (String *origin, char nstr) {
+    if (!origin) return;
+    if (!origin->str || origin->size == 0) {
+        // 异常状态：str 为空但 size 非 0，或者 size 为 0
+        origin->length = 0;
+        origin->size = 0;
+    }
+    size_t need = origin->length + 2;
+    if (need > origin->size) {
+        size_t newsize = origin->size ? origin->size : 16;
+        while (newsize < need) newsize *= 2;
+        char *p = realloc(origin->str, newsize);
+        if (!p) return;
+        origin->str = p;
+        origin->size = newsize;
+    }
+    origin->str[origin->length] = nstr;
+    origin->length++;
     origin->str[origin->length] = '\0';
-    free(temp);
 }
 
 /**
@@ -171,12 +181,18 @@ String *substring(String *string , int start , int end){
 
 /**
  * 删除String所有的字符串为空"\0"*/
-void delete_all(String *string){
+/*void delete_all(String *string){
     free(string->str);
     string->str = malloc(sizeof(char));
     for (int i = 0; i < 1; ++i)
         string->str[i] = '\0';
     string->length = 0;
+}*/
+
+void delete_all (String *s) {
+    if (!s) return;
+    s->length = 0;
+    if (s->str) s->str[0] = '\0';   // 只清内容，不 free
 }
 
 /**

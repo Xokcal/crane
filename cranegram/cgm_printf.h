@@ -14,7 +14,5 @@ static char *printf_PlaceHolds[PRINTF_PLACEHOLDS_LEN] = {
 static char number_char[NUMBER_CHAR] = {'1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' , '0'};
 
 
-
-
 int
-CraPrintf_fule(XokMalloc *xokmalloc ,TOKENSB *t , Hashmap *hashmap , int curr);
+CraPrintf_fule(XokMalloc *xokmalloc ,lexState *t , Hashmap *hashmap , int curr);

@@ -6,6 +6,62 @@
 #include "cralex.h"
 #include "cracode.h"
 
+
+#define acptkprint "print"
+
+#define acptkint "int"
+
+/* PH(parenthesee)*/
+#define acptlPH "("
+
+#define acptrPH ")"
+
+#define acptempty " "
+
+#define acptSemicolon ";"
+
+/* DQ(double quotaion)*/
+#define acptDQ "\""
+
+#define makefnTpysize 200
+
+#define makefnfdescssize 300
+/* ************** String func tackle ***************** */
+#define cmptail(s , tail) combine_tail((s), (tail))
+
+#define strclear(s) delete_all((s))
+
+#define strfree(s) string_free((s))
+/* ************** struct Parsefactor tackle *************** */
+#define pfcurstr(pf) \
+ pf->tokens->lextokens[pf->curr]->token->str
+
+#define craP_ps_currtoken(ps) \
+(ps).pf->tokens->lextokens[(ps).pf->curr]->token
+
+#define craP_pf_currtoken(pf) \
+(pf)->tokens->lextokens[(pf)->curr]->token
+
+#define pfnext(pf) (pf)->curr++
+
+#define pfback(pf) (pf)->curr--
+
+/* ************* desccall tackle *************** */
+#define desccallpushname(desc , name) \
+ (desc)->as.call.fname = (unkey);
+
+/* Tparam push desc.func args stack. */
+#define callpushargs(desc , tp)\
+ (desc)->as.call.args[desc->as.call.argsi++] = (tp);
+
+/* ************** common ******************* */
+#define craC_isstrvar(s) \
+ !isnumber((s)) && !strcmp((s), acptDQ)==0 \
+ && !strcmp((s), acptempty)==0 && !cmpkey((s))
+
+#define pushdl(xm, dl, t)\
+ craP_desclist_push((xm) , (dl) , (t));
+
 typedef struct value value;
 
 typedef enum cragramtype{
@@ -92,7 +148,7 @@ typedef struct desclist{
 }desclist;
 
 typedef struct ParseFactor{
-  TOKENSB *tokens;
+  lexState *tokens;
   int curr;
 }ParseFactor;
 
@@ -111,7 +167,7 @@ typedef struct pavstate{
 }pavstate;
 
 /* crane ast parse main funtion, xokMalloc is memory pool */
-int craP_parsedesc(XokMalloc *xokMalloc , TOKENSB *tokens , desclist *dl);
+int craP_parsedesc(XokMalloc *xokMalloc , lexState *tokens , desclist *dl);
 
 desclist *craP_desclist_create(XokMalloc *xm, int init_size);
 

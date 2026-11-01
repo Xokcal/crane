@@ -15,4 +15,4 @@
 #define CALCULATE_DIVI(p1 , p2)(*(p1)) / (*(p2))
 
 
-int CraTypeVar_Parse(XokMalloc *xokmalloc, TOKENSB *t, Hashmap *hashmap, int curr);
+int CraTypeVar_Parse(XokMalloc *xokmalloc, lexState *t, Hashmap *hashmap, int curr);

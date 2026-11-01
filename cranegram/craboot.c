@@ -13,37 +13,24 @@
 #include "cravm.h"
 #include "cracom.h"
 
-
-#include <time.h>
-
-#define starttime\
- clock_t start_time, end_time;\
- double time_used;\
- start_time = clock();
-
-#define endtime\
- end_time = clock();\
- time_used = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;\
- printf("[%s][] execution consumption: %f s\n", __TIME__, time_used);
- 
-
-int main()
-{
+int main(){
+ starttime;
  setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
- String *origin_str = open_file("test/test.cr");
- TOKENSB *tokens = craL_lexexecute(txm, origin_str);
+ String *context = open_file("test/test.cr");
+ //logc("context",context->str);
+ lexState *lexstate = craL_lexexecute(txm, context);
  //#define tsprint
  #ifdef tsprint
- for(int i = 0; i < tokens->count ; i++){
-  logc("token" , tokens->tokens[i]->str);
+ for(int i = 0; i < lexstate->count ; i++){
+  logc("token" , lexstate->lextokens[i]->token->str);
  }
  #endif
  XokMalloc *xm = create_XokMalloc();
  Hashmap *hmap = create_hashmap(); /* gloab variable*/
  desclist *dl = craP_desclist_create(xm , 1); /* tree list */
- parsecode = craP_parsedesc(xm , tokens , dl);  /*  AST main parse */
+ parsecode = craP_parsedesc(xm , lexstate , dl);  /*  AST main parse */
  if(parsecode == errorcode)
   goto executeError;
  vmState *vmState = craC_bytecode_parse(xm , dl);
@@ -53,5 +40,7 @@ int main()
  craP_desclist_free(xm , dl);
  free_XokMalloc(xm);
  free_XokMalloc(txm);
+ endtime;
  return 0;
 }
+

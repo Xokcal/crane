@@ -13,7 +13,7 @@
 
 #define cratext(s) printf("%s" , (s));
 
-  #define CRA_DEBUG
+#define CRA_DEBUG
 
 #ifdef CRA_DEBUG
     #define LOG(content) printf("[DEBUG] %s\n" , (content))
@@ -42,23 +42,13 @@
 //#define logcr(front , content)
 //#define logi(front , content)
 
-#define EXTRE_CHECK_CHAR_LEN 2
-#define PLACEHOLD_KEYS_LEN 4
-
 typedef struct Hashmap Hashmap;
 
+/* token parse 31 single char key. */
+static const char signkeys[] = {'-','+','*','/',',',' ','.','>','=','<','{','}','(',')','&','^','|','\\','/','%','$','@','#','!','~',';','\"',':','\'','\n','\r'};
 
-static char *keys[] = {"print" , "," , "\"" , "\n" , "(" , ")" , ";" , "<" , ">" , "=" , "==" , "\'"
-                      , "fun" , "@" , "$" , "%" , "&" , "+" , "-" , "^" , "/" , "*" , "." , " "
-                      , "int" , "float" , "string" , "%d" , "%f" , "%s"};
-
-static char extreCheckChar[EXTRE_CHECK_CHAR_LEN] = {
-    '\\' , '%'
-};
-
-static char *placeHoldKeys[PLACEHOLD_KEYS_LEN] = {
-    "%s" , "%d" , "%f" , "\\n"
-};
+/* crane grammar 19 key. */
+static const char *cranekeys[] = {"int","float","double","string","fn","print","if","for","in","static","long","char","struct","and","or","dand","dor","while","combine"};
 
 typedef enum key_enum{
     PRINT_K,
@@ -67,10 +57,15 @@ typedef enum key_enum{
     DEFAULT
 }KE;
 
-typedef struct TOKENSB{
-    String **tokens;
+typedef struct lextoken{
+ String *token;
+ long line;
+}lextoken;
+
+typedef struct lexState{
+    lextoken **lextokens;
     int count;
-}TOKENSB;
+}lexState;
 
 typedef struct HAJIGA_ATM{
     int MONEY_FOR;
@@ -79,7 +74,8 @@ typedef struct HAJIGA_ATM{
     String *ATM_SCREEN_0X1868632;
 }HAJIGA_ATM;
 
-int cmpkey(char *str);
-int isContainKeys(String *string);
-TOKENSB *craL_lexexecute(XokMalloc *txm, String *origin_file_string);
+
+int issinglekeys(const char c);
+int iscranekeys(const char *s);
+lexState *craL_lexexecute(XokMalloc *txm, String *origin_file_string);
 #endif //CRANEC_CGM_PARSE_H

@@ -1,7 +1,3 @@
-//
-// Created by 26432 on 2026/8/26.
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "../tool/String/String.h"
@@ -15,58 +11,80 @@
 #include "typevar.h"
 #include <string.h>
 #include "../tool/xokmalloc/xokmalloc.h"
+#include "cracom.h"
 
-int isContainKeys(String *string){
-    for (int i = 0; i < 30; ++i) {
-        if(compare(string , keys[i]) == 1)
-            return 1;
-    }
-    return 0;
+#define newlextoken(xm)\
+(lextoken*)xalloc_XokMalloc((xm), sizeof(lextoken));
+
+#define newstring(s)\
+(String*)create_string((s));
+
+static inline lexState* newlexstate(XokMalloc *xm){
+ lexState *lex = (lexState*)xalloc_XokMalloc(xm, sizeof(lexState));
+ lex->lextokens = (lextoken**)xalloc_XokMalloc(xm, 3000000 * sizeof(lextoken*));
+ return lex;
 }
 
 
-int cmpkey(char *str){
-    for (int i = 0; i < 30; ++i) {
-        if(strcmp(str , keys[i]) == 0)
-            return 1;
-    }
-    return 0;
+int issinglekeys(const char c){
+ for(int i=0;i<31;i++){
+  if(c==signkeys[i])return 1;
+  }
+ return 0;
 }
 
-static int
-isPlaceHoldKeys(String *str){
-    for(int i = 0; i < PLACEHOLD_KEYS_LEN ; i++){
-        if(compare(str , placeHoldKeys[i])){
-            return 1;
-        }
-    }
-    return 0;
+
+int iscranekeys(const char *s){
+ for(int i=0;i<19;i++){
+  if(strcmp(s, cranekeys[i])==0)return 1;
+  }
+ return 0;
 }
 
-static int
-isExtreCheckChar(char t){
-    for(int i = 0; i < EXTRE_CHECK_CHAR_LEN ; i++){
-        if(t == extreCheckChar[i]){
-            return 1;
-        }
-    }
-    return 0;
+
+lexState *craL_lexexecute(XokMalloc *xm, String *o){
+ lexState *lex = newlexstate(xm);
+ String *temp = newstring("");
+ long long cnum = 0;
+ long long line = 1;
+ while(cnum <= o->length){
+  switch(o->str[cnum]){
+   case '\n':
+    line++;
+   break;
+   case '\r':
+    line++;
+   break;
+   default:
+    break;
+  }
+  if(issinglekeys(o->str[cnum])){
+   if(temp->length > 0){
+    lextoken *tempt = newlextoken(xm);
+    tempt->line = line;
+    tempt->token = newstring(temp->str);
+    lex->lextokens[lex->count++] = tempt;
+    clearstr(temp);
+   }
+   lextoken *t = newlextoken(xm);
+   t->line = line;
+   t->token = newstring("");
+   addchar(t->token, o->str[cnum]);
+   lex->lextokens[lex->count++] = t;
+   cnum++;
+   continue;
+  }else{
+   addchar(temp, o->str[cnum]);
+   cnum++;
+   continue;
+  }
+ }
+ logi("all count", lex->count);
+ return lex;
 }
 
-#include <time.h>
 
-#define starttime\
- clock_t start_time, end_time;\
- double time_used;\
- start_time = clock();
-
-#define endtime\
- end_time = clock();\
- time_used = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;\
- printf("[%s][] execution consumption: %f s\n", __TIME__, time_used);
-
-
-TOKENSB *
+/*lexState *
 craL_lexexecute(XokMalloc *txm, String *origin)
 {
  String **tokens = (String**)xalloc_XokMalloc(txm, 2000000 * sizeof(String*));
@@ -147,6 +165,6 @@ craL_lexexecute(XokMalloc *txm, String *origin)
  tokensb->tokens = tokens;
  tokensb->count = count;
  return tokensb;
-}
+}*/
 
 

@@ -74,8 +74,6 @@
 /* ************** String func tackle ***************** */
 #define cmptail(s , tail) combine_tail((s), (tail))
 
-#define strclear(s) delete_all((s));
-
 #define strfree(s) string_free((s))
 
 
@@ -257,18 +255,18 @@ opcallexecute(vmState *vm, int *error)
     Tparam tp = vm->tempargs[i];
     switch(tp.pty)
     {
-     case PRM_STRING://prints(tp.originstr);
+     case PRM_STRING:prints(tp.originstr);
      break;
-     case PRM_NUMBER://prmnumberP(tp,error);
+     case PRM_NUMBER:prmnumberP(tp,error);
      break;
-     case PRM_VAR://prmvarP(tp, vm)
+     case PRM_VAR:prmvarP(tp, vm)
      break;
      default:break;
     }
    }
   }
  }
- //println;
+ println;
  vm->tempargsi = 0;
  codenext(vm);
 }

@@ -59,6 +59,10 @@
  !isnumber((s)) && !strcmp((s), acptDQ)==0 \
  && !strcmp((s), acptempty)==0 && !cmpkey((s))
 
+/* current line number */
+#define craC_tokencurline(pf)\
+ (pf)->tokens->lextokens[(pf)->curr]->line
+
 #define pushdl(xm, dl, t)\
  craP_desclist_push((xm) , (dl) , (t));
 

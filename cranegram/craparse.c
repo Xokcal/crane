@@ -80,7 +80,9 @@ static void accept_empty(ParseFactor *pf){
 }
 
 
-/* test whither have next like: {args, assign, ..}*/
+/* 
+** test whither have next like: {args, assign, ..}
+*/
 static inline int testnext(ParseFactor *pf , char *s){
  accept_empty(pf); /* check current pf not is empty key */
  int bl = strcmp(pfcurstr(pf), s) == 0 ? 1 : 0;
@@ -89,7 +91,9 @@ static inline int testnext(ParseFactor *pf , char *s){
 }
 
 
-/* packgae xm, parsefactor, root to assign number tree tackle. */
+/* 
+** packgae xm, parsefactor, root to assign number tree tackle. 
+*/
 static inline pavstate pavstate_init(XokMalloc *xm,ParseFactor *pf){
  pavstate pavs;
  pavs.xm = xm;
@@ -260,7 +264,7 @@ int craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree){
 /*
 ** variable is undefine status, parse to not have assign value's expdesc
 */
-static craastdesc* pushvarundefine(XokMalloc *xm , String *name , String *type){
+static inline craastdesc* pushvarundefine(XokMalloc *xm , String *name , String *type){
   return make_assign(xm , name->str , NULL , type->str);
 }
 
@@ -415,7 +419,7 @@ static void singletokenargs(ParseFactor *pf, craastdesc *desc){
 
 
 static int unkey_desc_fn(ParseFactor *pf, craastdesc *desc
-                  , String *t, char *unkeytype){
+                            , String *t, char *unkeytype){
  if(!strcmp(unkeytype , "(")){ /* "(" is function! */
   pfnext(pf);
   do{
@@ -431,7 +435,8 @@ static int unkey_desc_fn(ParseFactor *pf, craastdesc *desc
   loop one time, have ',' execute next args and selfadd pf.curr. */
   if(accept(pf , acptSemicolon))
    return successcode;
-  craCM_error("function not have end: \";\" ");
+  craCM_error(craC_tokencurline(pf),
+   "function not have end: \";\" ");
   return errorcode;
  }
 }

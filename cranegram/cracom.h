@@ -5,8 +5,8 @@
 #include <time.h>
 
 /* crane error describe log*/
-#define craCM_error(error) \
- printf("\n%s:%s:\033[31merror\033[0m: %s\n", __FILE__, __TIME__, (error))
+#define craCM_error(line,error) \
+ printf("\n%s: %s: line:%d \033[31merror\033[0m: %s\n", __FILE__, __TIME__, (line), (error))
 
 #define addchar(s,c) combine_tail_char((s),(c));
 

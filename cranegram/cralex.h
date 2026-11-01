@@ -44,11 +44,37 @@
 
 typedef struct Hashmap Hashmap;
 
-/* token parse 31 single char key. */
-static const char signkeys[] = {'-','+','*','/',',',' ','.','>','=','<','{','}','(',')','&','^','|','\\','/','%','$','@','#','!','~',';','\"',':','\'','\n','\r'};
+/* ASCLL code use to find single char key. */
+static const int ascllcode[] = {
+    0, 0, 0, 0, 0, 0, 0, 0,   /* 0~7 */
+    0, 0, 0, 0, 0, 0, 0, 0,   /* 8~15 */
+    0, 0, 0, 0, 0, 0, 0, 0,   /* 16~23 */
+    0, 0, 0, 0, 0, 0, 0, 0,   /* 24~31 */
+    ' ',                          /* 32 empty: 0，blank single tackle */
+    '!', 0, 0, '#', 0, '%', '&', 0,   /* 33~39: ! " # $ % & ' */
+    '(', ')', '*', '+', ',', '-', '.', '/', /* 40~47 */
+    0, 0, 0, 0, 0, 0, 0, 0,   /* 48~55 number 0~7: 0 */
+    0, 0, ':', ';', '<', '=', '>', '?', /* 56~63 number 8~9 + sign */
+    '@', 0, 0, 0, 0, 0, 0, 0, /* 64~71 char: 0 */
+    0, 0, 0, 0, 0, 0, 0, 0,   /* 72~79 char: 0 */
+    0, 0, 0, 0, 0, 0, 0, 0,   /* 80~87 char: 0 */
+    0, 0, 0, '[', '\\', ']', '^', 0, /* 88~95 char: 0 + sign */
+    0, 0, 0, 0, 0, 0, 0, 0,   /* 96~103 char: 0 */
+    0, 0, 0, 0, 0, 0, 0, 0,   /* 104~111 char: 0 */
+    0, 0, 0, 0, 0, 0, 0, 0,   /* 112~119 char: 0 */
+    0, 0, 0, '{', '|', '}', '~', 0    /* 120~127 char: 0 + sign */
+};
+
+#define SINGLE_KEYS_LEN 5
 
 /* crane grammar 19 key. */
-static const char *cranekeys[] = {"int","float","double","string","fn","print","if","for","in","static","long","char","struct","and","or","dand","dor","while","combine"};
+static const char *cranekeys[] = {
+    "int", "float", "double", "string",
+    "fn", "print", "if", "for",
+    "in", "static", "long", "char",
+    "struct", "and", "or", "dand",
+    "dor", "while", "combine"
+};
 
 typedef enum key_enum{
     PRINT_K,

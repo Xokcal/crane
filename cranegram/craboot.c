@@ -13,12 +13,17 @@
 #include "cravm.h"
 #include "cracom.h"
 
+int mai(){
+ int i = issinglekeys('(');
+ logi("i", i);
+}
+
 int main(){
  starttime;
  setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
- String *context = open_file("test/test.cr");
+ String *context = open_file("test/test2.cr");
  //logc("context",context->str);
  lexState *lexstate = craL_lexexecute(txm, context);
  //#define tsprint

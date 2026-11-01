@@ -1,12 +1,16 @@
-LOAD   "hello crane!!"
-CALL   print
-PUSH   19
-PUSH   213
+PUSH   89
+PUSH   54
 MUL    *
-PUSH   21
+PUSH   7
 DIV    /
+PUSH   135
+ADD    +
 PUSH   91
 SUB    -
+PUSH   78
+PUSH   2
+MUL    *
+ADD    +
 STORE  a
 TYPE   int
 LOAD   "a="

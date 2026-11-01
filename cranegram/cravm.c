@@ -203,7 +203,7 @@ find_value(vmState* vm, char *n, int *error)
   if(!strcmp(n, v.vname))
    return v;
  }
- craCM_error("var not have find!!");
+ craCM_error(0,"var not have find!!");
  (*error) = 1;
 }
 

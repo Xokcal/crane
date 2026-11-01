@@ -5,12 +5,9 @@ TARGET  = main.exe
 SRCS = cranegram/cracode.c \
        cranegram/cravm.c \
        cranegram/craparse.c \
-       cranegram/typevar.c \
-       cranegram/types.c \
        cranegram/cgm_file.c \
        cranegram/cgm_gramma.c \
        cranegram/cralex.c \
-       cranegram/cgm_printf.c \
        cranegram/craboot.c \
        cranegram/crafunc.c \
        tool/file/file.c \

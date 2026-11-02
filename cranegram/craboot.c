@@ -14,7 +14,6 @@
 #include "cracom.h"
 
 
-
 int main(){
  setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;

@@ -8,7 +8,6 @@
 #include "cgm_printf.h"
 #include "../tool/map/hashmap_int.h"
 #include "../tool/xokmalloc/xokmalloc.h"
-#include "typevar.h"
 #include <string.h>
 #include "../tool/xokmalloc/xokmalloc.h"
 #include "cracom.h"

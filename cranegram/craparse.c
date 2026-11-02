@@ -264,7 +264,8 @@ int craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree){
 /*
 ** variable is undefine status, parse to not have assign value's expdesc
 */
-static inline craastdesc* pushvarundefine(XokMalloc *xm , String *name , String *type){
+static inline craastdesc* pushvarundefine(XokMalloc *xm 
+                        , String *name , String *type){
   return make_assign(xm , name->str , NULL , type->str);
 }
 

@@ -5,6 +5,7 @@
 #include "craparse.h"
 #include "cralex.h"
 #include "cravm.h"
+#include "craobject.h"
 
 #define BYTECODE_GROW_FACTOR  2
 #define craC_codes_log(bc) \
@@ -26,6 +27,24 @@
 #define strfree(s) string_free((s))
 
 #define strcomcat(s, s2) combine_tail((s), (s2))
+
+
+/*
+** package codes execution args
+*/
+typedef struct codesState{
+ XokMalloc *xm;
+ Ttypes *types; 
+ bytecode *bc;
+ varnamestk *vns;
+ Targs *targs;
+ Tcalls *tcalls;
+ int *dl_c;
+ int *t_idx;
+ int *vnsi;
+ int *tcallsi;
+}codesState;
+
 
 /*
 ** by struct vartype convert to char* origin type
@@ -570,22 +589,6 @@ signemit(XokMalloc *xm , char *s , bytecode *bc)
   if(strcmp(s , "/")==0)return bc_emit(xm , bc , OP_DIV);
 }
 
-
-/*
-** package codes execution args
-*/
-typedef struct codesState{
- XokMalloc *xm;
- Ttypes *types; 
- bytecode *bc;
- varnamestk *vns;
- Targs *targs;
- Tcalls *tcalls;
- int *dl_c;
- int *t_idx;
- int *vnsi;
- int *tcallsi;
-}codesState;
 
 
 static codesState

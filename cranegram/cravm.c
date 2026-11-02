@@ -5,90 +5,68 @@
 #include "crafunc.h"
 #include "cgm_gramma.h"
 #include "cracom.h"
+#include "craobject.h"
 
-#define VM_DEFAULT_STACK_SIZE 3000000
-#define VM_DEFAULT_VSLOTS_SIZE 3000000
-#define VM_DEFAULT_TEMPARGS_SIZE 3000000
-#define importancelogsign "________________________"
-#define addsign "+"
-#define subsign "-"
-#define mulsign "*"
-#define divsign "/"
+long vmhashcode(const char *s){
+ long len = strlen(s);
+ long r = 0;
+ if(len > 5){
+  for(int i=0;i<5;i++){
+    r += (long)(int)s[i];
+  }
+  return (long)((r*31) % VAR_MAP_LEN);
+ }else{
+  for(int i=0;i<len;i++){
+    r += (long)(int)s[i];
+  }
+  return (long)((r*31) % VAR_MAP_LEN);
+ }
+}
 
-#define vmcase(op) case (op):
-#define vmswitch(op) switch(op)
-#define vmdefault default:
-#define vmbreak break
-#define dlong long long
-#define voidunfind -1
+vmap *newvmap(XokMalloc *xm){
+ vmap *map = (vmap*)xalloc_XokMalloc(xm, sizeof(vmap));
+ map->count = 0;
+ return map;
+}
 
-/* ************ build-in function *********** */
-#define prints(s) printf("%s", (s))
-#define printi(i) printf("%d",(i))
-#define println printf("\n")
+static inline vmapnode* newvmapnode(XokMalloc *xm,value v){
+ vmapnode *node = (vmapnode*)xalloc_XokMalloc(xm, sizeof(vmapnode));
+ node->v = v;
+ node->next = NULL;
+ return node;
+}
 
-/* ************ virtual machine ************* */
-/* instruct OP_PUSH execute */
-#define oppush_executor(vm) \
- (vm)->vs[(vm)->sp++] = (vm)->bc->values[(vm)->bc->codes[(vm)->ci++]]
+void pushvmap(XokMalloc *xm, vmap *map, value v){
+  long code = vmhashcode(v.vname);
+  vmapnode *root = &map->map[code];
+  vmapnode *new = newvmapnode(xm,v);
+  if(root->v.vname == NULL){
+    map->map[code] = *new;
+    map->count++;
+    return;
+  }
+  while(root->next != NULL){
+    root = root->next; /* root.next is struct vmapnode*,
+    after (*) is struct vmapnode */
+  }
+  root->next = new;
+  map->count++;
+  return;
+}
 
- /* instruct OP_PUSH_VAR execute */
-#define oppushvar_executor(vm, error) \
- (vm)->vs[(vm)->sp++] = find_value((vm), (vm)->vns->vn[getcode((vm))], (error))
-
-/* current codes's bytecode */
-#define getcode(vm) \
- (vm)->bc->codes[(vm)->ci]
-
-/* instruct OP_LOAD execute */
-#define opload_executor(vm)\
- (vm)->tempargs[(vm)->tempargsi++] = (vm)->targs->args[getcode((vm))]
-
-#define calc_swrap(res , resi , vm)\
- (vm)->vs[(vm)->sp - 2] = (res);\
- (vm)->sp = (vm)->sp - 1;
-
- /* virtual machine current ci point codes reflect struct value*/
-#define get_codesv(vm)\
- (vm)->vns->vn[(vm)->bc->codes[(vm)->ci]]
-
- /* virtual machine only value after calculate*/
-#define get_stack_res(vm)\
- (vm)->vs[(vm)->sp - 1].v.i
-
-#define clear_sp(vm)\
- (vm)->sp = 0;
-
- /* virtual machine current ci point codes variable type */
-#define get_stack_type(vm)\
- (vm)->tys->types[(vm)->bc->codes[(vm)->ci]]
-
-/* virtual machine vslots push value*/
-#define vmvslots_push(vm , v)\
- (vm)->vslots[(vm)->vsi++] = (v);
-
-/* ********** virtual machine *********** */
-#define codenext(vm)\
- (vm)->ci++;
-
-/* ************** String func tackle ***************** */
-#define cmptail(s , tail) combine_tail((s), (tail))
-
-#define strfree(s) string_free((s))
-
-
-/* ************** define function **************** */
-#define prmnumberP(tp, error) \
- String *number = create_string((tp).originstr); \
- int *r = str_convert_int(number); \
- printi(*r); \
- free(r); \
- strfree(number);
-
- #define prmvarP(tp, vm) \
- value v = find_value((vm), (tp).originstr, (error)); \
- printi(v.v.i);
-
+value getvmap(vmap *map, const char *n){
+ long code = vmhashcode(n);
+ vmapnode *root = &map->map[code];
+ while(root->v.vname != NULL){
+  if(strcmp(root->v.vname, n)==0){
+    return root->v;
+  }
+  root = root->next;
+ }
+ value empty;
+ empty.vname = NULL;
+ return empty;
+}
 
 inline void vm_free(XokMalloc *xm, vmState *v){
  if (!v) return;
@@ -154,15 +132,6 @@ calc_executor(dlong *p1 , dlong *p2 , char *sign)
 
 static void
 opcalc_executor(vmState *vm , char *sign){
- //#define vscheck
- #ifdef vscheck
- log("-----------------{");
- logi("000",vm->sp);
- for(int i=0;i<vm->sp;i++){
-  logi("value___",vm->vs[i].v.i);
- }
- log("----------------}");
- #endif
  value res;
  dlong resi;
  value value1 = vm->vs[vm->sp - 2];
@@ -222,7 +191,7 @@ vmvslots_pop(vmState *vm , char *n)
 
 
 static void
-opstore_executor(vmState *vm)
+opstore_executor(XokMalloc *xm, vmState *vm)
 {
  value v; /* init value v, push stack later.*/
  vm->ci++;
@@ -232,7 +201,7 @@ opstore_executor(vmState *vm)
  vm->ci++;
  v.v.i = get_stack_res(vm);
  v.type = TYPE_INT;
- vmvslots_push(vm , v);
+ pushvmap(xm, vm->map, v);
  //#define vmprint
  #ifdef vmprint
  value *r = vmvslots_pop(vm , v.vname);
@@ -274,6 +243,7 @@ opcallexecute(vmState *vm, int *error)
 void 
 craV_execute(XokMalloc *xm , vmState *vm)
 {
+ vm->map = newvmap(xm);
  int error = 0;
  int *codes = vm->bc->codes;
  while(vm->ci < vm->bc->count){
@@ -302,7 +272,7 @@ craV_execute(XokMalloc *xm , vmState *vm)
     vmbreak;
    }
    vmcase(OP_STORE){
-    opstore_executor(vm);
+    opstore_executor(xm, vm);
     vmbreak;
    }
    vmcase(OP_ADD){

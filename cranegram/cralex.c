@@ -25,18 +25,25 @@ static inline lexState* newlexstate(XokMalloc *xm){
  return lex;
 }
 
+/*
+** by ASCLL code to judge whether char c is single sign.
+*/
 int issinglekeys(const char c){
- unsigned int ccode = ((int) c)+1;
+ unsigned int ccode = ((int) c);
  if(ccode >= 128)return 0;
  int i = (int)ascllcode[ccode];
  if(i != 0)return 1;
- if(c == '\n' || c == '\"' || c == '\'' ||  c == ' ' || c == '\t' || c == '\r'){   
+ if(c == '\n' || c == '\"' || c == '\'' 
+  ||  c == ' ' || c == '\t' || c == '\r'){   
   return 1;
  }
  return 0;
 }
 
 
+/*
+** judge char* s whether is crane key. 
+*/
 int iscranekeys(const char *s){
  for(int i=0;i<19;i++){
   if(strcmp(s, cranekeys[i])==0)return 1;
@@ -45,6 +52,12 @@ int iscranekeys(const char *s){
 }
 
 
+/*
+** Crane lex main execution, origin char* convert lexState.
+** LexState contain tokens(lextokens-->[line, String]) and all token count(count).
+** Lex only separate single sign and unsingle sign string, if twe continous single sign
+** combine is crane key, lex only store twe single sign token.
+*/
 lexState *craL_lexexecute(XokMalloc *xm, String *o){
  lexState *lex = newlexstate(xm);
  String *temp = newstring("");
@@ -52,12 +65,9 @@ lexState *craL_lexexecute(XokMalloc *xm, String *o){
  long long line = 1;
  while(cnum <= o->length){
   switch(o->str[cnum]){
-   case '\n':
+   case '\n': /* record enter number. */
     line++;
    break;
-   /*case '\r':
-    line++;
-   break;*/
    default:
     break;
   }

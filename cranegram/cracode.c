@@ -594,7 +594,7 @@ packagecodestate(XokMalloc *xm){
  cs.xm = xm;
  cs.bc = bc_create(xm , BC_DEFAULT_SIZE);
  cs.types = types_create(xm , TYPES_DEFAULT_SIZE);
- cs.vns = vnstk_create(xm , 160000);
+ cs.vns = vnstk_create(xm , 300000);
  cs.targs = targs_create(xm, TARGS_DEFAULT_SIZE);
  cs.tcalls = tcalls_create(xm, TCALLS_DEFAULT_SIZE);
  cs.dl_c = (int*)xalloc_XokMalloc(xm, sizeof(int));
@@ -718,6 +718,6 @@ craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
  op_visualization(cs.bc, cs.vns , cs.tcalls, cs.targs, cs.types);
  #endif
  return vm_create(xm, cs.bc, cs.vns,
- cs.types, cs.targs, cs.tcalls, 25000);
+ cs.types, cs.targs, cs.tcalls, 2500000);
 }
 

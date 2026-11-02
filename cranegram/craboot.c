@@ -13,17 +13,13 @@
 #include "cravm.h"
 #include "cracom.h"
 
-int mai(){
- int i = issinglekeys('(');
- logi("i", i);
-}
+
 
 int main(){
- starttime;
  setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
- String *context = open_file("test/test2.cr");
+ String *context = open_file("test/std.cr");
  //logc("context",context->str);
  lexState *lexstate = craL_lexexecute(txm, context);
  //#define tsprint
@@ -39,13 +35,14 @@ int main(){
  if(parsecode == errorcode)
   goto executeError;
  vmState *vmState = craC_bytecode_parse(xm , dl);
+ starttime;
  craV_execute(xm, vmState);
+ endtime;
  executeError:
  /* free setting struct */
  craP_desclist_free(xm , dl);
  free_XokMalloc(xm);
  free_XokMalloc(txm);
- endtime;
  return 0;
 }
 

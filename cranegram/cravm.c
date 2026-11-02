@@ -6,9 +6,9 @@
 #include "cgm_gramma.h"
 #include "cracom.h"
 
-#define VM_DEFAULT_STACK_SIZE 300000
-#define VM_DEFAULT_VSLOTS_SIZE 300000
-#define VM_DEFAULT_TEMPARGS_SIZE 300000
+#define VM_DEFAULT_STACK_SIZE 3000000
+#define VM_DEFAULT_VSLOTS_SIZE 3000000
+#define VM_DEFAULT_TEMPARGS_SIZE 3000000
 #define importancelogsign "________________________"
 #define addsign "+"
 #define subsign "-"
@@ -331,4 +331,5 @@ craV_execute(XokMalloc *xm , vmState *vm)
   }
  }
  vmterminal:
+ logi("var count",vm->vsi);
 }

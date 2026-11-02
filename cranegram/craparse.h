@@ -23,7 +23,7 @@
 /* DQ(double quotaion)*/
 #define acptDQ "\""
 
-#define makefnTpysize 200
+#define makefnTpysize 2000
 
 #define makefnfdescssize 300
 /* ************** String func tackle ***************** */

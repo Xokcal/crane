@@ -15,10 +15,11 @@
 
 
 int main(){
- setvbuf(stdout, NULL, _IOFBF, 1 << 20);
+ starttime;
+ //setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
- String *context = open_file("test/std.cr");
+ String *context = open_file("test/grm.cr");
  //logc("context",context->str);
  lexState *lexstate = craL_lexexecute(txm, context);
  //#define tsprint
@@ -34,14 +35,13 @@ int main(){
  if(parsecode == errorcode)
   goto executeError;
  vmState *vmState = craC_bytecode_parse(xm , dl);
- starttime;
  craV_execute(xm, vmState);
- endtime;
  executeError:
  /* free setting struct */
  craP_desclist_free(xm , dl);
  free_XokMalloc(xm);
  free_XokMalloc(txm);
+ endtime;
  return 0;
 }
 

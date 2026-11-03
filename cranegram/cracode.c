@@ -7,6 +7,9 @@
 #include "cravm.h"
 #include "craobject.h"
 
+#define TYPES_DEFAULT_SIZE 300
+#define TYPES_GROW_FACTOR  2
+
 #define BYTECODE_GROW_FACTOR  2
 #define craC_codes_log(bc) \
   for(int i = 0; i < (bc)->count; i++) log_i("BC" , (bc)->codes[i]);
@@ -30,23 +33,6 @@
 
 
 /*
-** package codes execution args
-*/
-typedef struct codesState{
- XokMalloc *xm;
- Ttypes *types; 
- bytecode *bc;
- varnamestk *vns;
- Targs *targs;
- Tcalls *tcalls;
- int *dl_c;
- int *t_idx;
- int *vnsi;
- int *tcallsi;
-}codesState;
-
-
-/*
 ** by struct vartype convert to char* origin type
 ** like: {TYPE_INT ---> "int"},{TYPE_STRING ---> "string"}
 */
@@ -63,7 +49,6 @@ typetostr(vartype type)
   default:return "unknown";
  }
 }
-
 
 /* 
 ** void *vv is value , vm by char *type judge 
@@ -391,10 +376,6 @@ targs_push(XokMalloc *xm, Targs *t, Tparam param)
 }
 
 
-#define TYPES_DEFAULT_SIZE 300
-#define TYPES_GROW_FACTOR  2
-
-
 static Ttypes *
 types_create(XokMalloc *xm, int init_size)
 {
@@ -547,7 +528,7 @@ vnstk_expand(XokMalloc *xm, varnamestk *vs)
   if (!vs) return 0;
   int new_size = vs->size * 2;
   char **new_vn = (char **)xalloc_XokMalloc(xm, sizeof(char *) * new_size);
-  int   *new_slots = (int *)xalloc_XokMalloc(xm, sizeof(int) * new_size);
+  int *new_slots = (int *)xalloc_XokMalloc(xm, sizeof(int) * new_size);
   if (!new_vn || !new_slots) return 0;
   memcpy(new_vn, vs->vn, sizeof(char *) * vs->count);
   memcpy(new_slots, vs->slots, sizeof(int) * vs->count);
@@ -562,7 +543,7 @@ vnstk_push(XokMalloc *xm, varnamestk *vs, const char *name, int slot)
 {
   if (!vs) return 0;
   if (vs->count >= vs->size) {
-      if (!vnstk_expand(xm, vs)) return 0;
+   if(!vnstk_expand(xm, vs)) return 0;
   }
   vs->vn[vs->count]    = strdup(name);
   vs->slots[vs->count] = slot;
@@ -574,23 +555,15 @@ static int
 vnstk_find(varnamestk *vs, const char *name)
 {
   for (int i = 0; i < vs->count; i++) {
-    if (strcmp(vs->vn[i], name) == 0)return vs->slots[i];
+   if (strcmp(vs->vn[i], name) == 0)return vs->slots[i];
   }
   return -1;
 }
 
 
-static int
-signemit(XokMalloc *xm , char *s , bytecode *bc)
-{
-  if(strcmp(s , "+")==0)return bc_emit(xm , bc , OP_ADD);
-  if(strcmp(s , "-")==0)return bc_emit(xm , bc , OP_SUB);
-  if(strcmp(s , "*")==0)return bc_emit(xm , bc , OP_MUL);
-  if(strcmp(s , "/")==0)return bc_emit(xm , bc , OP_DIV);
-}
-
-
-
+/*
+** package bytecode init struct and essential number.
+*/
 static codesState
 packagecodestate(XokMalloc *xm){
  codesState cs;
@@ -612,42 +585,81 @@ packagecodestate(XokMalloc *xm){
 }
 
 
-static void
-assignencode(codesState cs, craastdesc *node, char *type){
- if (node->kind == AST_NUM) { /* single tackle node
-  is AST_NUM, if is binop node don't push*/
-  value v;
-  v_type_insert(type , &v , &node->as.num);
-  bc_emit(cs.xm, cs.bc, OP_PUSH);
-  bc_emit(cs.xm , cs.bc , cs.bc->v_count);
-  /* push struct value stack */
-  bc_add_constant(cs.xm, cs.bc , v);
-  return;
- }
- if(node->kind == AST_LVNAME){
-  bc_emit(cs.xm, cs.bc, OP_PUSH_VAR);
-  vnstk_push(cs.xm, cs.vns, node->as.lvname, (*cs.vnsi));
-  bc_emit(cs.xm, cs.bc, (*cs.vnsi)++);
-  return;
- }
- if (node->kind == AST_BINOP) { /* left-right-mid recursion，
-  leftest is highest priority binop, priority tackle leftest binop
-  left-num and right-num, rightest is low priority, can tabckle later */
-  assignencode(cs, node->as.binop.left, type);
-  assignencode(cs, node->as.binop.right, type);
-  signemit(cs.xm, node->as.binop.calcsign, cs.bc);
-  return;
+/*
+** parse assign calculate sign to byte code. 
+*/
+static int
+signemit(XokMalloc *xm , char *s , bytecode *bc)
+{
+  if(strcmp(s , "+")==0)return bc_emit(xm , bc , OP_ADD);
+  if(strcmp(s , "-")==0)return bc_emit(xm , bc , OP_SUB);
+  if(strcmp(s , "*")==0)return bc_emit(xm , bc , OP_MUL);
+  if(strcmp(s , "/")==0)return bc_emit(xm , bc , OP_DIV);
+}
+
+
+static void treenumber(codesState cs, craastdesc *node, char *type){
+ value v;
+ v_type_insert(type , &v , &node->as.num);
+ bc_emit(cs.xm, cs.bc, OP_PUSH);
+ bc_emit(cs.xm , cs.bc , cs.bc->v_count);
+ /* push struct value stack */
+ bc_add_constant(cs.xm, cs.bc , v);
+}
+
+
+static void treelvalue(codesState cs, craastdesc *node){
+ bc_emit(cs.xm, cs.bc, OP_PUSH_VAR);
+ vnstk_push(cs.xm, cs.vns, node->as.lvname, (*cs.vnsi));
+ bc_emit(cs.xm, cs.bc, (*cs.vnsi)++);
+}
+
+
+/* 
+** left-right-mid recursion，
+** leftest is highest priority binop, priority tackle leftest binop
+** left-num and right-num, rightest is low priority, can tabckle later 
+*/
+static void treebinop(codesState cs, craastdesc *node, char *type){
+ assignencode(cs, node->as.binop.left, type);
+ assignencode(cs, node->as.binop.right, type);
+ signemit(cs.xm, node->as.binop.calcsign, cs.bc);
+}
+
+
+/*
+** assign tree parse to bytecode main execute. 
+*/
+void assignencode(codesState cs, craastdesc *node, char *type){
+ switch(node->kind){
+  case AST_NUM:{
+     treenumber(cs, node, type);
+    break;
+  }
+  case AST_LVNAME:{
+    treelvalue(cs, node);
+   break;
+  }
+  case AST_BINOP:{
+    treebinop(cs, node, type);
+   break;
+  }
+  default:{
+    break;
+  }
  }
  return;
 }
 
 
-static void
-astassignexe(codesState cs, craastdesc *curdesc){
+static void astassignexe(codesState cs, craastdesc *curdesc){
  craastdesc *value = curdesc->as.assign.value; /* get desc assign 
  value tree, just go parse tree to codes */
  char *type = curdesc->as.assign.type; /* data type string information */
+ if(value==NULL)
+  goto undef;
  assignencode(cs, value, type);
+ undef:
  bc_emit(cs.xm , cs.bc , OP_STORE);
  vnstk_push(cs.xm , cs.vns , curdesc->as.assign.name , (*cs.vnsi));
  bc_emit(cs.xm , cs.bc , (*cs.vnsi)++); /* variable name index */
@@ -671,8 +683,7 @@ astassignexe(codesState cs, craastdesc *curdesc){
 ** codes op_func or op_undefvar or .. desc.call.Tparams push
 ** Targs, and push codes store Targs has pushed index.
 */
-static void
-astcallexe(codesState cs, craastdesc *desc){
+static void astcallexe(codesState cs, craastdesc *desc){
  int argsi = 0;
  while(argsi < desc->as.call.argsi){
   bc_emit(cs.xm, cs.bc, OP_LOAD);
@@ -696,9 +707,7 @@ astcallexe(codesState cs, craastdesc *desc){
 /*
 ** bytecode parse main execute.
 */
-vmState*
-craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
-{
+vmState* craC_bytecode_parse(XokMalloc *xm ,  desclist *dl){
  codesState cs = packagecodestate(xm);
  while((*cs.dl_c) < dl->count){
   craastdesc *curdesc = dl->desclist[(*cs.dl_c)];

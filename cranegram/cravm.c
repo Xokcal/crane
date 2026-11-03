@@ -212,6 +212,12 @@ opstore_executor(XokMalloc *xm, vmState *vm)
 }
 
 
+/*#define storeundefexecutor(xm, vm)\
+ value v;\
+ v.type = TYPE_INT;\
+ pushvmap((xm), (vm)->map, v);*/
+
+
 static void
 opcallexecute(vmState *vm, int *error)
 {
@@ -301,5 +307,4 @@ craV_execute(XokMalloc *xm , vmState *vm)
   }
  }
  vmterminal:
- logi("var count",vm->vsi);
 }

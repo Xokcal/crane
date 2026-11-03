@@ -75,8 +75,7 @@ typedef enum cragramtype{
   GRAM_PRINTF,    /* [3]origin token is 'printf' */
   GRAM_EMPTY,     /* [4]origin token is 'empty' */
   GRAM_VAR,       /* [5]origin token is 'variable' */
-  GRAM_PRINT,     /* [6]origin token is 'print' */
-  GRAM_UNKEY      /* [7]origin token is 'unkey' */
+  GRAM_UNKEY      /* [6]origin token is 'unkey' */
 }cragramtype;
 
 /* signed ast descibtion grammar tree type */
@@ -89,7 +88,8 @@ typedef enum craasttype{
   AST_FUNC,         /* [5]AST type function */
   AST_UNKEY,        /* [6]AST type unkey */
   AST_CALL,         /* [7]AST type call(function) */
-  AST_LVNAME        /* [8]AST type left value */
+  AST_LVNAME,       /* [8]AST type left value */
+  AST_HASVAR        /* [9]AST type has def variable */
 }craasttype;
 
 /* define param type like: {("hello", count, 10086, 3.1415)} */
@@ -135,6 +135,11 @@ typedef struct craastdesc{
    int argsi;           /* args count */
    /* modified array define .. */
   }call;
+  struct hasvar{             /* has def variable reassign */
+   char *name;               /* variable name */
+   struct craastdesc *value; /* value tree*/
+   char *type;               /* variable type */
+  }hasvar;
  } as;
 }craastdesc;
 

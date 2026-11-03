@@ -12,6 +12,8 @@
 #include "../tool/xokmalloc/xokmalloc.h"
 #include "cracom.h"
 
+#define LEX_TOKENS_SIZE 3000000
+
 #define newlextoken(xm)\
 (lextoken*)xalloc_XokMalloc((xm), sizeof(lextoken));
 
@@ -20,7 +22,7 @@
 
 static inline lexState* newlexstate(XokMalloc *xm){
  lexState *lex = (lexState*)xalloc_XokMalloc(xm, sizeof(lexState));
- lex->lextokens = (lextoken**)xalloc_XokMalloc(xm, 3000000 * sizeof(lextoken*));
+ lex->lextokens = (lextoken**)xalloc_XokMalloc(xm, LEX_TOKENS_SIZE * sizeof(lextoken*));
  return lex;
 }
 
@@ -44,7 +46,7 @@ int issinglekeys(const char c){
 ** judge char* s whether is crane key. 
 */
 int iscranekeys(const char *s){
- for(int i=0;i<19;i++){
+ for(int i = 0; i < CRANE_KEY_COUNT; i++){
   if(strcmp(s, cranekeys[i])==0)return 1;
   }
  return 0;

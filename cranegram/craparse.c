@@ -32,6 +32,19 @@ static int islowprioritysign(char *n){
 
 
 /*
+** find has store to desclist assign craastdesc by variable name. 
+*/
+static craastdesc *findvardesc(desclist *dl, char *name){
+ for(int i = 0; i < dl->count; i++){
+  if(!strcmp(dl->desclist[i]->as.assign.name, name)){
+    return dl->desclist[i];
+  }
+ }
+ return NULL;
+}
+
+
+/*
 ** token convert enum asttype, return to tree parse switch. 
 */
 static int tokentype(String *s){
@@ -279,8 +292,8 @@ int craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree){
 /*
 ** variable is undefine status, parse to not have assign value's expdesc.
 */
-static inline craastdesc* pushvarundefine(XokMalloc *xm 
-                        , String *name , String *type){
+static inline craastdesc* undefvardesc(XokMalloc *xm 
+                     , String *name , String *type){
   return make_assign(xm , name->str , NULL , type->str);
 }
 
@@ -333,7 +346,7 @@ static craastdesc* parse_mid(pavstate ps){
 
 
 
-static craastdesc* parse_value_main(pavstate ps){
+static craastdesc* parsevaluemain(pavstate ps){
  accept_empty(ps.pf);
  /* tackle low priority or continous tackle high priority,
   use ps.root to accept res , root is current all craastdesc node */
@@ -360,7 +373,7 @@ static craastdesc* parse_value_main(pavstate ps){
 ** variable parse to expdesc main function.
 ** about differ variable type, and differ variable garmmar express type.
 */
-static craastdesc* var_desc(XokMalloc *xm , ParseFactor *pf, String *t){
+static craastdesc* vardesc(XokMalloc *xm , ParseFactor *pf, String *t){
  String *type = create_string(t->str);
  accept(pf , acptkint);  /* int type var */
  accept_empty(pf);  /* throught empty to variable name */
@@ -368,17 +381,16 @@ static craastdesc* var_desc(XokMalloc *xm , ParseFactor *pf, String *t){
  pfnext(pf);
  craastdesc* var = make_var(xm , name->str);  /* variable's name */
  accept_empty(pf);  /* throught empty to '=' */
- int isEqu = accept(pf , "=");  /* judge '=' */
- if(!isEqu){  /* if isEqu not's true , declare is 'int a;' */
+ int isequ = accept(pf , "=");  /* judge '=' */
+ if(!isequ){  /* if isEqu not's true , declare is 'int a;' */
   craastdesc *undefinevar = 
-  pushvarundefine(xm , name , type);  /* undefine variable tackle */
+  undefvardesc(xm , name , type);  /* undefine variable tackle */
   return undefinevar;
  }
  pavstate ps = pavstate_init(xm , pf);
- craastdesc *v = parse_value_main(ps); /* tackle after '=' value tree */
+ craastdesc *v = parsevaluemain(ps); /* tackle after '=' value tree */
  /* current 'desc' struction is: struct assign* = {var_name , struct binop* root} */
- craastdesc *desc 
- = make_assign(xm , name->str , v , type->str);
+ craastdesc *desc = make_assign(xm , name->str , v , type->str);
  strfree(t);
  return desc;
 }
@@ -459,20 +471,9 @@ static int unkey_desc_fn(ParseFactor *pf, craastdesc *desc
 
 
 /*
-** find has store to desclist assign craastdesc by variable name. 
-*/
-static craastdesc *findvardesc(desclist *dl, char *name){
- for(int i = 0; i < dl->count; i++){
-  if(strcmp(dl->desclist[i]->as.assign.name, name))
-    return dl->desclist[i];
- }
-}
-
-
-/*
 ** unkey tackle call execute, string parse to craastdesc call.
 */
-static void unkeycallexe(XokMalloc *xm, ParseFactor *pf,
+static int unkeycallexe(XokMalloc *xm, ParseFactor *pf,
               craastdesc **desc, char *unkey, String *t){
  int unkeycode; /* accept unkey_desc return code*/
  if(!strcmp(pfcurstr(pf) , "(")){
@@ -483,21 +484,26 @@ static void unkeycallexe(XokMalloc *xm, ParseFactor *pf,
   unkeycode = unkey_desc_fn(pf, *desc, t, unkeytype);
   free(unkeytype);  /* free unkey type */
   free(unkey);  /* free unkey name */
+  if(unkeycode == errorcode)return errorcode;
+  return successcode;
  }
 }
 
 
 /*
 ** unkey tackle hasvar execute, if is '=' judge is hasvar.
-** assume unkey_desc def desc self address is 0X001, craastdesc**desc accept
-** out desc address and assign to out desc address value is new desc(make_hasvar).
+** assume function unkey_desc def desc self address is 0X001, craastdesc**desc accept
+** out desc address and assign to out desc address's value is new desc(make_hasvar).
 */
-static void unkeyhasvarexe(XokMalloc *xm, ParseFactor *pf, 
-                        desclist *dl, craastdesc **desc){
+static void unkeyhasvarexe(XokMalloc *xm, ParseFactor *pf,
+            desclist *dl, craastdesc **desc, char *unkey){
  if(!strcmp(pfcurstr(pf), "=")){
+  accept(pf, "=");  /* current is function unkey_desc entry by
+  judge after unkey token, authentic content is next. */
   pavstate ps = pavstate_init(xm , pf);
-  craastdesc *v = parse_value_main(ps);
+  craastdesc *v = parsevaluemain(ps);
   craastdesc *target = findvardesc(dl, unkey);
+  if(target==NULL)return;
   *desc = make_hasvar(
   xm, v, unkey, target->as.assign.type);
   free(unkey);
@@ -510,7 +516,8 @@ static void unkeyhasvarexe(XokMalloc *xm, ParseFactor *pf,
 ** special tackle, unkey not is key, and not is queto, parenthesee,
 ** .., so overall call these is'unkey'.
 */
-static craastdesc* unkey_desc(XokMalloc *xm, ParseFactor *pf, desclist *dl){
+static craastdesc* unkeydesc(XokMalloc *xm, 
+             ParseFactor *pf, desclist *dl){
  pfback(pf);  /* current pf is slip key,
  pf need back to previous index get varibale key */
  craastdesc *desc; /* overall desc node */
@@ -520,8 +527,9 @@ static craastdesc* unkey_desc(XokMalloc *xm, ParseFactor *pf, desclist *dl){
  pfnext(pf); /* next is {'(', '++', '--', "+=", '-=', ...}, 
  judge unkey specific type  */
  accept_empty(pf);
- unkeyhasvarexe(xm, pf, dl, &desc);
- unkeycallexe(xm, pf, &desc, unkey, t);
+ unkeyhasvarexe(xm, pf, dl, &desc, unkey);
+ int code = unkeycallexe(xm, pf, &desc, unkey, t);
+ if(code == errorcode)return NULL;
  strfree(t);
  return desc;
 }
@@ -537,7 +545,7 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl)
   String *t = pf.tokens->lextokens[pf.curr++]->token;
   switch(tokentype(t)){
    case GRAM_UNKEY:{
-    craastdesc *cd = unkey_desc(xm , &pf, dl);
+    craastdesc *cd = unkeydesc(xm , &pf, dl);
     pushdl(xm, dl, cd);
     if(cd == NULL)
      return errorcode;
@@ -547,7 +555,7 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl)
     break;
    }
    case GRAM_VAR:{
-    craastdesc *vd = var_desc(xm , &pf , t);
+    craastdesc *vd = vardesc(xm , &pf , t);
     pushdl(xm , dl , vd);
     break;
    }

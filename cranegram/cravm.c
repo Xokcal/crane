@@ -82,7 +82,7 @@ inline void vm_free(XokMalloc *xm, vmState *v){
    free(v->vslots);
    v->vslots = NULL;
   }
-   free(v);
+  free(v);
 }
 
 vmState *

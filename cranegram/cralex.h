@@ -65,6 +65,8 @@ static const int ascllcode[] = {
     0, 0, 0, '{', '|', '}', '~', 0    /* 120~127 char: 0 + sign */
 };
 
+#define CRANE_KEY_COUNT 19
+
 /* crane grammar 19 key. */
 static const char *cranekeys[] = {
     "int", "float", "double", "string",

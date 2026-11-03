@@ -97,6 +97,7 @@ op_comcatop(int op, String *s)
  if(op==8)strcomcat(s,"LOAD");
  if(op==9)strcomcat(s,"TYPE");
  if(op==10)strcomcat(s,"VAR");
+ if(op==11)strcomcat(s,"REASSIGN");
 }
 
 static void
@@ -111,35 +112,35 @@ op_codeparse(int op, int preop, int *opi, String *s, bytecode *bc,
   char buf[32];
   snprintf(buf,sizeof(buf), "%d", bc->values[op].v.i);
   char *p = buf;
-  op_calcblank(7, 4, blank);
+  op_calcblank(17, 4, blank);
   strcomcat(s, blank->str);
   strcomcat(s, p);
   strfree(blank);
   return 0;
  }
  if(preop==1){
-  op_calcblank(7, 3, blank);
+  op_calcblank(17, 3, blank);
   strcomcat(s, blank->str);
   strcomcat(s, "+");
   strfree(blank);
   return 1;
 }
  if(preop==2){
-  op_calcblank(7, 3, blank);
+  op_calcblank(17, 3, blank);
   strcomcat(s, blank->str);
   strcomcat(s, "-");
   strfree(blank);
   return 1;
 }
  if(preop==3){
-  op_calcblank(7, 3, blank);
+  op_calcblank(17, 3, blank);
   strcomcat(s, blank->str);
   strcomcat(s, "/");
   strfree(blank);
   return 1;
 }
  if(preop==4){
-  op_calcblank(7, 3, blank);
+  op_calcblank(17, 3, blank);
   strcomcat(s, blank->str);
   strcomcat(s, "*");
   strfree(blank);
@@ -147,7 +148,7 @@ op_codeparse(int op, int preop, int *opi, String *s, bytecode *bc,
 }
  if(preop==5){return 0;}
  if(preop==6){
-  op_calcblank(7, 5, blank);
+  op_calcblank(17, 5, blank);
   strcomcat(s, blank->str);
   strcomcat(s,(vns->vn[op]));
   strclear(blank);
@@ -155,14 +156,14 @@ op_codeparse(int op, int preop, int *opi, String *s, bytecode *bc,
   return 0;
  }
  if(preop==7){
-  op_calcblank(7, 4, blank);
+  op_calcblank(17, 4, blank);
   strcomcat(s, blank->str);
   strcomcat(s, (tcalls->calls[op]));
   strfree(blank);
   return 0;
 }
  if(preop==8){
-  op_calcblank(7, 4, blank);
+  op_calcblank(17, 4, blank);
   strcomcat(s, blank->str);
   if(targs->args[op].pty==PRM_STRING){
    strcomcat(s, "\"");
@@ -174,14 +175,21 @@ op_codeparse(int op, int preop, int *opi, String *s, bytecode *bc,
   return 0;
 }
  if(preop==9){
-  op_calcblank(7, 4, blank);
+  op_calcblank(17, 4, blank);
   strcomcat(s, blank->str);
   strcomcat(s, types->types[op]);
   strfree(blank);
   return 0;
  }
  if(preop==10){
-  op_calcblank(8, 4, blank);
+  op_calcblank(17, 3, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s, vns->vn[op]);
+  strfree(blank);
+  return 0;
+ }
+ if(preop==11){
+  op_calcblank(17, 8, blank);
   strcomcat(s, blank->str);
   strcomcat(s, vns->vn[op]);
   strfree(blank);
@@ -704,6 +712,17 @@ static void astcallexe(codesState cs, craastdesc *desc){
  (*cs.dl_c)++;
 }
 
+
+static void asthasvarexe(codesState cs, craastdesc *desc){
+ char *type = desc->as.hasvar.type;
+ assignencode(cs, desc->as.hasvar.value, type);
+ bc_emit(cs.xm, cs.bc, OP_STORE_HASVAR);
+ vnstk_push(cs.xm , cs.vns , desc->as.hasvar.name , (*cs.vnsi));
+ bc_emit(cs.xm , cs.bc , (*cs.vnsi)++);  /* variable name index */
+ (*cs.dl_c)++;
+ return;
+}
+
 /*
 ** bytecode parse main execute.
 */
@@ -712,6 +731,10 @@ vmState* craC_bytecode_parse(XokMalloc *xm ,  desclist *dl){
  while((*cs.dl_c) < dl->count){
   craastdesc *curdesc = dl->desclist[(*cs.dl_c)];
   switch(curdesc->kind){
+   case AST_HASVAR:{
+    asthasvarexe(cs, curdesc);
+    break;
+   }
    case AST_ASSIGN:{
     astassignexe(cs, curdesc);
     break;
@@ -724,7 +747,7 @@ vmState* craC_bytecode_parse(XokMalloc *xm ,  desclist *dl){
   }
  }
  bc_emit(xm , cs.bc , OP_HALT);
- //#define codesvisualization
+ #define codesvisualization
  #ifdef codesvisualization
  craC_codes_log(cs.bc);
  op_visualization(cs.bc, cs.vns , cs.tcalls, cs.targs, cs.types);

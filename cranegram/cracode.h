@@ -13,18 +13,18 @@ typedef struct Tparam Tparam;
 
 /* virtual machine instruct */
 typedef enum opcode{
- OP_PUSH,         /* [0]push Value* */
- OP_ADD,          /* [1]calculate add */
- OP_SUB,          /* [2]calculate sub */
- OP_DIV,          /* [3]calculate divide */
- OP_MUL,          /* [4]calculate multiply */
- OP_HALT,         /* [5]vm quit */
- OP_STORE,        /* [6]store variable */
- OP_CALL,         /* [7]execute function call */
- OP_LOAD,         /* [8]args load */
- OP_TYPE,         /* [9]store variable type */
- OP_PUSH_VAR,     /* [10]push variable */
- //OP_STORE_UNDEF   /* [11]store undefine variable*/
+ OP_PUSH,          /* [0]push Value* */
+ OP_ADD,           /* [1]calculate add */
+ OP_SUB,           /* [2]calculate sub */
+ OP_DIV,           /* [3]calculate divide */
+ OP_MUL,           /* [4]calculate multiply */
+ OP_HALT,          /* [5]vm quit */
+ OP_STORE,         /* [6]store variable */
+ OP_CALL,          /* [7]execute function call */
+ OP_LOAD,          /* [8]args load */
+ OP_TYPE,          /* [9]store variable type */
+ OP_PUSH_VAR,      /* [10]push variable */
+ OP_STORE_HASVAR   /* [11]reassign has store variable*/
 }opcode; 
 
 /*

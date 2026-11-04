@@ -14,7 +14,7 @@
     cx="200"
     cy="200"
     r="94"
-    fill="#E94560"
+    fill="#07b592"
   />
 
   <!-- 文字 crane -->
@@ -35,7 +35,7 @@
   <path
     d="M 80 140 A 120 120 0 0 0 80 260"
     fill="none"
-    stroke="#2EC4B6"
+    stroke="#d22f91"
     stroke-width="12"
     stroke-linecap="round"
   />

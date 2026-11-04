@@ -22,7 +22,7 @@
 #define endtime\
  end_time = clock();\
  time_used = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;\
- printf("[%s][] execution consumption: %f s\n", __TIME__, time_used);
+ printf("[%s]\033[32m execution consumption: %f s \033[0m\n", __TIME__, time_used);
 
 
 #define errorcode 0xff

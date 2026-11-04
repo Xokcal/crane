@@ -2,5 +2,8 @@ int i = 560;
 print("i=",i);
 i = i + 3;
 print("i=", i);
-i = i * i - i + 2 * 3;
+
+-- 3 tiem assign.
+-- is ok!!!
+i = i * i - i + 2 * 3; -- is very ok.
 print("i2=",i);

@@ -45,10 +45,6 @@ $print($json[me]);
 
 $int all = $ansfnc[add][a, b]::
 
-
-
-
-
 $combine["..\cranestd\math.ce"]::
 $combine["..\cranestd\io.ce"]::
 

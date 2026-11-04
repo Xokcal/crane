@@ -57,6 +57,7 @@ static int tokentype(String *s){
  if(compare(s , "\r"))return GRAM_EMPTY;
  if(compare(s , ";"))return GRAM_EMPTY;
  if(compare(s , "print"))return GRAM_UNKEY;
+ if(compare(s , "-"))return GRAM_NOTE;
  if(!iscranekeys(s->str))return GRAM_UNKEY;
  return GRAM_EMPTY;
 }
@@ -152,13 +153,6 @@ static void print_ast(craastdesc *node, int depth){
 }
 
 
-/* struct create desclist init desc arrays size */
-#define DESCLIST_DEFAULT_SIZE 200
-
-/* struct expand number */
-#define DESCLIST_GROW_FACTOR  2
-
-
 /*
 ** Create a description list with initial capacity 'init_size'.
 ** A non-positive 'init_size' uses DESCLIST_DEFAULT_SIZE.
@@ -203,6 +197,22 @@ int craP_desclist_expand(XokMalloc *xm, desclist *dl){
   return 1; /* success return 1. */
 }
 
+
+/*
+** collect target line origin code string by loop.
+** common execute this function when programme happen erro or bug.
+*/
+static String *linecontext(ParseFactor *pf, long line){
+ String *t = create_string("");
+ long curline = 0;  /* record current line number. */
+ for(int i = 0; i < pf->tokens->count; i++){
+  if(curline == line){addstr(t, pfcurstr(pf));}
+  else if(curline > line)return t;  /* current line 
+  number > target line is return. */
+  curline = getcurline(pf);
+ }
+ return t;
+}
 
 
 /*
@@ -299,8 +309,8 @@ static craastdesc* parsevaluemain(pavstate ps){
 
 
 /*
-** variable parse to expdesc main function.
-** about differ variable type, and differ variable garmmar express type.
+** Variable parse to expdesc main function.
+** About differ variable type, and differ variable garmmar express type.
 */
 static craastdesc* vardesc(XokMalloc *xm , ParseFactor *pf, String *t){
  String *type = create_string(t->str);
@@ -327,7 +337,7 @@ static craastdesc* vardesc(XokMalloc *xm , ParseFactor *pf, String *t){
 
 
 /*
-** function str param type, record like: {"hello crane!"}
+** Function str param type, record like: {"hello crane!"}
 ** originstr = "hello crane!", and tackle print in virtual machine
 ** package by struct Tparam.
 */
@@ -353,10 +363,12 @@ static void stringargs(ParseFactor *pf, craastdesc *desc, String *t){
 
 
 static void singletokenargs(ParseFactor *pf, craastdesc *desc){
-/* could is ',' or crane key
- if the funtion have more args, and string args not is last args
- like print(a , "crane" , 13)
-                        `--------> ',' (be thought it was variable args). */
+/* Could is ',' or crane key if the funtion have more args,
+ and string args not is last args like print(a , "crane" , 13).
+                                                         `--------> ',' (be thought it was variable args).
+ Function issinglekeys() args is char type 
+ and pfcurstr() result is char*, so judge whither 
+ is ',' or singlesign use result[0] first char. */
  if(issinglekeys(pfcurstr(pf)[0]))return; 
  Tparam tp;
  /* single string param about 'number', 'variable', 'enum', ..
@@ -365,7 +377,7 @@ static void singletokenargs(ParseFactor *pf, craastdesc *desc){
  tp.pty = PRM_VAR;
  else if(isnumber(pfcurstr(pf)))
  tp.pty = PRM_NUMBER;
-/*  store origin string, convert number type(int, long, float, double, 
+/*  Store origin string, convert number type(int, long, float, double, 
  ..) in virtual machine. */
  tp.originstr = strdup(pfcurstr(pf));
  callpushargs(desc, tp);
@@ -375,20 +387,23 @@ static void singletokenargs(ParseFactor *pf, craastdesc *desc){
 
 
 
-static int unkey_desc_fn(ParseFactor *pf, craastdesc *desc
-                            , String *t, char *unkeytype){
+/*
+** Unkey use to call(function use call) main execute.
+*/
+static int unkeycallexe(ParseFactor *pf, craastdesc *desc
+                           , String *t, char *unkeytype){
  if(!strcmp(unkeytype , "(")){ /* "(" is function! */
   pfnext(pf);
   do{
    if(!strcmp(pfcurstr(pf) , ")"))
-   /* if function not have args like: "print();"
+   /* If function not have args like: "print();"
    , next token is ')' can return. */
    return successcode;
-   /* current is '(' next token */
+   /* Current is '(' next token */
    accept_empty(pf);  /* confirm not is empty, reach first param */
    stringargs(pf , desc , t);
    singletokenargs(pf , desc);
-  }while(testnext(pf, ","));  /* if have one or more args, at least 
+  }while(testnext(pf, ","));  /* If have one or more args, at least 
   loop one time, have ',' execute next args and selfadd pf.curr. */
   if(accept(pf , acptSemicolon))
    return successcode;
@@ -400,17 +415,17 @@ static int unkey_desc_fn(ParseFactor *pf, craastdesc *desc
 
 
 /*
-** unkey tackle call execute, string parse to craastdesc call.
+** Unkey tackle call execute, string parse to craastdesc call.
 */
-static int unkeycallexe(XokMalloc *xm, ParseFactor *pf,
-              craastdesc **desc, char *unkey, String *t){
+static int unkeycallexemain(XokMalloc *xm, ParseFactor *pf,
+               craastdesc **desc, char *unkey, String *t){
  int unkeycode; /* accept unkey_desc return code*/
  if(!strcmp(pfcurstr(pf) , "(")){
   *desc = make_call(xm, unkey);
   /* store, use to judge unkey how about grammar type*/
   char *unkeytype = strdup(pfcurstr(pf));
   /* priority judge function */
-  unkeycode = unkey_desc_fn(pf, *desc, t, unkeytype);
+  unkeycode = unkeycallexe(pf, *desc, t, unkeytype);
   free(unkeytype);  /* free unkey type */
   free(unkey);  /* free unkey name */
   if(unkeycode == errorcode)return errorcode;
@@ -420,8 +435,8 @@ static int unkeycallexe(XokMalloc *xm, ParseFactor *pf,
 
 
 /*
-** unkey tackle hasvar execute, if is '=' judge is hasvar.
-** assume function unkey_desc def desc self address is 0X001, craastdesc**desc accept
+** Unkey tackle hasvar execute, if is '=' judge is hasvar.
+** Assume function unkey_desc def desc self address is 0X001, craastdesc**desc accept
 ** out desc address and assign to out desc address's value is new desc(make_hasvar).
 */
 static void unkeyhasvarexe(XokMalloc *xm, ParseFactor *pf,
@@ -430,6 +445,7 @@ static void unkeyhasvarexe(XokMalloc *xm, ParseFactor *pf,
   accept(pf, "=");  /* current is function unkey_desc entry by
   judge after unkey token, authentic content is next. */
   pavstate ps = pavstate_init(xm , pf);
+  /* Parse reassign binop after '='. */
   craastdesc *v = parsevaluemain(ps);
   craastdesc *target = findvardesc(dl, unkey);
   if(target==NULL)return;
@@ -441,23 +457,23 @@ static void unkeyhasvarexe(XokMalloc *xm, ParseFactor *pf,
 
 
 /* 
-** unkey about like function, selfadd, selfsub,..,the unkey need 
+** Unkey about like function, selfadd, selfsub,..,the unkey need 
 ** special tackle, unkey not is key, and not is queto, parenthesee,
 ** .., so overall call these is'unkey'.
 */
 static craastdesc* unkeydesc(XokMalloc *xm, 
              ParseFactor *pf, desclist *dl){
- pfback(pf);  /* current pf is slip key,
+ pfback(pf);  /* Current pf is slip key,
  pf need back to previous index get varibale key */
- craastdesc *desc; /* overall desc node */
+ craastdesc *desc; /* Overall desc node */
  /* str tool, convenient to tackle str */
  String *t = create_string("");        
- char *unkey = strdup(pfcurstr(pf)); /* store function name */
- pfnext(pf); /* next is {'(', '++', '--', "+=", '-=', ...}, 
+ char *unkey = strdup(pfcurstr(pf)); /* Store function name */
+ pfnext(pf); /* Next is {'(', '++', '--', "+=", '-=', ...}, 
  judge unkey specific type  */
  accept_empty(pf);
  unkeyhasvarexe(xm, pf, dl, &desc, unkey);
- int code = unkeycallexe(xm, pf, &desc, unkey, t);
+ int code = unkeycallexemain(xm, pf, &desc, unkey, t);
  if(code == errorcode)return NULL;
  strfree(t);
  return desc;
@@ -465,12 +481,37 @@ static craastdesc* unkeydesc(XokMalloc *xm,
 
 
 /*
-** crane parse ast main execute.
+** Crane grammar 'note' desc execute, '--' note only use to oneline,
+** if is next line '--' note is uneffectived.
+*/
+static int notedesc(ParseFactor *pf){
+  /* switch auto Slip first '-' judge next token whither is '-'. */
+ if(!strcmp(pfcurstr(pf), "-")){
+  for(int i = pf->curr; i < pf->tokens->count; i++){  /* From current 
+   pf tokenpoint to tokens end, if reach '\n' exit. */
+   if(!strcmp(pfcurstr(pf), "\n"))return 0;  /* Current is token '\n'. */
+   pfnext(pf);}
+ }
+ long line = getcurline(pf);  /* Record error line. */
+ /* get target line origin code string */
+ String *lineorigincode = linecontext(pf, line);
+ linecontext(pf, line);
+ /* Tell use error reason. */
+ craCM_error(line, "grammar only have single '-' . ");
+ /* Tell reatil error code context. */
+ craCM_error(getcurline(pf), lineorigincode->str);
+ strfree(lineorigincode);  /* Free String* t */
+ return 1;
+}
+
+
+/*
+** Crane parse ast main execute.
 */
 int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl)
 {
- ParseFactor pf = {ts , 0};  /* package tokens and index(curr) */
- while(pf.curr < ts->count){  /* ast parse executor main while */
+ ParseFactor pf = {ts , 0};  /* Package tokens and index(curr) */
+ while(pf.curr < ts->count){  /* Ast parse executor main while */
   String *t = pf.tokens->lextokens[pf.curr++]->token;
   switch(tokentype(t)){
    case GRAM_UNKEY:{
@@ -480,11 +521,17 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl)
      return errorcode;
     break;
    }
+   case GRAM_NOTE:{
+     int code = notedesc(&pf);
+     if(code)return errorcode;
+    break;
+   }
    case GRAM_EMPTY:{
     break;
    }
    case GRAM_VAR:{
-    craastdesc *vd = vardesc(xm , &pf , t);
+    craastdesc *vd = 
+    vardesc(xm , &pf , t);
     pushdl(xm , dl , vd);
     break;
    }

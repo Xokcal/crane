@@ -6,6 +6,11 @@
 #include "cralex.h"
 #include "cracode.h"
 
+/* struct create desclist init desc arrays size */
+#define DESCLIST_DEFAULT_SIZE 200
+
+/* struct expand number */
+#define DESCLIST_GROW_FACTOR  2
 
 #define acptkprint "print"
 
@@ -59,6 +64,9 @@
  !isnumber((s)) && !strcmp((s), acptDQ)==0 \
  && !strcmp((s), acptempty)==0 && !cmpkey((s))
 
+#define getcurline(pf)\
+ (pf)->tokens->lextokens[(pf)->curr]->line
+
 /* current line number */
 #define craC_tokencurline(pf)\
  (pf)->tokens->lextokens[(pf)->curr]->line
@@ -76,7 +84,8 @@ typedef enum cragramtype{
   GRAM_PRINTF,    /* [3]origin token is 'printf' */
   GRAM_EMPTY,     /* [4]origin token is 'empty' */
   GRAM_VAR,       /* [5]origin token is 'variable' */
-  GRAM_UNKEY      /* [6]origin token is 'unkey' */
+  GRAM_UNKEY,     /* [6]origin token is 'unkey' */
+  GRAM_NOTE       /* [7]origin token is '-' judge behind is '--' note */
 }cragramtype;
 
 /* signed ast descibtion grammar tree type */

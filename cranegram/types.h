@@ -6,94 +6,21 @@
 #include "cralex.h"
 #include "../tool/map/hashmap_int.h"
 #include "../tool/xokmalloc/xokmalloc.h"
+#include "craparse.h"
 
-typedef struct PlaceHold{
-    int indexs_count;
-    int size;
-    int type_count;
-    int origin_count;
-    int *in_format_indexs;
-    String **type;
-    String **origin;
-}PlaceHold;
+typedef struct craastdesc craastdesc;
 
-typedef struct PrintfVarArg{
-    String **args;
-    String **args_type;
-    int args_count;
-    int size;
-}PrintfVarArg;
-
-typedef struct PrintfArgsValue{
-    void **printfargs_value;
-    int value_count;
-    int size;
-    String **type;
-}PrintfArgsValue;
-
-/* typevar.h struct!*/
-typedef struct TypeVar{
-    String *var_name;
-    String *type;
-}TypeVar;
-
-typedef struct AssignStack{
-    String **var_name;
-    String **calc_sign;
-    int var_name_count;
-    int calc_sign_count;
-    int size;
-}AssignStack;
-
-
-void
-free_PlaceHold(PlaceHold *ph);
-
-PlaceHold *
-extend_PlaceHold(PlaceHold *old);
-
-PlaceHold *
-create_PlaceHold(void);
-
-void 
-PlaceHold_is_outsize(PlaceHold *placeHold);
-
-
-/* Create a new PrintfVarArg with initial capacity 10.
-   Returns NULL on failure. */
-PrintfVarArg *create_PrintfVarArg(void);
-
-/* Double the capacity of the PrintfVarArg.
-   Returns the (possibly new) pointer. */
-PrintfVarArg *extend_PrintfVarArg(PrintfVarArg *old);
-
-/* Free the PrintfVarArg and all its Strings. */
-void free_PrintfVarArg(PrintfVarArg *pva);
-
-void
-judge_is_extend(PrintfVarArg *printfVarArg);
-
-
-TypeVar*
-create_TypeVar();
-
-void
-free_TypeVar(TypeVar *typeVar);
-
-AssignStack *
-create_AssignStack(XokMalloc *xokmalloc);
-
-AssignStack *
-extend_AssignStack(XokMalloc *xokmalloc, AssignStack *old);
-
-PrintfArgsValue *create_PrintfArgsValue(XokMalloc *xokmalloc);
-
-PrintfArgsValue *extend_PrintfArgsValue(XokMalloc *xokmalloc,
-                                        PrintfArgsValue *old);
-
-PrintfArgsValue *check_extend_PrintfArgsValue(XokMalloc *xokmalloc,
-                                              PrintfArgsValue *pav);
-
-void free_PrintfArgsValue(PrintfArgsValue *pav);
-
+/*
+** ast parse variable string name to struct desc
+*/
+craastdesc *make_var(XokMalloc *xokmalloc , char *name);
+craastdesc* make_num(XokMalloc *xokMalloc ,  int n);
+craastdesc *make_binop(XokMalloc *xokMalloc, char *calcsign,
+                      craastdesc *left , craastdesc *right);
+craastdesc *make_assign(XokMalloc *xokMalloc, char *name, 
+                         craastdesc *value , char *type);
+craastdesc *make_call(XokMalloc *xokMalloc, char *name);
+craastdesc *make_lvalue(XokMalloc *xokmalloc , char *name);
+craastdesc *make_hasvar(XokMalloc *xokmalloc,
+  craastdesc *value, char *name, char *type);
 #endif

@@ -10,6 +10,7 @@
 #include "cracode.h"
 #include "cravm.h"
 #include "cracom.h"
+#include "types.h"
 
 /*
 ** judge current token char* whither is high priority 
@@ -48,16 +49,16 @@ static craastdesc *findvardesc(desclist *dl, char *name){
 ** token convert enum asttype, return to tree parse switch. 
 */
 static int tokentype(String *s){
-  if(compare(s, "int")||compare(s, "float")
-  ||compare(s, "double")||compare(s, "char")
-  ||compare(s, "long"))return GRAM_VAR;
-  if(compare(s , " "))return GRAM_EMPTY;
-  if(compare(s , "\n"))return GRAM_EMPTY;
-  if(compare(s , "\r"))return GRAM_EMPTY;
-  if(compare(s , ";"))return GRAM_EMPTY;
-  if(compare(s , "print"))return GRAM_UNKEY;
-  if(!iscranekeys(s->str))return GRAM_UNKEY;
-  return GRAM_EMPTY;
+ if(compare(s, "int")||compare(s, "float")
+ ||compare(s, "double")||compare(s, "char")
+ ||compare(s, "long"))return GRAM_VAR;
+ if(compare(s , " "))return GRAM_EMPTY;
+ if(compare(s , "\n"))return GRAM_EMPTY;
+ if(compare(s , "\r"))return GRAM_EMPTY;
+ if(compare(s , ";"))return GRAM_EMPTY;
+ if(compare(s , "print"))return GRAM_UNKEY;
+ if(!iscranekeys(s->str))return GRAM_UNKEY;
+ return GRAM_EMPTY;
 }
 
 
@@ -148,78 +149,6 @@ static void print_ast(craastdesc *node, int depth){
   printf("UNKNOWN kind=%d\n", node->kind);
   break;
  }
-}
-
-
-/*
-** ast parse variable string name to struct desc
-*/
-static craastdesc *make_var(XokMalloc *xokmalloc , char *name){
- craastdesc *node = (craastdesc *)
- xalloc_XokMalloc(xokmalloc , sizeof(craastdesc));
- node->kind = AST_VAR;
- node->as.varname = strdup(name);  /* remember free node name */
- return node;
-}
-
-static craastdesc* make_num(XokMalloc *xokMalloc ,  int n){
- craastdesc *node = (craastdesc *)
- xalloc_XokMalloc(xokMalloc , sizeof(craastdesc));
- node->kind = AST_NUM;
- node->as.num = n;  /* store number value */
- return node;
-}
-
-static craastdesc *make_binop(XokMalloc *xokMalloc, char *calcsign,
-                             craastdesc *left , craastdesc *right){
- craastdesc *node = (craastdesc *)
- xalloc_XokMalloc(xokMalloc , sizeof(craastdesc));
- node->kind = AST_BINOP;
- node->as.binop.calcsign = strdup(calcsign); /* remember free node.left! */
- node->as.binop.left = left; 
- node->as.binop.right = right;
- return node;
-}
-
-static craastdesc *make_assign(XokMalloc *xokMalloc, 
-       char *name , craastdesc *value , char *type){
- craastdesc *node = (craastdesc *)
- xalloc_XokMalloc(xokMalloc , sizeof(craastdesc));
- node->kind = AST_ASSIGN;
- node->as.assign.name = strdup(name);
- node->as.assign.value = value;
- node->as.assign.type = strdup(type);
- return node;
-}
-
-static craastdesc *make_call(XokMalloc *xokMalloc, char *name){
- craastdesc *node = (craastdesc *)
- xalloc_XokMalloc(xokMalloc , sizeof(craastdesc));
- node->as.call.args = (Tparam *)
- xalloc_XokMalloc(xokMalloc , sizeof(Tparam) * makefnTpysize);
- node->kind = AST_CALL;
- node->as.call.fname = strdup(name);
- node->as.call.argsi = 0;
- return node;
-}
-
-static craastdesc *make_lvalue(XokMalloc *xokmalloc , char *name){
- craastdesc *node = (craastdesc *)
- xalloc_XokMalloc(xokmalloc , sizeof(craastdesc));
- node->kind = AST_LVNAME;
- node->as.lvname = strdup(name);  /* remember free node name */
- return node;
-}
-
-static craastdesc *make_hasvar(XokMalloc *xokmalloc
-      , craastdesc *value, char *name, char *type){
- craastdesc *node = (craastdesc *)
- xalloc_XokMalloc(xokmalloc , sizeof(craastdesc));
- node->kind = AST_HASVAR;
- node->as.hasvar.name = strdup(name);
- node->as.hasvar.value = value;
- node->as.hasvar.type = strdup(type);
- return node;
 }
 
 

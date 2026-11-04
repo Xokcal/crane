@@ -54,18 +54,16 @@ void pushvmap(XokMalloc *xm, vmap *map, value v){
   return;
 }
 
-value getvmap(vmap *map, const char *n){
+value* getvmap(vmap *map, const char *n){
  long code = vmhashcode(n);
  vmapnode *root = &map->map[code];
  while(root->v.vname != NULL){
   if(strcmp(root->v.vname, n)==0){
-    return root->v;
+    return &root->v;
   }
   root = root->next;
  }
- value empty;
- empty.vname = NULL;
- return empty;
+ return NULL;
 }
 
 inline void vm_free(XokMalloc *xm, vmState *v){
@@ -191,10 +189,18 @@ vmvslots_pop(vmState *vm , char *n)
 
 
 static void
-opstore_executor(XokMalloc *xm, vmState *vm)
+opstore_executor(XokMalloc *xm, vmState *vm, char *storetype)
 {
  value v; /* init value v, push stack later.*/
- vm->ci++;
+ vm->ci++; /* code after OP_STORE */
+ if(!strcmp(storetype, "reassign")){
+  char *rename = get_codesv(vm);
+  value *rev = getvmap(vm->map, rename);
+  rev->v.i = get_stack_res(vm);
+  clear_sp(vm);
+  vm->ci++;
+  return;
+ }
  v.vname = strdup(get_codesv(vm));
  vm->ci = ((vm->ci) + 2);
  v.vtype = strdup(get_stack_type(vm));
@@ -277,8 +283,12 @@ craV_execute(XokMalloc *xm , vmState *vm)
     oppush_executor(vm);
     vmbreak;
    }
+   vmcase(OP_STORE_HASVAR){
+    opstore_executor(xm, vm, "reassign");
+    vmbreak;
+   }
    vmcase(OP_STORE){
-    opstore_executor(xm, vm);
+    opstore_executor(xm, vm, "first");
     vmbreak;
    }
    vmcase(OP_ADD){

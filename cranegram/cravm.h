@@ -47,9 +47,9 @@ typedef struct Tcalls Tcalls;
 #define oppush_executor(vm) \
  (vm)->vs[(vm)->sp++] = (vm)->bc->values[(vm)->bc->codes[(vm)->ci++]]
 
- /* instruct OP_PUSH_VAR execute */
+ /* instruct OP_PUSH_VAR execute, getvmap is return point struct value  */
 #define oppushvar_executor(vm, error) \
- (vm)->vs[(vm)->sp++] = getvmap((vm)->map, (vm)->vns->vn[getcode((vm))])
+ (vm)->vs[(vm)->sp++] = *getvmap((vm)->map, (vm)->vns->vn[getcode((vm))])
 
 /* current codes's bytecode */
 #define getcode(vm) \
@@ -101,7 +101,7 @@ typedef struct Tcalls Tcalls;
  strfree(number);
 
  #define prmvarP(tp, vm) \
- value v = getvmap((vm)->map, (tp).originstr);\
+ value v = *getvmap((vm)->map, (tp).originstr);\
  printi(v.v.i);
 
 
@@ -148,14 +148,10 @@ typedef struct vmState{
  int size;
 }vmState;
 
-typedef struct vmmap{
-  Hashmap *vmap; /* variable map store  */
-}vmmap;
-
 long vmhashcode(const char *s);
 vmap *newvmap(XokMalloc *xm);
 void pushvmap(XokMalloc *xm, vmap *map, value v);
-value getvmap(vmap *map, const char *n);
+value* getvmap(vmap *map, const char *n);
 vmState *vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns,
   Ttypes *tys, Targs *Targs, Tcalls *tcalls, int size);
 void vm_free(XokMalloc *xm, vmState *v);

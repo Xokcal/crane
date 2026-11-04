@@ -67,6 +67,7 @@
  craP_desclist_push((xm) , (dl) , (t));
 
 typedef struct value value;
+typedef struct lexState lexState;
 
 typedef enum cragramtype{
   GRAM_INT,       /* [0]origin token is 'int' */

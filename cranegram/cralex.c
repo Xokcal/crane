@@ -21,8 +21,10 @@
 (String*)create_string((s));
 
 static inline lexState* newlexstate(XokMalloc *xm){
- lexState *lex = (lexState*)xalloc_XokMalloc(xm, sizeof(lexState));
- lex->lextokens = (lextoken**)xalloc_XokMalloc(xm, LEX_TOKENS_SIZE * sizeof(lextoken*));
+ lexState *lex = (lexState*)
+ xalloc_XokMalloc(xm, sizeof(lexState));
+ lex->lextokens = (lextoken**)
+ xalloc_XokMalloc(xm, LEX_TOKENS_SIZE * sizeof(lextoken*));
  return lex;
 }
 
@@ -56,8 +58,8 @@ int iscranekeys(const char *s){
 /*
 ** Crane lex main execution, origin char* convert lexState.
 ** LexState contain tokens(lextokens-->[line, String]) and all token count(count).
-** Lex only separate single sign and unsingle sign string, if twe continous single sign
-** combine is crane key, lex only store twe single sign token.
+** Lex only separate single sign and unsingle sign string, if twe 
+** continous single sign combine is crane key, lex only store twe single sign token.
 */
 lexState *craL_lexexecute(XokMalloc *xm, String *o){
  lexState *lex = newlexstate(xm);

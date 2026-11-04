@@ -376,8 +376,7 @@ targs_push(XokMalloc *xm, Targs *t, Tparam param)
 {
  if (!t) return 0;
  if (t->count >= t->size) {
-     if (!targs_expand(xm, t)) return 0;
- }
+     if (!targs_expand(xm, t)) return 0;}
  t->args[t->count] = param;
  t->count++;
  return 1;
@@ -388,9 +387,11 @@ static Ttypes *
 types_create(XokMalloc *xm, int init_size)
 {
  if (init_size <= 0) init_size = TYPES_DEFAULT_SIZE;
- Ttypes *t = (Ttypes *)xalloc_XokMalloc(xm, sizeof(Ttypes));
+ Ttypes *t = (Ttypes *)
+ xalloc_XokMalloc(xm, sizeof(Ttypes));
  if (!t) return NULL;
- t->types = (char **)xalloc_XokMalloc(xm, sizeof(char *) * init_size);
+ t->types = (char **)
+ xalloc_XokMalloc(xm, sizeof(char *) * init_size);
  if (!t->types)
   return NULL;
  t->size  = init_size;
@@ -417,7 +418,8 @@ types_expand(XokMalloc *xm, Ttypes *t)
 {
  if (!t) return 0;
  int new_size = t->size * TYPES_GROW_FACTOR;
- char **new_types = (char **)xalloc_XokMalloc(xm, sizeof(char *) * new_size);
+ char **new_types = (char **)
+ xalloc_XokMalloc(xm, sizeof(char *) * new_size);
  if (!new_types) return 0;
  memcpy(new_types, t->types, sizeof(char *) * t->count);
  t->types = new_types;
@@ -442,10 +444,13 @@ bytecode *
 bc_create(XokMalloc *xm, int init_size)
 {
   if (init_size <= 0) init_size = BC_DEFAULT_SIZE;
-  bytecode *bc = (bytecode *)xalloc_XokMalloc(xm, sizeof(bytecode));
+  bytecode *bc = (bytecode *)
+  xalloc_XokMalloc(xm, sizeof(bytecode));
   if (!bc) return NULL;
-  bc->codes = (int *)xalloc_XokMalloc(xm, sizeof(int) * init_size);
-  bc->values = (value *)xalloc_XokMalloc(xm, sizeof(value) * init_size);
+  bc->codes = (int *)
+  xalloc_XokMalloc(xm, sizeof(int) * init_size);
+  bc->values = (value *)
+  xalloc_XokMalloc(xm, sizeof(value) * init_size);
   if (!bc->codes || !bc->values)return NULL;
   bc->count = 0;
   bc->size  = init_size;
@@ -462,8 +467,8 @@ bc_free(XokMalloc *xm, bytecode *bc)
   if (bc->values) {
     for (int i = 0; i < bc->v_count; i++) {
       if (bc->values[i].type == TYPE_STRING)
-        {free(bc->values[i].v.s);}
-    }
+       free(bc->values[i].v.s);
+      }
   }
   if (bc->codes){}
 }
@@ -474,12 +479,14 @@ bc_expand(XokMalloc *xm, bytecode *bc)
 {
   if (!bc) return 0;
   int new_size = bc->size * 2;
-  int *new_codes = (int *)xalloc_XokMalloc(xm, sizeof(int) * new_size);
+  int *new_codes = (int *)
+  xalloc_XokMalloc(xm, sizeof(int) * new_size);
   if (!new_codes) return 0;
   memcpy(new_codes, bc->codes, sizeof(int) * bc->count);
   bc->codes = new_codes;
   bc->size  = new_size;
-  value *new_values = (value *)xalloc_XokMalloc(xm, sizeof(value) * new_size);
+  value *new_values = (value *)
+  xalloc_XokMalloc(xm, sizeof(value) * new_size);
   if (!new_values) return 0;
    memcpy(new_values, bc->values, sizeof(value) * bc->v_count);
   bc->values = new_values;
@@ -514,10 +521,13 @@ static varnamestk *
 vnstk_create(XokMalloc *xm, int init_size)
 {
   if (init_size <= 0) init_size = 16;
-  varnamestk *vs = (varnamestk *)xalloc_XokMalloc(xm, sizeof(varnamestk));
+  varnamestk *vs = (varnamestk *)
+  xalloc_XokMalloc(xm, sizeof(varnamestk));
   if (!vs) return NULL;
-  vs->vn    = (char **)xalloc_XokMalloc(xm, sizeof(char *) * init_size);
-  vs->slots = (int *)xalloc_XokMalloc(xm, sizeof(int) * init_size);
+  vs->vn = (char **)
+  xalloc_XokMalloc(xm, sizeof(char *) * init_size);
+  vs->slots = (int *)
+  xalloc_XokMalloc(xm, sizeof(int) * init_size);
   if (!vs->vn || !vs->slots) return NULL;
   vs->size  = init_size;
   vs->count = 0;
@@ -535,8 +545,10 @@ vnstk_expand(XokMalloc *xm, varnamestk *vs)
 {
   if (!vs) return 0;
   int new_size = vs->size * 2;
-  char **new_vn = (char **)xalloc_XokMalloc(xm, sizeof(char *) * new_size);
-  int *new_slots = (int *)xalloc_XokMalloc(xm, sizeof(int) * new_size);
+  char **new_vn = (char **)
+  xalloc_XokMalloc(xm, sizeof(char *) * new_size);
+  int *new_slots = (int *)
+  xalloc_XokMalloc(xm, sizeof(int) * new_size);
   if (!new_vn || !new_slots) return 0;
   memcpy(new_vn, vs->vn, sizeof(char *) * vs->count);
   memcpy(new_slots, vs->slots, sizeof(int) * vs->count);
@@ -551,8 +563,7 @@ vnstk_push(XokMalloc *xm, varnamestk *vs, const char *name, int slot)
 {
   if (!vs) return 0;
   if (vs->count >= vs->size) {
-   if(!vnstk_expand(xm, vs)) return 0;
-  }
+   if(!vnstk_expand(xm, vs)) return 0;}
   vs->vn[vs->count]    = strdup(name);
   vs->slots[vs->count] = slot;
   vs->count++;
@@ -563,8 +574,7 @@ static int
 vnstk_find(varnamestk *vs, const char *name)
 {
   for (int i = 0; i < vs->count; i++) {
-   if (strcmp(vs->vn[i], name) == 0)return vs->slots[i];
-  }
+   if (strcmp(vs->vn[i], name) == 0)return vs->slots[i];}
   return -1;
 }
 
@@ -640,22 +650,10 @@ static void treebinop(codesState cs, craastdesc *node, char *type){
 */
 void assignencode(codesState cs, craastdesc *node, char *type){
  switch(node->kind){
-  case AST_NUM:{
-     treenumber(cs, node, type);
-    break;
-  }
-  case AST_LVNAME:{
-    treelvalue(cs, node);
-   break;
-  }
-  case AST_BINOP:{
-    treebinop(cs, node, type);
-   break;
-  }
-  default:{
-    break;
-  }
- }
+  case AST_NUM:treenumber(cs, node, type);break;
+  case AST_LVNAME:treelvalue(cs, node);break;
+  case AST_BINOP:treebinop(cs, node, type);break;
+  default:break;}
  return;
 }
 
@@ -747,7 +745,7 @@ vmState* craC_bytecode_parse(XokMalloc *xm ,  desclist *dl){
   }
  }
  bc_emit(xm , cs.bc , OP_HALT);
- #define codesvisualization
+ //#define codesvisualization
  #ifdef codesvisualization
  craC_codes_log(cs.bc);
  op_visualization(cs.bc, cs.vns , cs.tcalls, cs.targs, cs.types);

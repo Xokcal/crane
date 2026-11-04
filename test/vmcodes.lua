@@ -8,4 +8,20 @@ VAR              i
 PUSH             3
 ADD              +
 REASSIGN         i
+LOAD             "i="
+LOAD             i
+CALL             print
+VAR              i
+VAR              i
+MUL              *
+VAR              i
+SUB              -
+PUSH             2
+PUSH             3
+MUL              *
+ADD              +
+REASSIGN         i
+LOAD             "i2="
+LOAD             i
+CALL             print
 EXIT

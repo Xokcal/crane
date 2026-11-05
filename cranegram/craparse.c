@@ -199,24 +199,22 @@ int craP_desclist_expand(XokMalloc *xm, desclist *dl){
 
 
 /*
-** collect target line origin code string by loop.
-** common execute this function when programme happen erro or bug.
+** Collect target line origin code string by loop.
+** Common execute this function when programme happen erro or bug.
 */
 static String *linecontext(ParseFactor *pf, long line){
  String *t = create_string("");
- long curline = 0;  /* record current line number. */
  for(int i = 0; i < pf->tokens->count; i++){
-  if(curline == line){addstr(t, pfcurstr(pf));}
-  else if(curline > line)return t;  /* current line 
+  if(pf->tokens->lextokens[i]->line == line){addstr(t, pfcurstr(pf));}
+  else if(pf->tokens->lextokens[i]->line > line)return t;  /* Current line 
   number > target line is return. */
-  curline = getcurline(pf);
  }
  return t;
 }
 
 
 /*
-** new desc tree push desclist stack, if dl count >= dl size
+** New desc tree push desclist stack, if dl count >= dl size
 ** use desclist expand funtion.
 */
 int craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree){
@@ -229,16 +227,16 @@ int craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree){
 
 
 /*
-** variable is undefine status, parse to not have assign value's expdesc.
+** Variable is undefine status, parse to not have assign value's expdesc.
 */
 static inline craastdesc* undefvardesc(XokMalloc *xm 
                      , String *name , String *type){
-  return make_assign(xm , name->str , NULL , type->str);
+return make_assign(xm , name->str , NULL , type->str);
 }
 
 
 /*
-** assign value expdesc node parse factor, assign value's number, function, 
+** Assign value expdesc node parse factor, assign value's number, function, 
 ** arrays index value,... parse to desc tree and return mid high priority
 ** and low priority function tackle.
 */
@@ -263,22 +261,22 @@ static craastdesc* parse_factor(pavstate ps){
 
 static craastdesc* parse_mid(pavstate ps){
  accept_empty(ps.pf);
- /* low priority calculate sign ,tackle struct 'craastdesc*' */
+ /* Low priority calculate sign ,tackle struct 'craastdesc*' */
  craastdesc *l = parse_factor(ps); /* is 'main node' in the funtion */
  String *cur = craP_ps_currtoken(ps);
  /* continuous tackle high priority condition */
  while(ishighprioritysign(cur->str)){
   pfnext(ps.pf);
-  accept_empty(ps.pf); /* current pf.token is calcsign */
-  /* ps entry parse_factor ps root address convert, but previous
+  accept_empty(ps.pf); /* Current pf.token is calcsign */
+  /* Ps entry parse_factor ps root address convert, but previous
   ps root's desc result address is store to craastdesc *l */
   craastdesc *r = parse_factor(ps);
   l = make_binop(ps.xm , cur->str , l , r);
-  /* every loop, l is after refresh l and loop internal r(num) 
+  /* Every loop, l is after refresh l and loop internal r(num) 
   make_binop() overall root node */
-  cur = craP_ps_currtoken(ps); /* refresh current calcsign */
+  cur = craP_ps_currtoken(ps); /* Refresh current calcsign */
  }
- /* external funtion need r node, l is has tackled all continuous high priority
+ /* External funtion need r node, l is has tackled all continuous high priority
  node tree, and/or first entre the funtion's low priority node(tree) */
  return l;
 }
@@ -287,22 +285,22 @@ static craastdesc* parse_mid(pavstate ps){
 
 static craastdesc* parsevaluemain(pavstate ps){
  accept_empty(ps.pf);
- /* tackle low priority or continous tackle high priority,
+ /* Tackle low priority or continous tackle high priority,
   use ps.root to accept res , root is current all craastdesc node */
  ps.root = parse_mid(ps); 
- /* drawer parse_mid() , current caculate sign */
+ /* Drawer parse_mid() , current caculate sign */
  String *cur = craP_ps_currtoken(ps);
  while (islowprioritysign(cur->str)){
   pfnext(ps.pf);
-  accept_empty(ps.pf); /* current is match right number */
+  accept_empty(ps.pf); /* Current is match right number */
   craastdesc *r = parse_mid(ps);
   ps.root = make_binop(ps.xm , cur->str , ps.root , r);
-  /* ps.root is previous ps.root and craastdesc *r binop node 
+  /* Ps.root is previous ps.root and craastdesc *r binop node 
   (about parse_mid() internal high priority root accept overall node),
   and current pf.token is calcsign */
-  cur = craP_ps_currtoken(ps); /* refresh current calcsign */
+  cur = craP_ps_currtoken(ps); /* Refresh current calcsign */
  }
- /* root is main node, has collected all tackled node tree */
+ /* Root is main node, has collected all tackled node tree */
  return ps.root; 
 }
 
@@ -314,22 +312,23 @@ static craastdesc* parsevaluemain(pavstate ps){
 */
 static craastdesc* vardesc(XokMalloc *xm , ParseFactor *pf, String *t){
  String *type = create_string(t->str);
- accept(pf , acptkint);  /* int type var */
- accept_empty(pf);  /* throught empty to variable name */
+ accept(pf , acptkint);  /* Int type var */
+ accept_empty(pf);  /* Throught empty to variable name */
  String *name = craP_pf_currtoken(pf);
  pfnext(pf);
- craastdesc* var = make_var(xm , name->str);  /* variable's name */
- accept_empty(pf);  /* throught empty to '=' */
- int isequ = accept(pf , "=");  /* judge '=' */
- if(!isequ){  /* if isEqu not's true , declare is 'int a;' */
+ craastdesc* var = make_var(xm , name->str);  /* Variable's name */
+ accept_empty(pf);  /* Throught empty to '=' */
+ int isequ = accept(pf , "=");  /* Judge '=' */
+ if(!isequ){  /* If isEqu not's true , declare is 'int a;' */
   craastdesc *undefinevar = 
-  undefvardesc(xm , name , type);  /* undefine variable tackle */
+  undefvardesc(xm , name , type);  /* Undefine variable tackle */
   return undefinevar;
  }
  pavstate ps = pavstate_init(xm , pf);
- craastdesc *v = parsevaluemain(ps); /* tackle after '=' value tree */
- /* current 'desc' struction is: struct assign* = {var_name , struct binop* root} */
- craastdesc *desc = make_assign(xm , name->str , v , type->str);
+ craastdesc *v = parsevaluemain(ps); /* Tackle after '=' value tree */
+ /* Current 'desc' struction is: struct assign* = {var_name , struct binop* root} */
+ craastdesc *desc = make_assign(
+ xm , name->str , v , type->str);
  strfree(t);
  return desc;
 }
@@ -342,31 +341,33 @@ static craastdesc* vardesc(XokMalloc *xm , ParseFactor *pf, String *t){
 ** package by struct Tparam.
 */
 static void stringargs(ParseFactor *pf, craastdesc *desc, String *t){
- if(strcmp(pfcurstr(pf) , "\"")==0){ /* is string */
+ if(strcmp(pfcurstr(pf) , "\"")==0){ /* Is string */
   accept(pf , "\""); /* eat '|"' */
   while(strcmp(pfcurstr(pf) , "\"") != 0){
-   cmptail(t, pfcurstr(pf)); /* main content */
+   cmptail(t, pfcurstr(pf)); /* Main content */
    pfnext(pf);
-  }/* current pf.token is double parenthesee , need slip the 
-  token by pfnext() later */
+  }/* Current pf.token is double parenthesee,
+  need slip the token by pfnext() later */
   Tparam tp;
   tp.pty = PRM_STRING;
   tp.originstr = strdup(t->str);
   /* Tparam tp push desc func args, and selfadd argsi. */
-  callpushargs(desc, tp);
-  strclear(t);  /* template String* delete all content. */
-  pfnext(pf);  /* slip '\"'. */
-  accept_empty(pf);  /* current chould is ',' or ')'  */ 
+  callpushargs(desc, tp);  /* Tparam assign 
+  to outed arrays is forever store */
+  strclear(t);  /* Template String* delete all content. */
+  pfnext(pf);  /* Slip '\"'. */
+  accept_empty(pf);  /* Current chould is ',' or ')'  */ 
  }
 }
 
 
-
+/* 
+** Could is ',' or crane key if the funtion have more args,
+** and string args not is last args like print(a , "crane" , 13).
+**                                                         `--------> ',' (be thought it was variable args).
+*/
 static void singletokenargs(ParseFactor *pf, craastdesc *desc){
-/* Could is ',' or crane key if the funtion have more args,
- and string args not is last args like print(a , "crane" , 13).
-                                                         `--------> ',' (be thought it was variable args).
- Function issinglekeys() args is char type 
+  /*Function issinglekeys() args is char type 
  and pfcurstr() result is char*, so judge whither 
  is ',' or singlesign use result[0] first char. */
  if(issinglekeys(pfcurstr(pf)[0]))return; 
@@ -392,7 +393,7 @@ static void singletokenargs(ParseFactor *pf, craastdesc *desc){
 */
 static int unkeycallexe(ParseFactor *pf, craastdesc *desc
                            , String *t, char *unkeytype){
- if(!strcmp(unkeytype , "(")){ /* "(" is function! */
+ if(!strcmp(unkeytype , "(")){  /* "(" is function! */
   pfnext(pf);
   do{
    if(!strcmp(pfcurstr(pf) , ")"))
@@ -462,7 +463,7 @@ static void unkeyhasvarexe(XokMalloc *xm, ParseFactor *pf,
 ** .., so overall call these is'unkey'.
 */
 static craastdesc* unkeydesc(XokMalloc *xm, 
-             ParseFactor *pf, desclist *dl){
+            ParseFactor *pf, desclist *dl){
  pfback(pf);  /* Current pf is slip key,
  pf need back to previous index get varibale key */
  craastdesc *desc; /* Overall desc node */
@@ -474,8 +475,8 @@ static craastdesc* unkeydesc(XokMalloc *xm,
  accept_empty(pf);
  unkeyhasvarexe(xm, pf, dl, &desc, unkey);
  int code = unkeycallexemain(xm, pf, &desc, unkey, t);
+ strfree(t); /* priroity free String, then return */
  if(code == errorcode)return NULL;
- strfree(t);
  return desc;
 }
 
@@ -487,8 +488,8 @@ static craastdesc* unkeydesc(XokMalloc *xm,
 static int notedesc(ParseFactor *pf){
   /* switch auto Slip first '-' judge next token whither is '-'. */
  if(!strcmp(pfcurstr(pf), "-")){
-  for(int i = pf->curr; i < pf->tokens->count; i++){  /* From current 
-   pf tokenpoint to tokens end, if reach '\n' exit. */
+  /* From current pf tokenpoint to tokens end, if reach '\n' exit. */
+  for(int i = pf->curr; i < pf->tokens->count; i++){  
    if(!strcmp(pfcurstr(pf), "\n"))return 0;  /* Current is token '\n'. */
    pfnext(pf);}
  }
@@ -498,7 +499,7 @@ static int notedesc(ParseFactor *pf){
  linecontext(pf, line);
  /* Tell use error reason. */
  craCM_error(line, "grammar only have single '-' . ");
- /* Tell reatil error code context. */
+ /* Tell reatil error origin code content. */
  craCM_error(getcurline(pf), lineorigincode->str);
  strfree(lineorigincode);  /* Free String* t */
  return 1;
@@ -508,17 +509,17 @@ static int notedesc(ParseFactor *pf){
 /*
 ** Crane parse ast main execute.
 */
-int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl)
-{
+int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl){
  ParseFactor pf = {ts , 0};  /* Package tokens and index(curr) */
  while(pf.curr < ts->count){  /* Ast parse executor main while */
-  String *t = pf.tokens->lextokens[pf.curr++]->token;
+  /* Noted: very loop entry switch match pf's curr have selfadd,
+   inner function get GRAM token need back. */
+  String *t = pf.tokens->lextokens[pf.curr++]->token; 
   switch(tokentype(t)){
    case GRAM_UNKEY:{
     craastdesc *cd = unkeydesc(xm , &pf, dl);
     pushdl(xm, dl, cd);
-    if(cd == NULL)
-     return errorcode;
+    if(cd == NULL)return errorcode;
     break;
    }
    case GRAM_NOTE:{

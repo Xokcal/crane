@@ -100,7 +100,7 @@ typedef struct HAJIGA_ATM{
     String *ATM_SCREEN_0X1868632;
 }HAJIGA_ATM;
 
-
+void craL_lexstatefree(lexState *lex);
 int issinglekeys(const char c);
 int iscranekeys(const char *s);
 lexState *craL_lexexecute(XokMalloc *txm, String *origin_file_string);

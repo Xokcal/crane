@@ -1,4 +1,4 @@
-int i = 560;
+int i = 3;
 print("i=",i);
 i = i + 3;
 print("i=", i);

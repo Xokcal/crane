@@ -28,6 +28,18 @@ static inline lexState* newlexstate(XokMalloc *xm){
  return lex;
 }
 
+
+/*
+** release struct lexState, main task is free struct String* token.
+*/
+void craL_lexstatefree(lexState *lex){
+ while(lex->count >= 0){
+  strfree(lex->lextokens[lex->count]->token);
+  lex->count--;
+ }
+}
+
+
 /*
 ** by ASCLL code to judge whether char c is single sign.
 */

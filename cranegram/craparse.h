@@ -187,12 +187,8 @@ typedef struct pavstate{
 
 /* crane ast parse main funtion, xokMalloc is memory pool */
 int craP_parsedesc(XokMalloc *xokMalloc , lexState *tokens , desclist *dl);
-
 desclist *craP_desclist_create(XokMalloc *xm, int init_size);
-
 void craP_desclist_free(XokMalloc *xm, desclist *dl);
-
 int craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree);
-
 int craP_desclist_expand(XokMalloc *xm, desclist *dl);
 #endif

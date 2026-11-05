@@ -1,13 +1,8 @@
-<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-  <!-- 深色圆角背景板（适配暗色主题） -->
-  <rect width="30" height="30" rx="16" fill="#32323934" />
-  
-  <!-- 绿色极简 C -->
-  <path d="M 44 20 A 14 14 0 1 0 44 44" fill="none" stroke="#8bd7a2" stroke-width="8" stroke-linecap="round" />
-  
-  <!-- 粉色动感弧线 -->
-  <path d="M 12 20 A 20 20 0 0 0 12 44" fill="none" stroke="#ee77be" stroke-width="5" stroke-linecap="round" />
-  
-  <!-- 紫色核心点 -->
-  <circle cx="50" cy="32" r="4" fill="#93e4ca" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 44 32" width="54.6" height="39">
+  <!-- 主大环 -->
+  <circle cx="19" cy="16" r="13" fill="none" stroke="#8ee6ee" stroke-width="2.9"/>
+  <!-- 中心小圆环（donut，内孔透明） -->
+  <circle cx="19" cy="16" r="2.6" fill="none" stroke="#f59cd4" stroke-width="2.6"/>
+  <!-- 右上角小方环 -->
+  <rect x="31.5" y="1" width="9.5" height="9.5" rx="2" fill="none" stroke="#beee8e" stroke-width="2.9"/>
 </svg>

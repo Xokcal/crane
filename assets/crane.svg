@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 28" width="42" height="28">
+  <!-- 主大环 -->
+  <circle cx="19" cy="15" r="10" fill="none" stroke="#8EAAEE" stroke-width="2.2"/>
+  <!-- 中心小圆环（donut，内孔透明） -->
+  <circle cx="19" cy="15" r="2" fill="none" stroke="#9CB8F5" stroke-width="2"/>
+  <!-- 右上角小方环 -->
+  <rect x="29" y="3" width="7.5" height="7.5" rx="1.5" fill="none" stroke="#8EAAEE" stroke-width="2.2"/>
+</svg>

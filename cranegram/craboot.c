@@ -13,13 +13,16 @@
 #include "cravm.h"
 #include "cracom.h"
 
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
 
 int main(){
+ _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
  starttime;
  setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
- String *context = open_file("test/test3.ce");
+ String *context = open_file("test/test1.ce");
  //logc("context",context->str);
  lexState *lexstate = craL_lexexecute(txm, context);
  //#define tsprint
@@ -32,6 +35,7 @@ int main(){
  Hashmap *hmap = create_hashmap(); /* gloab variable*/
  desclist *dl = craP_desclist_create(xm , 1); /* tree list */
  parsecode = craP_parsedesc(xm , lexstate , dl);  /*  AST main parse */
+ craL_lexstatefree(lexstate);
  if(parsecode == errorcode)
   goto executeError;
  vmState *vmState = craC_bytecode_parse(xm , dl);

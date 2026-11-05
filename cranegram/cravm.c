@@ -87,12 +87,13 @@ vmState *
 vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns,
   Ttypes *tys, Targs *Targs, Tcalls *tcalls, int size){
  if (size <= 0) size = VM_DEFAULT_STACK_SIZE;
- vmState *v = (vmState *)xalloc_XokMalloc(xm, sizeof(vmState));
+ vmState *v = (vmState *)
+ xalloc_XokMalloc(xm, sizeof(vmState));
  if (!v) return NULL;
- v->vs = (value *)xalloc_XokMalloc
- (xm, sizeof(value) * size);
- v->vslots = (value *)xalloc_XokMalloc
- (xm, sizeof(value) * VM_DEFAULT_VSLOTS_SIZE);
+ v->vs = (value *)
+ xalloc_XokMalloc(xm, sizeof(value) * size);
+ v->vslots = (value *)
+ xalloc_XokMalloc(xm, sizeof(value) * VM_DEFAULT_VSLOTS_SIZE);
  v->tempargs = (Tparam*)
  xalloc_XokMalloc(xm, sizeof(Tparam) * VM_DEFAULT_TEMPARGS_SIZE);
  if (!v->vs) return NULL;

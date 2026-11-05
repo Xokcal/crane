@@ -310,7 +310,7 @@ static craastdesc* parsevaluemain(pavstate ps){
 ** Variable parse to expdesc main function.
 ** About differ variable type, and differ variable garmmar express type.
 */
-static craastdesc* vardesc(XokMalloc *xm , ParseFactor *pf, String *t){
+static craastdesc* vardesc(XokMalloc *xm, ParseFactor *pf, String *t){
  String *type = create_string(t->str);
  accept(pf , acptkint);  /* Int type var */
  accept_empty(pf);  /* Throught empty to variable name */
@@ -329,7 +329,6 @@ static craastdesc* vardesc(XokMalloc *xm , ParseFactor *pf, String *t){
  /* Current 'desc' struction is: struct assign* = {var_name , struct binop* root} */
  craastdesc *desc = make_assign(
  xm , name->str , v , type->str);
- strfree(t);
  return desc;
 }
 
@@ -395,8 +394,7 @@ static int unkeycallexe(ParseFactor *pf, craastdesc *desc
                            , String *t, char *unkeytype){
  if(!strcmp(unkeytype , "(")){  /* "(" is function! */
   pfnext(pf);
-  do{
-   if(!strcmp(pfcurstr(pf) , ")"))
+  do{if(!strcmp(pfcurstr(pf) , ")"))
    /* If function not have args like: "print();"
    , next token is ')' can return. */
    return successcode;
@@ -406,7 +404,7 @@ static int unkeycallexe(ParseFactor *pf, craastdesc *desc
    singletokenargs(pf , desc);
   }while(testnext(pf, ","));  /* If have one or more args, at least 
   loop one time, have ',' execute next args and selfadd pf.curr. */
-  if(accept(pf , acptSemicolon))
+  if(accept(pf , ";"))
    return successcode;
   craCM_error(craC_tokencurline(pf),
    "function not have end: \";\" ");

@@ -25,6 +25,7 @@ static inline lexState* newlexstate(XokMalloc *xm){
  xalloc_XokMalloc(xm, sizeof(lexState));
  lex->lextokens = (lextoken**)
  xalloc_XokMalloc(xm, LEX_TOKENS_SIZE * sizeof(lextoken*));
+ lex->count = 0;
  return lex;
 }
 
@@ -33,10 +34,11 @@ static inline lexState* newlexstate(XokMalloc *xm){
 ** release struct lexState, main task is free struct String* token.
 */
 void craL_lexstatefree(lexState *lex){
- while(lex->count >= 0){
-  strfree(lex->lextokens[lex->count]->token);
-  lex->count--;
+ for(long i = 0; i < lex->count; i++){
+  strfree(lex->lextokens[i]->token);
  }
+ lex->lextokens = NULL;
+ lex = NULL;
 }
 
 

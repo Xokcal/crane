@@ -13,3 +13,8 @@ gcc.exe cranegram/types.c cranegram/craobject.c cranegram/test.c cranegram/crafu
 mingw32-make run
 
 mingw32-make
+
+gcc -g cranegram/types.c cranegram/craobject.c cranegram/test.c cranegram/crafunc.c cranegram/craboot.c cranegram/cravm.c cranegram/cracode.c cranegram/craparse.c cranegram/cgm_file.c cranegram/cgm_gramma.c cranegram/cralex.c tool/file/file.c tool/log/log.c tool/map/hashmap_int.c tool/String/String.c tool/xokmalloc/xokmalloc.c  -o main.exe
+
+
+gcc.exe -g -gdwarf-2  cranegram/types.c cranegram/craobject.c cranegram/test.c cranegram/crafunc.c cranegram/craboot.c cranegram/cravm.c cranegram/cracode.c cranegram/craparse.c cranegram/cgm_file.c cranegram/cgm_gramma.c cranegram/cralex.c tool/file/file.c tool/log/log.c tool/map/hashmap_int.c tool/String/String.c tool/xokmalloc/xokmalloc.c  -o main.exe

@@ -28,7 +28,7 @@ craastdesc* make_num(XokMalloc *xokMalloc ,  int n){
 }
 
 craastdesc *make_binop(XokMalloc *xokMalloc, char *calcsign,
-                             craastdesc *left , craastdesc *right){
+                      craastdesc *left , craastdesc *right){
  craastdesc *node = (craastdesc *)
  xalloc_XokMalloc(xokMalloc , sizeof(craastdesc));
  node->kind = AST_BINOP;
@@ -76,5 +76,28 @@ craastdesc *make_hasvar(XokMalloc *xokmalloc
  node->as.hasvar.name = strdup(name);
  node->as.hasvar.value = value;
  node->as.hasvar.type = strdup(type);
+ return node;
+}
+
+craastdesc *make_cmp(XokMalloc *xokmalloc, char *cmpc,
+                craastdesc *left , craastdesc *right){
+ craastdesc *node = (craastdesc *)
+ xalloc_XokMalloc(xokmalloc , sizeof(craastdesc));
+ node->kind = AST_CMP;
+ node->as.binop.calcsign = strdup(cmpc);
+ node->as.binop.left = left;
+ node->as.binop.right = right;
+ return node;
+}
+
+
+craastdesc *make_condi(XokMalloc *xokmalloc, char *cmpc,
+                craastdesc *left , craastdesc *right){
+ craastdesc *node = (craastdesc *)
+ xalloc_XokMalloc(xokmalloc , sizeof(craastdesc));
+ node->kind = AST_CONDI;
+ node->as.binop.calcsign = strdup(cmpc);
+ node->as.binop.left = left;
+ node->as.binop.right = right;
  return node;
 }

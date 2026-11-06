@@ -85,7 +85,8 @@ typedef enum cragramtype{
   GRAM_EMPTY,     /* [4]origin token is 'empty' */
   GRAM_VAR,       /* [5]origin token is 'variable' */
   GRAM_UNKEY,     /* [6]origin token is 'unkey' */
-  GRAM_NOTE       /* [7]origin token is '-' judge behind is '--' note */
+  GRAM_NOTE,     /* [7]origin token is '-' judge behind is '--' note */
+  GRAM_IF         /* [8]origin token is 'if' */
 }cragramtype;
 
 /* signed ast descibtion grammar tree type */
@@ -99,7 +100,9 @@ typedef enum craasttype{
   AST_UNKEY,        /* [6]AST type unkey */
   AST_CALL,         /* [7]AST type call(function) */
   AST_LVNAME,       /* [8]AST type left value */
-  AST_HASVAR        /* [9]AST type has def variable */
+  AST_HASVAR,       /* [9]AST type has def variable */
+  AST_CONDI,        /* [10]AST type condition logic */
+  AST_CMP           /* [11]AST type compare condition */
 }craasttype;
 
 /* define param type like: {("hello", count, 10086, 3.1415)} */
@@ -155,10 +158,13 @@ typedef struct craastdesc{
 
 #define HIGH_PRI_SIGN_SIZE 2
 #define LOW_PRI_SIGN_SIZE 2
+#define CONDI_SIGN_SIZE 2
 
 static char *highprisign[] = {"*" , "/"};
 
 static char *lowprisign[] = {"+" , "-"};
+
+static char *condisign[] = {"and", "or"};
 
 typedef struct desclist{
   craastdesc **desclist;

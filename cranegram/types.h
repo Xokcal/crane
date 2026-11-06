@@ -22,5 +22,9 @@ craastdesc *make_assign(XokMalloc *xokMalloc, char *name,
 craastdesc *make_call(XokMalloc *xokMalloc, char *name);
 craastdesc *make_lvalue(XokMalloc *xokmalloc , char *name);
 craastdesc *make_hasvar(XokMalloc *xokmalloc,
-  craastdesc *value, char *name, char *type);
+craastdesc *value, char *name, char *type);
+craastdesc *make_cmp(XokMalloc *xokmalloc, char *cmpc,
+                craastdesc *left , craastdesc *right);
+craastdesc *make_condi(XokMalloc *xokmalloc, char *cmpc,
+                craastdesc *left , craastdesc *right);
 #endif

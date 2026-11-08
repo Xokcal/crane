@@ -721,6 +721,34 @@ static void asthasvarexe(codesState cs, craastdesc *desc){
  return;
 }
 
+
+/*
+** Only give ifdesc node's condi desc tree.
+*/
+static void ifcondiexe(codesState cs, craastdesc *node){
+ if(node->kind == AST_CMP){
+  assignencode(cs, node->as.binop.left);
+  assignencode(cs, node->as.binop.right);
+  bc_emit(cs.xm, cs.bc, OP_PUSH);
+  vnstk_push(cs.xm , cs.vns , node->as.binop.calcsign , (*cs.vnsi));
+  bc_emit(cs.xm , cs.bc , (*cs.vnsi)++);
+ }
+ if(node->kind == AST_CONDI){
+  ifcondiexe(cs, node->as.binop.left);
+  ifcondiexe(cs, node->as.binop.right);
+  bc_emit(cs.xm, cs.bc, OP_PUSH);
+  vnstk_push(cs.xm , cs.vns , node->as.binop.calcsign , (*cs.vnsi));
+  bc_emit(cs.xm , cs.bc , (*cs.vnsi)++);
+  if(strcmp(node->as.binop.calcsign, "and")==0){
+    bc_emit(cs.xm, cs.bc, OP_JMP_FALSE);
+    // push stack...
+  }else{
+    bc_emit(cs.xm, cs.bc, OP_JMP_TRUE);
+    //push stack...
+  }
+ }
+}
+
 /*
 ** bytecode parse main execute.
 */
@@ -739,6 +767,10 @@ vmState* craC_bytecode_parse(XokMalloc *xm ,  desclist *dl){
    }
    case AST_CALL:{
     astcallexe(cs, curdesc);
+    break;
+   }
+   case AST_IF:{
+    ifcondiexe(cs, curdesc);
     break;
    }
    default:break;

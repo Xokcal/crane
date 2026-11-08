@@ -21,7 +21,7 @@ int main(){
  String *context = open_file("test/test4_if.ce");
  //logc("context",context->str);
  lexState *lexstate = craL_lexexecute(txm, context);
- #define tsprint
+ //#define tsprint
  #ifdef tsprint
  for(int i = 0; i < lexstate->count ; i++){
   logc("token" , lexstate->lextokens[i]->token->str);

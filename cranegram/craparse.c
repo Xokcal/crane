@@ -301,7 +301,7 @@ static void stringargs(ParseFactor *pf, craastdesc *desc, String *t){
   tp.pty = PRM_STRING;
   tp.originstr = strdup(t->str);
   /* Tparam tp push desc func args, and selfadd argsi. */
-  callpushargs(desc, tp);  /* Tparam assign 
+  callpushargs(desc, tp);  /* Tparam assign
   to outed arrays is forever store */
   strclear(t);  /* Template String* delete all content. */
   pfnext(pf);  /* Slip '\"'. */
@@ -518,21 +518,23 @@ static craastdesc *ifcondimain(XokMalloc *xm, ParseFactor *pf){
 /*
 ** If key main execute, by ifcondimain(), block()... function tackle to desc tree.
 */
-static craastdesc *ifdesc(XokMalloc *xm, ParseFactor *pf, lexState *ts){
+static craastdesc *ifdesc(XokMalloc *xm, 
+         ParseFactor *pf, lexState *ts){
  accept_empty(pf);  /* Ensure current token not is empty */
  accept(pf, "(");  /* Current token probably is '(' and eat */
  accept_empty(pf);  /* Current is authentic content */
  /* First execute if comdition tree */
- craastdesc *condi = ifcondimain(xm, pf);/* Parse if condition
-  desc tree, tokesn is "(" when entry, and out this function token is ")" */
+ craastdesc *condi = ifcondimain(xm, pf);/* Parse if condition desc 
+ tree, tokesn is "(" when entry, and out this function token is ")" */
  pfnext(pf); accept_empty(pf);
- accept(pf, "{"); accept_empty(pf);  /* Eat "{" judge current whither is this token */
- Tblock *ifblock = newTblock(xm);  /* Tblock use to record "{..}" inner content tree */
+ /* Eat "{" judge current whither is this token */
+ accept(pf, "{"); accept_empty(pf);
+ /* Tblock use to record "{..}" inner content tree */
+ Tblock *ifblock = newTblock(xm);
  /* Ifdesc use to record condition tree and {..} content*/
  craastdesc *ifdesc = make_ifdesc(xm, condi, ifblock);
  /* {..} content parse tree by use craP_parsedesc() */
- craP_parsedesc(
- xm, ts, ifblock->treelist, pf->curr);
+ craP_parsedesc(xm, ts, ifblock->treelist, pf->curr);
  return ifdesc;
 }
 
@@ -550,9 +552,10 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx){
   String *t = pf.tokens->lextokens[pf.curr++]->token; 
   switch(tokentype(t)){
    case GRAM_UNKEY:{
-    craastdesc *cd = unkeydesc(xm , &pf, dl);
-    pushdl(xm, dl, cd);
-    if(cd == NULL)return errorcode;
+     craastdesc *cd = unkeydesc(xm , &pf, dl);
+     pushdl(xm, dl, cd);
+     if(cd == NULL)
+      return errorcode;
     break;
    }
    case GRAM_IF:{
@@ -573,9 +576,9 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx){
     return successcode;
    }
    case GRAM_VAR:{
-    craastdesc *vd = 
-    vardesc(xm , &pf , t);
-    pushdl(xm , dl , vd);
+     craastdesc *vd = 
+     vardesc(xm , &pf , t);
+     pushdl(xm , dl , vd);
     break;
    }
   }

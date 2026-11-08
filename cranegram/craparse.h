@@ -5,6 +5,7 @@
 #include <string.h>
 #include "cralex.h"
 #include "cracode.h"
+#include "types.h"
 
 /* struct create desclist init desc arrays size */
 #define DESCLIST_DEFAULT_SIZE 200
@@ -85,8 +86,9 @@ typedef enum cragramtype{
   GRAM_EMPTY,     /* [4]origin token is 'empty' */
   GRAM_VAR,       /* [5]origin token is 'variable' */
   GRAM_UNKEY,     /* [6]origin token is 'unkey' */
-  GRAM_NOTE,     /* [7]origin token is '-' judge behind is '--' note */
-  GRAM_IF         /* [8]origin token is 'if' */
+  GRAM_NOTE,      /* [7]origin token is '-' judge behind is '--' note */
+  GRAM_IF,        /* [8]origin token is 'if' */
+  GRAM_BLOCK_END  /* [9]origin token is "}" use to return */
 }cragramtype;
 
 /* signed ast descibtion grammar tree type */
@@ -102,7 +104,8 @@ typedef enum craasttype{
   AST_LVNAME,       /* [8]AST type left value */
   AST_HASVAR,       /* [9]AST type has def variable */
   AST_CONDI,        /* [10]AST type condition logic */
-  AST_CMP           /* [11]AST type compare condition */
+  AST_CMP,          /* [11]AST type compare condition */
+  AST_IF            /* [12]AST type if desc tree */
 }craasttype;
 
 /* define param type like: {("hello", count, 10086, 3.1415)} */
@@ -153,6 +156,10 @@ typedef struct craastdesc{
    struct craastdesc *value; /* value tree*/
    char *type;               /* variable type */
   }hasvar;
+  struct ifdesc{
+    struct craastdesc *condi;  /* if condition tree */
+    struct Tblock *block;  /* if main content block */
+  }ifdesc;
  } as;
 }craastdesc;
 
@@ -191,8 +198,13 @@ typedef struct pavstate{
   craastdesc *root;
 }pavstate;
 
+typedef struct Tblock{
+ desclist *treelist;
+ long count;
+}Tblock;
+
 /* crane ast parse main funtion, xokMalloc is memory pool */
-int craP_parsedesc(XokMalloc *xokMalloc , lexState *tokens , desclist *dl);
+int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx);
 desclist *craP_desclist_create(XokMalloc *xm, int init_size);
 void craP_desclist_free(XokMalloc *xm, desclist *dl);
 int craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree);

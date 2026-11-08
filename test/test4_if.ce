@@ -1,1 +1,6 @@
-if(a < 10 or a2 > 1 and a3 + 9 eq 19 or 4 eq 9)
+if(a < 10 or a2 > 1 and a3 + 9 eq 19 or 4 eq 9){
+    print("hello", "crane if!!");
+    print("call 2 if inner", 1432);
+}
+
+print("out);

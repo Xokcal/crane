@@ -9,10 +9,10 @@
 #include "craparse.h"
 
 typedef struct craastdesc craastdesc;
+typedef struct Tblock Tblock;
+typedef struct desclist desclist;
 
-/*
-** ast parse variable string name to struct desc
-*/
+/* make desc func */
 craastdesc *make_var(XokMalloc *xokmalloc , char *name);
 craastdesc* make_num(XokMalloc *xokMalloc ,  int n);
 craastdesc *make_binop(XokMalloc *xokMalloc, char *calcsign,
@@ -27,4 +27,13 @@ craastdesc *make_cmp(XokMalloc *xokmalloc, char *cmpc,
                 craastdesc *left , craastdesc *right);
 craastdesc *make_condi(XokMalloc *xokmalloc, char *cmpc,
                 craastdesc *left , craastdesc *right);
+craastdesc *make_ifdesc(XokMalloc *xokmalloc,
+           craastdesc *condi, Tblock *block);
+/* desclist func */
+desclist *craP_desclist_create(XokMalloc *xm, int init_size);
+void craP_desclist_free(XokMalloc *xm, desclist *dl);
+int craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree);
+int craP_desclist_expand(XokMalloc *xm, desclist *dl);
+/* Tblock func*/
+Tblock *newTblock(XokMalloc *xm);
 #endif

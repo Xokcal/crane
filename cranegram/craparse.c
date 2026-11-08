@@ -67,6 +67,7 @@ static int tokentype(String *s){
  if(compare(s , "print"))return GRAM_UNKEY;
  if(compare(s , "-"))return GRAM_NOTE;
  if(compare(s , "if"))return GRAM_IF;
+ if(compare(s , "}"))return GRAM_BLOCK_END;
  if(!iscranekeys(s->str))return GRAM_UNKEY;
  return GRAM_EMPTY;
 }
@@ -163,51 +164,6 @@ static void print_ast(craastdesc *node, int depth){
 
 
 /*
-** Create a description list with initial capacity 'init_size'.
-** A non-positive 'init_size' uses DESCLIST_DEFAULT_SIZE.
-** Returns NULL if allocation fails.
-*/
-desclist *craP_desclist_create(XokMalloc *xm, int init_size){
-  if (init_size <= 0) init_size = DESCLIST_DEFAULT_SIZE;
-  desclist *dl = (desclist *)xalloc_XokMalloc(xm, sizeof(desclist));
-  if (!dl) return NULL;
-  dl->desclist = (craastdesc **)xalloc_XokMalloc(
-  xm, sizeof(craastdesc *) * init_size);
-  if (!dl->desclist)return NULL; /* dl non-create return NULL */
-  dl->size  = init_size;
-  dl->count = 0;
-  return dl;
-}
-
-
-/* desclist free let desc arrays equal NULL, dl use xokmallc pool need't free */
-inline void craP_desclist_free(XokMalloc *xm, desclist *dl){
-  if (!dl) return;
-  if (dl->desclist)dl->desclist = NULL;
-  dl->count = 0;
-  dl->size = 0;
-}
-
-
-/*
-** Desc list expand size by (origin size * DESCLIST_GROW_FACTOR).
-** memcpy function copy dl's origin desclist and give to new desclist.
-** need't free origin desclist, it use xokmalloc pool. 
-*/
-int craP_desclist_expand(XokMalloc *xm, desclist *dl){
-  if (!dl) return 0;
-  int new_size = dl->size * DESCLIST_GROW_FACTOR;
-  craastdesc **new_arr = (craastdesc **)xalloc_XokMalloc
-  (xm, sizeof(craastdesc *) * new_size);
-  if (!new_arr) return 0; /* non-create return 0. */
-  memcpy(new_arr, dl->desclist, sizeof(craastdesc *) * dl->count);
-  dl->desclist = new_arr;
-  dl->size = new_size;
-  return 1; /* success return 1. */
-}
-
-
-/*
 ** Collect target line origin code string by loop.
 ** Common execute this function when programme happen erro or bug.
 */
@@ -219,19 +175,6 @@ static String *linecontext(ParseFactor *pf, long line){
   number > target line is return. */
  }
  return t;
-}
-
-
-/*
-** New desc tree push desclist stack, if dl count >= dl size
-** use desclist expand funtion.
-*/
-int craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree){
-  if (!dl) return 0;
-  if (dl->count >= dl->size) {
-  if (!craP_desclist_expand(xm, dl))return 0;}
-  dl->desclist[dl->count++] = tree;
-  return 1;
 }
 
 
@@ -291,7 +234,6 @@ static craastdesc* parse_mid(pavstate ps){
 }
 
 
-
 static craastdesc* parsevaluemain(pavstate ps){
  accept_empty(ps.pf);
  /* Tackle low priority or continous tackle high priority,
@@ -312,7 +254,6 @@ static craastdesc* parsevaluemain(pavstate ps){
  /* Root is main node, has collected all tackled node tree */
  return ps.root; 
 }
-
 
 
 /*
@@ -372,7 +313,7 @@ static void stringargs(ParseFactor *pf, craastdesc *desc, String *t){
 /* 
 ** Could is ',' or crane key if the funtion have more args,
 ** and string args not is last args like print(a , "crane" , 13).
-**                                                         `--------> ',' (be thought it was variable args).
+**           ',' (be thought it was variable args).   ____/
 */
 static void singletokenargs(ParseFactor *pf, craastdesc *desc){
   /*Function issinglekeys() args is char type 
@@ -393,8 +334,6 @@ static void singletokenargs(ParseFactor *pf, craastdesc *desc){
  pfnext(pf);
  accept_empty(pf);
 }
-
-
 
 
 /*
@@ -513,21 +452,20 @@ static int notedesc(ParseFactor *pf){
  return 1;
 }
 
-//if(a < 10 or a2 > 1 and a3 + 9 eq 19)
+
 /*
+** if(a < 10 or a2 > 1 and a3 + 9 eq 19)
 ** Tackle compare describtion tree execute, pf token start to first content. 
 */
 static craastdesc *cmpdescexe(XokMalloc *xm, ParseFactor *pf){
- logc("en cmp curr token", pfcurstr(pf));
  pavstate ps = pavstate_init(xm , pf);  /* Package xm, pf to ps */
- /* Token is compare char when parsevaluemain() return */
- craastdesc *lv = parsevaluemain(ps);  /* Current token is first authentic contene */
+ /* Token is compare char when parsevaluemain() return 
+ and current token is first authentic contene */
+ craastdesc *lv = parsevaluemain(ps);  
  char *cmpsign = pfcurstr(pf);
- pfnext(pf);  /* Reach compare sign next value */
- accept_empty(pf); 
+ pfnext(pf); accept_empty(pf);  /* Reach compare sign next value */
  craastdesc *rv = parsevaluemain(ps);
  craastdesc *cmpdesc = make_cmp(xm, cmpsign, lv, rv);
- logc("cmp end cur t", pfcurstr(pf));
  return cmpdesc;  /* current token is condition sign */
 }
 
@@ -539,15 +477,16 @@ static craastdesc *cmpdescexe(XokMalloc *xm, ParseFactor *pf){
 static craastdesc *ifcondimid(XokMalloc *xm, ParseFactor *pf){
   /* Return cmpdescexe() compare tree result current is condition sign*/
  craastdesc *l = cmpdescexe(xm, pf);
- /* Reach 'and' condition sign continous collect high priority condition. */
+ /* Reach 'and' condition sign continous
+  collect high priority condition. */
  while(strcmp(pfcurstr(pf), "and")==0){
   char *condic = pfcurstr(pf);   /* Record current condition sign */
-  logc("mid while cur comdic", condic);
   pfnext(pf); accept_empty(pf);  /* Reach next authentic content */
   craastdesc *r = cmpdescexe(xm, pf);
-  /* Up craastdesc l is single binop, here r is new cmpdesc, 
-  r and l make new condidesc, l equal new condition desc if have next 
-  while l is this new condition desc and continous combine new r cmpdesc. */
+  /* Up craastdesc l is single binop, here r is new 
+  cmpdesc, r and l make new condidesc, l equal new 
+  condition desc if have next while l is this new condition
+   desc and continous combine new r cmpdesc. */
   l = make_condi(xm, condic, l, r);  /* Make condition tree */
  }
  return l;
@@ -555,15 +494,15 @@ static craastdesc *ifcondimid(XokMalloc *xm, ParseFactor *pf){
 
 
 /*
-** if condition tree main execute function and condition low priroity execute factor
+** if condition tree main execute function and condition 
+** low priroity execute factor
 */
 static craastdesc *ifcondimain(XokMalloc *xm, ParseFactor *pf){
  craastdesc *l = ifcondimid(xm, pf);  /* Desc l is main desc */
- /* In ifcondimid has continous combine 'and' condition,
-  next only is 'or' and entry */
+ /* In ifcondimid has continous combine 'and' 
+ condition,  next only is 'or' and entry */
  while(strcmp(pfcurstr(pf), "or")==0){
   char *condic = pfcurstr(pf);  /* Store this condition sign */
-  logc("main while cur comdic", condic);
   pfnext(pf); accept_empty(pf);
   /* Again use function ifcondimid(), judge next whitehr
    is 'and', if is.. continous combine and return to r*/
@@ -579,24 +518,31 @@ static craastdesc *ifcondimain(XokMalloc *xm, ParseFactor *pf){
 /*
 ** If key main execute, by ifcondimain(), block()... function tackle to desc tree.
 */
-static craastdesc *ifdesc(XokMalloc *xm, ParseFactor *pf){
+static craastdesc *ifdesc(XokMalloc *xm, ParseFactor *pf, lexState *ts){
  accept_empty(pf);  /* Ensure current token not is empty */
  accept(pf, "(");  /* Current token probably is '(' and eat */
  accept_empty(pf);  /* Current is authentic content */
- logc("en current token", pfcurstr(pf));
  /* First execute if comdition tree */
- craastdesc *root = ifcondimain(xm, pf);/* Current pf token is "(" */
- // Tackle block...
- return root;
+ craastdesc *condi = ifcondimain(xm, pf);/* Parse if condition
+  desc tree, tokesn is "(" when entry, and out this function token is ")" */
+ pfnext(pf); accept_empty(pf);
+ accept(pf, "{"); accept_empty(pf);  /* Eat "{" judge current whither is this token */
+ Tblock *ifblock = newTblock(xm);  /* Tblock use to record "{..}" inner content tree */
+ /* Ifdesc use to record condition tree and {..} content*/
+ craastdesc *ifdesc = make_ifdesc(xm, condi, ifblock);
+ /* {..} content parse tree by use craP_parsedesc() */
+ craP_parsedesc(
+ xm, ts, ifblock->treelist, pf->curr);
+ return ifdesc;
 }
 
 
 /*
 ** Crane parse ast main execute.
 */
-int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl){
+int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx){
   /* Package tokens and index(curr) */
- ParseFactor pf = {ts , 0}; 
+ ParseFactor pf = {ts , curidx}; 
  /* Ast parse executor main while */
  while(pf.curr < ts->count){  
   /* Noted: very loop entry switch match pf's curr have selfadd,
@@ -610,8 +556,7 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl){
     break;
    }
    case GRAM_IF:{
-    log("en if");
-     craastdesc *r = ifdesc(xm, &pf);
+     craastdesc *r = ifdesc(xm, &pf, ts);
      pushdl(xm, dl, r);
     break;
    }
@@ -622,6 +567,10 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl){
    }
    case GRAM_EMPTY:{
     break;
+   }
+   case GRAM_BLOCK_END:{  /* Reach "}" toekn judge is
+   "{..}" terminal, use craP_parsedesc() should return */
+    return successcode;
    }
    case GRAM_VAR:{
     craastdesc *vd = 

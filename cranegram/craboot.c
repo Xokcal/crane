@@ -30,7 +30,7 @@ int main(){
  XokMalloc *xm = create_XokMalloc();
  Hashmap *hmap = create_hashmap(); /* gloab variable*/
  desclist *dl = craP_desclist_create(xm , 1); /* tree list */
- parsecode = craP_parsedesc(xm , lexstate , dl);  /*  AST main parse */
+ parsecode = craP_parsedesc(xm , lexstate , dl, 0);  /*  AST main parse */
  craL_lexstatefree(lexstate);
  if(parsecode == errorcode)
   goto executeError;

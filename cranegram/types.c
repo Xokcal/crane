@@ -4,7 +4,7 @@
 
 /*
 ********************************************************
-                    AST TREE CREATE
+*                   AST TREE CREATE                    *
 ********************************************************
 */
 
@@ -100,4 +100,91 @@ craastdesc *make_condi(XokMalloc *xokmalloc, char *cmpc,
  node->as.binop.left = left;
  node->as.binop.right = right;
  return node;
+}
+
+
+craastdesc *make_ifdesc(XokMalloc *xokmalloc,
+           craastdesc *condi, Tblock *block){
+ craastdesc *node = (craastdesc *)
+ xalloc_XokMalloc(xokmalloc , sizeof(craastdesc));
+ node->kind = AST_IF;
+ node->as.ifdesc.condi = condi;
+ node->as.ifdesc.block = block;
+ return node;
+}
+
+/*
+**********************************************************
+*                  DescList factor                       *
+**********************************************************
+*/
+
+/*
+** Create a description list with initial capacity 'init_size'.
+** A non-positive 'init_size' uses DESCLIST_DEFAULT_SIZE.
+** Returns NULL if allocation fails.
+*/
+desclist *craP_desclist_create(XokMalloc *xm, int init_size){
+  if (init_size <= 0) init_size = DESCLIST_DEFAULT_SIZE;
+  desclist *dl = (desclist *)xalloc_XokMalloc(xm, sizeof(desclist));
+  if (!dl) return NULL;
+  dl->desclist = (craastdesc **)xalloc_XokMalloc(
+  xm, sizeof(craastdesc *) * init_size);
+  if (!dl->desclist)return NULL; /* dl non-create return NULL */
+  dl->size  = init_size;
+  dl->count = 0;
+  return dl;
+}
+
+
+/* desclist free let desc arrays equal NULL, dl use xokmallc pool need't free */
+void craP_desclist_free(XokMalloc *xm, desclist *dl){
+  if (!dl) return;
+  if (dl->desclist)dl->desclist = NULL;
+  dl->count = 0;
+  dl->size = 0;
+}
+
+
+/*
+** New desc tree push desclist stack, if dl count >= dl size
+** use desclist expand funtion.
+*/
+int craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree){
+  if (!dl) return 0;
+  if (dl->count >= dl->size) {
+  if (!craP_desclist_expand(xm, dl))return 0;}
+  dl->desclist[dl->count++] = tree;
+  return 1;
+}
+
+
+/*
+** Desc list expand size by (origin size * DESCLIST_GROW_FACTOR).
+** memcpy function copy dl's origin desclist and give to new desclist.
+** need't free origin desclist, it use xokmalloc pool. 
+*/
+int craP_desclist_expand(XokMalloc *xm, desclist *dl){
+  if (!dl) return 0;
+  int new_size = dl->size * DESCLIST_GROW_FACTOR;
+  craastdesc **new_arr = (craastdesc **)xalloc_XokMalloc
+  (xm, sizeof(craastdesc *) * new_size);
+  if (!new_arr) return 0; /* non-create return 0. */
+  memcpy(new_arr, dl->desclist, sizeof(craastdesc *) * dl->count);
+  dl->desclist = new_arr;
+  dl->size = new_size;
+  return 1; /* success return 1. */
+}
+
+
+/*
+*****************************************************
+*                Tblock factor                      *
+*****************************************************
+*/
+Tblock *newTblock(XokMalloc *xm){
+ Tblock *block = (Tblock*)xalloc_XokMalloc(xm, sizeof(Tblock));
+ block->treelist = craP_desclist_create(xm, 16);
+ block->count = 0;
+ return block;
 }

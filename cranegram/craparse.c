@@ -534,7 +534,8 @@ static craastdesc *ifdesc(XokMalloc *xm,
  /* Ifdesc use to record condition tree and {..} content*/
  craastdesc *ifdesc = make_ifdesc(xm, condi, ifblock);
  /* {..} content parse tree by use craP_parsedesc() */
- craP_parsedesc(xm, ts, ifblock->treelist, pf->curr);
+ pf->curr = craP_parsedesc(xm, ts, ifblock->treelist, pf->curr);
+ if(ifdesc->kind == AST_IF){log("is IF");}
  return ifdesc;
 }
 
@@ -544,12 +545,14 @@ static craastdesc *ifdesc(XokMalloc *xm,
 */
 int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx){
   /* Package tokens and index(curr) */
- ParseFactor pf = {ts , curidx}; 
+ ParseFactor pf = {ts , curidx};
  /* Ast parse executor main while */
- while(pf.curr < ts->count){  
+ while(pf.curr < ts->count){
+  log("loop");
   /* Noted: very loop entry switch match pf's curr have selfadd,
    inner function get GRAM token need back. */
-  String *t = pf.tokens->lextokens[pf.curr++]->token; 
+  String *t = pf.tokens->lextokens[pf.curr++]->token;
+  log(t->str);
   switch(tokentype(t)){
    case GRAM_UNKEY:{
      craastdesc *cd = unkeydesc(xm , &pf, dl);
@@ -560,7 +563,9 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx){
    }
    case GRAM_IF:{
      craastdesc *r = ifdesc(xm, &pf, ts);
+     if(r->kind == AST_IF){log("R is IF");}
      pushdl(xm, dl, r);
+     log("if end");
     break;
    }
    case GRAM_NOTE:{
@@ -573,7 +578,7 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx){
    }
    case GRAM_BLOCK_END:{  /* Reach "}" toekn judge is
    "{..}" terminal, use craP_parsedesc() should return */
-    return successcode;
+    return pf.curr;
    }
    case GRAM_VAR:{
      craastdesc *vd = 
@@ -582,6 +587,10 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx){
     break;
    }
   }
+ }
+ for(int i = 0; i < dl->count; i++){
+  if(dl->desclist[i]->kind == AST_IF){log(" this DL is IF");}
+  if(dl->desclist[i]->kind == AST_UNKEY){log(" this DL is IF");}
  }
 }
 

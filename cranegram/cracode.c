@@ -6,6 +6,7 @@
 #include "cralex.h"
 #include "cravm.h"
 #include "craobject.h"
+#include "types.h"
 
 #define TYPES_DEFAULT_SIZE 300
 #define TYPES_GROW_FACTOR  2
@@ -98,6 +99,11 @@ op_comcatop(int op, String *s)
  if(op==9)strcomcat(s,"TYPE");
  if(op==10)strcomcat(s,"VAR");
  if(op==11)strcomcat(s,"REASSIGN");
+ if(op==12)strcomcat(s,"JMP_FALSE");
+ if(op==13)strcomcat(s,"JMP_TRUE");
+ if(op==14)strcomcat(s,"JMP");
+ if(op==15)strcomcat(s,"CMP");
+ if(op==16)strcomcat(s,"CONDI");
 }
 
 static void
@@ -192,6 +198,52 @@ op_codeparse(int op, int preop, int *opi, String *s, bytecode *bc,
   op_calcblank(17, 8, blank);
   strcomcat(s, blank->str);
   strcomcat(s, vns->vn[op]);
+  strfree(blank);
+  return 0;
+ }
+ if(preop==12){
+  op_calcblank(17, 9, blank);
+  strcomcat(s, blank->str);
+  char buf[32];
+  snprintf(buf,sizeof(buf), "%d", op);
+  char *p = buf;
+  strcomcat(s, p);
+  strfree(blank);
+  return 0;
+ }
+ if(preop==13){
+  op_calcblank(17, 8, blank);
+  strcomcat(s, blank->str);
+  char buf[32];
+  snprintf(buf,sizeof(buf), "%d", op);
+  char *p = buf;
+  strcomcat(s, p);
+  strfree(blank);
+  return 0;
+ }
+ if(preop==14){
+  op_calcblank(17, 3, blank);
+  strcomcat(s, blank->str);
+  char buf[32];
+  snprintf(buf,sizeof(buf), "%d", op);
+  char *p = buf;
+  strcomcat(s, p);
+  strfree(blank);
+  return 0;
+ }
+ if(preop==15){
+  op_calcblank(17, 3, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s,(vns->vn[op]));
+  strclear(blank);
+  strfree(blank);
+  return 0;
+ }
+ if(preop==16){
+  op_calcblank(17, 5, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s,(vns->vn[op]));
+  strclear(blank);
   strfree(blank);
   return 0;
  }
@@ -582,8 +634,7 @@ vnstk_find(varnamestk *vs, const char *name)
 /*
 ** package bytecode init struct and essential number.
 */
-static codesState
-packagecodestate(XokMalloc *xm){
+codesState packagecodestate(XokMalloc *xm){
  codesState cs;
  cs.xm = xm;
  cs.bc = bc_create(xm , BC_DEFAULT_SIZE);
@@ -658,7 +709,7 @@ void assignencode(codesState cs, craastdesc *node, char *type){
 }
 
 
-static void astassignexe(codesState cs, craastdesc *curdesc){
+static void astassignexe(codesState cs, craastdesc *curdesc, int *dl){
  craastdesc *value = curdesc->as.assign.value; /* get desc assign 
  value tree, just go parse tree to codes */
  char *type = curdesc->as.assign.type; /* data type string information */
@@ -680,7 +731,7 @@ static void astassignexe(codesState cs, craastdesc *curdesc){
  logi("bc.values.v[1]" , bc->values[0].v.i);
  logi("bc.values.v[2]" , bc->values[1].v.i);
  #endif
- (*cs.dl_c)++;
+ (*dl)++;
 }
 
 
@@ -689,7 +740,7 @@ static void astassignexe(codesState cs, craastdesc *curdesc){
 ** codes op_func or op_undefvar or .. desc.call.Tparams push
 ** Targs, and push codes store Targs has pushed index.
 */
-static void astcallexe(codesState cs, craastdesc *desc){
+static void astcallexe(codesState cs, craastdesc *desc, int *dl){
  int argsi = 0;
  while(argsi < desc->as.call.argsi){
   bc_emit(cs.xm, cs.bc, OP_LOAD);
@@ -707,17 +758,17 @@ static void astcallexe(codesState cs, craastdesc *desc){
  for(int i=0;i<targs->count;i++)
   logc("vm_Targs",targs->args[i].originstr);
  #endif
- (*cs.dl_c)++;
+ (*dl)++;
 }
 
 
-static void asthasvarexe(codesState cs, craastdesc *desc){
+static void asthasvarexe(codesState cs, craastdesc *desc, int *dl){
  char *type = desc->as.hasvar.type;
  assignencode(cs, desc->as.hasvar.value, type);
  bc_emit(cs.xm, cs.bc, OP_STORE_HASVAR);
  vnstk_push(cs.xm , cs.vns , desc->as.hasvar.name , (*cs.vnsi));
  bc_emit(cs.xm , cs.bc , (*cs.vnsi)++);  /* variable name index */
- (*cs.dl_c)++;
+ (*dl)++;
  return;
 }
 
@@ -725,64 +776,113 @@ static void asthasvarexe(codesState cs, craastdesc *desc){
 /*
 ** Only give ifdesc node's condi desc tree.
 */
-static void ifcondiexe(codesState cs, craastdesc *node){
+static void ifcondiexe(codesState cs, craastdesc *node,
+                   Istack *andtstack, Istack *orstack){
  if(node->kind == AST_CMP){
-  assignencode(cs, node->as.binop.left);
-  assignencode(cs, node->as.binop.right);
-  bc_emit(cs.xm, cs.bc, OP_PUSH);
+  assignencode(cs, node->as.binop.left, "int");
+  assignencode(cs, node->as.binop.right, "int");
+  bc_emit(cs.xm, cs.bc, OP_CMP);
   vnstk_push(cs.xm , cs.vns , node->as.binop.calcsign , (*cs.vnsi));
   bc_emit(cs.xm , cs.bc , (*cs.vnsi)++);
  }
  if(node->kind == AST_CONDI){
-  ifcondiexe(cs, node->as.binop.left);
-  ifcondiexe(cs, node->as.binop.right);
-  bc_emit(cs.xm, cs.bc, OP_PUSH);
+  ifcondiexe(cs, node->as.binop.left, andtstack, orstack);
+  /* record condition node like 'and' 'or', and
+   judge use 'OP_JMP_FALSE' or 'OP_JMP_TRUE' */
+  bc_emit(cs.xm, cs.bc, OP_CONDI);
   vnstk_push(cs.xm , cs.vns , node->as.binop.calcsign , (*cs.vnsi));
   bc_emit(cs.xm , cs.bc , (*cs.vnsi)++);
   if(strcmp(node->as.binop.calcsign, "and")==0){
-    bc_emit(cs.xm, cs.bc, OP_JMP_FALSE);
-    // push stack...
+   /* Use temp stack record continous 'and' logic block, 
+   and all assign by next or's first instruction code value 
+   when reach 'or'. Then clear and temp stack*/
+   bc_emit(cs.xm, cs.bc, OP_JMP_FALSE);
+   pushI(andtstack, cs.bc->count);
+   bc_emit(cs.xm, cs.bc, 0);
   }else{
-    bc_emit(cs.xm, cs.bc, OP_JMP_TRUE);
-    //push stack...
+   /* Reach 'or' first push current 'or' to orstack.
+   Then next instruction code assignto and temp stack. */
+   bc_emit(cs.xm, cs.bc, OP_JMP_TRUE);
+   pushI(orstack, cs.bc->count);
+   bc_emit(cs.xm, cs.bc, 0);
+   if(node->as.binop.right != NULL){
+    while(andtstack->count > 0){
+     /* Revise codes[] contain and temp stack has record
+     index to bc current index. */
+     cs.bc->codes[popI(andtstack)] = cs.bc->count;
+    }
+   }
   }
+  ifcondiexe(
+  cs, node->as.binop.right, andtstack, orstack);
  }
 }
+
+
+static void ifdescexe(codesState *cs, craastdesc *curdesc, int *dlindex){
+ Istack *andtstack = newIstack(cs->xm);
+ Istack *orstack = newIstack(cs->xm);
+ ifcondiexe(*cs, curdesc->as.ifdesc.condi, andtstack, orstack);
+ /* Push orstack judge end 'or' logic again */
+ bc_emit(cs->xm, cs->bc, OP_JMP_TRUE);
+ pushI(orstack, cs->bc->count);
+ bc_emit(cs->xm, cs->bc, 0);
+ /* If all condition not match, JMP to if out */
+ bc_emit(cs->xm, cs->bc, OP_JMP);
+ /* temp record current 'OP_JMP' instructction in codes index */
+ int ifjmpoutindex = cs->bc->count;
+ bc_emit(cs->xm, cs->bc, 0);
+ /* All 'or' stack revise to current codes index,
+  because current bc index is entry if block first instruction index */
+ while(orstack->count > 0){
+  cs->bc->codes[popI(orstack)] = cs->bc->count;
+ }
+ /* Use craC_bytecode_parse() execute ifdesc block tree. */
+ int blockdl = 0;
+ craC_bytecode_parse(cs->xm, curdesc->as.ifdesc.block->treelist, cs, "block", &blockdl);
+ cs->bc->codes[ifjmpoutindex] = cs->bc->count;
+ (*dlindex)++;
+}
+
 
 /*
 ** bytecode parse main execute.
 */
-vmState* craC_bytecode_parse(XokMalloc *xm ,  desclist *dl){
- codesState cs = packagecodestate(xm);
- while((*cs.dl_c) < dl->count){
-  craastdesc *curdesc = dl->desclist[(*cs.dl_c)];
+vmState* craC_bytecode_parse(XokMalloc *xm ,
+ desclist *dl, codesState *cs, char *type, int *dlindex){
+ while((*dlindex) < dl->count){
+  craastdesc *curdesc = dl->desclist[(*dlindex)];
   switch(curdesc->kind){
    case AST_HASVAR:{
-    asthasvarexe(cs, curdesc);
+    asthasvarexe(*cs, curdesc, dlindex);
     break;
    }
    case AST_ASSIGN:{
-    astassignexe(cs, curdesc);
+    astassignexe(*cs, curdesc, dlindex);
     break;
    }
    case AST_CALL:{
-    astcallexe(cs, curdesc);
+    astcallexe(*cs, curdesc, dlindex);
     break;
    }
    case AST_IF:{
-    ifcondiexe(cs, curdesc);
+    ifdescexe(cs, curdesc, dlindex);
     break;
    }
    default:break;
   }
  }
- bc_emit(xm , cs.bc , OP_HALT);
- //#define codesvisualization
+ if(strcmp(type, "main")==0)
+  bc_emit(xm , cs->bc , OP_HALT);
+ #define codesvisualization
  #ifdef codesvisualization
- craC_codes_log(cs.bc);
- op_visualization(cs.bc, cs.vns , cs.tcalls, cs.targs, cs.types);
+ craC_codes_log(cs->bc);
+ op_visualization(cs->bc, cs->vns , cs->tcalls, cs->targs, cs->types);
  #endif
- return vm_create(xm, cs.bc, cs.vns,
- cs.types, cs.targs, cs.tcalls, 2500000);
+ if(strcmp(type, "main")==0){
+  return vm_create(xm, cs->bc, cs->vns,
+  cs->types, cs->targs, cs->tcalls, 2500000);
+ }
+ else{}
 }
 

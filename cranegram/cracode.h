@@ -27,7 +27,9 @@ typedef enum opcode{
  OP_STORE_HASVAR,  /* [11]reassign has store variable*/
  OP_JMP_FALSE,     /* [12]behind 'and', if stack is '1' continue */
  OP_JMP_TRUE,      /* [13]behind 'or', if stack is '1' entry */
- OP_JMP            /* [14]jump to specified vm index */
+ OP_JMP,           /* [14]jump to specified vm index */
+ OP_CMP,           /* [15]compare vm stack twe value */
+ OP_CONDI          /* [16]condition logic sign store */
 }opcode; 
 
 /*
@@ -84,7 +86,8 @@ typedef struct Tcalls{
  int count;
 }Tcalls;
 
-vmState*craC_bytecode_parse(XokMalloc *xm ,  desclist *dl);
+vmState* craC_bytecode_parse(XokMalloc *xm ,desclist *dl, 
+                    codesState *cs, char *type, int *dlindex);
 bytecode *bc_create(XokMalloc *xm, int init_size);
 void bc_free(XokMalloc *xm, bytecode *bc);
 int bc_expand(XokMalloc *xm, bytecode *bc);
@@ -92,4 +95,5 @@ int bc_emit(XokMalloc *xm, bytecode *bc, int instr);
 int bc_add_constant(XokMalloc *xm, bytecode *bc, value v);
 const char* typetostr(vartype type);
 void assignencode(codesState cs, craastdesc *node, char *type);
+codesState packagecodestate(XokMalloc *xm);
 #endif

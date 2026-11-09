@@ -188,3 +188,26 @@ Tblock *newTblock(XokMalloc *xm){
  block->count = 0;
  return block;
 }
+
+/*
+******************************************************
+*                 Istack factor                      *
+******************************************************
+*/
+Istack* newIstack(XokMalloc *xm){
+  Istack *stack = (Istack*)xalloc_XokMalloc(xm, sizeof(Istack));
+  stack->count = 0;
+  stack->p = 0;
+  return stack;
+}
+
+void pushI(Istack *stack, int i){
+  stack->stack[stack->p++] = i;
+  stack->count++;
+}
+
+int popI(Istack *stack){
+ if(stack->stack == 0)return 0;
+ stack->count--;
+ return stack->stack[--stack->p];
+}

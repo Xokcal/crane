@@ -12,6 +12,13 @@ typedef struct craastdesc craastdesc;
 typedef struct Tblock Tblock;
 typedef struct desclist desclist;
 
+typedef struct Istack{
+ int stack[200];
+ int p;
+ int count;
+}Istack;
+
+
 /* make desc func */
 craastdesc *make_var(XokMalloc *xokmalloc , char *name);
 craastdesc* make_num(XokMalloc *xokMalloc ,  int n);
@@ -36,4 +43,10 @@ int craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree);
 int craP_desclist_expand(XokMalloc *xm, desclist *dl);
 /* Tblock func*/
 Tblock *newTblock(XokMalloc *xm);
+/* Istack func */
+Istack *newIstack(XokMalloc *xm);
+void pushI(Istack *stack, int i);
+int popI(Istack *stack);
+#define clearI(stack)\
+ (stack)->p = 0; (stack)->count = 0;
 #endif

@@ -34,7 +34,9 @@ int main(){
  craL_lexstatefree(lexstate);
  if(parsecode == errorcode)
   goto executeError;
- //vmState *vmState = craC_bytecode_parse(xm , dl);
+ codesState cs = packagecodestate(xm);
+ int dlindex = 0;
+ vmState *vmState = craC_bytecode_parse(xm , dl, &cs, "main", &dlindex);
  //craV_execute(xm, vmState);
  executeError:
  /* free setting struct */

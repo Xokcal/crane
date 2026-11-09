@@ -773,6 +773,31 @@ static void asthasvarexe(codesState cs, craastdesc *desc, int *dl){
 }
 
 
+static void nodecondiexe(codesState cs, craastdesc *node,
+                    Istack *andtstack, Istack *orstack){
+ if(strcmp(node->as.binop.calcsign, "and")==0){
+  /* Use temp stack record continous 'and' logic block, 
+  and all assign by next or's first instruction code value 
+  when reach 'or'. Then clear and temp stack*/
+  bc_emit(cs.xm, cs.bc, OP_JMP_FALSE);
+  pushI(andtstack, cs.bc->count);
+  bc_emit(cs.xm, cs.bc, 0);
+ }else{
+  /* Reach 'or' first push current 'or' to orstack.
+  Then next instruction code assignto and temp stack. */
+  bc_emit(cs.xm, cs.bc, OP_JMP_TRUE);
+  pushI(orstack, cs.bc->count);
+  bc_emit(cs.xm, cs.bc, 0);
+  if(node->as.binop.right != NULL){
+   while(andtstack->count > 0){
+    /* Revise codes[] contain and temp stack has record
+    index to bc current index. */
+    cs.bc->codes[popI(andtstack)] = cs.bc->count;
+   }
+  }
+ }
+}
+
 /*
 ** Only give ifdesc node's condi desc tree.
 */
@@ -792,33 +817,18 @@ static void ifcondiexe(codesState cs, craastdesc *node,
   bc_emit(cs.xm, cs.bc, OP_CONDI);
   vnstk_push(cs.xm , cs.vns , node->as.binop.calcsign , (*cs.vnsi));
   bc_emit(cs.xm , cs.bc , (*cs.vnsi)++);
-  if(strcmp(node->as.binop.calcsign, "and")==0){
-   /* Use temp stack record continous 'and' logic block, 
-   and all assign by next or's first instruction code value 
-   when reach 'or'. Then clear and temp stack*/
-   bc_emit(cs.xm, cs.bc, OP_JMP_FALSE);
-   pushI(andtstack, cs.bc->count);
-   bc_emit(cs.xm, cs.bc, 0);
-  }else{
-   /* Reach 'or' first push current 'or' to orstack.
-   Then next instruction code assignto and temp stack. */
-   bc_emit(cs.xm, cs.bc, OP_JMP_TRUE);
-   pushI(orstack, cs.bc->count);
-   bc_emit(cs.xm, cs.bc, 0);
-   if(node->as.binop.right != NULL){
-    while(andtstack->count > 0){
-     /* Revise codes[] contain and temp stack has record
-     index to bc current index. */
-     cs.bc->codes[popI(andtstack)] = cs.bc->count;
-    }
-   }
-  }
+  nodecondiexe(cs, node, andtstack, orstack);
   ifcondiexe(
   cs, node->as.binop.right, andtstack, orstack);
  }
 }
 
 
+/*
+** AST_IF code parse main executor, because if outer parse main function
+** and if block main parse function don's shared int *dlindex, 
+** so need alone transfor tree list count.
+*/
 static void ifdescexe(codesState *cs, craastdesc *curdesc, int *dlindex){
  Istack *andtstack = newIstack(cs->xm);
  Istack *orstack = newIstack(cs->xm);
@@ -834,12 +844,13 @@ static void ifdescexe(codesState *cs, craastdesc *curdesc, int *dlindex){
  bc_emit(cs->xm, cs->bc, 0);
  /* All 'or' stack revise to current codes index,
   because current bc index is entry if block first instruction index */
- while(orstack->count > 0){
+ while(orstack->count > 0)
   cs->bc->codes[popI(orstack)] = cs->bc->count;
- }
  /* Use craC_bytecode_parse() execute ifdesc block tree. */
  int blockdl = 0;
- craC_bytecode_parse(cs->xm, curdesc->as.ifdesc.block->treelist, cs, "block", &blockdl);
+ craC_bytecode_parse(
+ cs->xm, curdesc->as.ifdesc.block->treelist, 
+ cs, "block", &blockdl);
  cs->bc->codes[ifjmpoutindex] = cs->bc->count;
  (*dlindex)++;
 }

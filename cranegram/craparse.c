@@ -535,7 +535,7 @@ static craastdesc *ifdesc(XokMalloc *xm,
  craastdesc *ifdesc = make_ifdesc(xm, condi, ifblock);
  /* {..} content parse tree by use craP_parsedesc() */
  pf->curr = craP_parsedesc(xm, ts, ifblock->treelist, pf->curr);
- if(ifdesc->kind == AST_IF){log("is IF");}
+ if(ifdesc->kind == AST_IF){log("is IF__");}
  return ifdesc;
 }
 
@@ -588,9 +588,6 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx){
    }
   }
  }
- for(int i = 0; i < dl->count; i++){
-  if(dl->desclist[i]->kind == AST_IF){log(" this DL is IF");}
-  if(dl->desclist[i]->kind == AST_UNKEY){log(" this DL is IF");}
- }
+
 }
 

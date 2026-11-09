@@ -253,9 +253,7 @@ opcallexecute(vmState *vm, int *error)
  codenext(vm);
 }
 
-void 
-craV_execute(XokMalloc *xm , vmState *vm)
-{
+void craV_execute(XokMalloc *xm , vmState *vm){
  vm->map = newvmap(xm);
  int error = 0;
  int *codes = vm->bc->codes;

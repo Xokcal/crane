@@ -672,6 +672,7 @@ static void treenumber(codesState cs, craastdesc *node, char *type){
  v_type_insert(type , &v , &node->as.num);
  bc_emit(cs.xm, cs.bc, OP_PUSH);
  bc_emit(cs.xm , cs.bc , cs.bc->v_count);
+ logi("value", v.v.i);
  /* push struct value stack */
  bc_add_constant(cs.xm, cs.bc , v);
 }
@@ -692,6 +693,7 @@ static void treelvalue(codesState cs, craastdesc *node){
 static void treebinop(codesState cs, craastdesc *node, char *type){
  assignencode(cs, node->as.binop.left, type);
  assignencode(cs, node->as.binop.right, type);
+ log(node->as.binop.calcsign);
  signemit(cs.xm, node->as.binop.calcsign, cs.bc);
 }
 
@@ -701,10 +703,10 @@ static void treebinop(codesState cs, craastdesc *node, char *type){
 */
 void assignencode(codesState cs, craastdesc *node, char *type){
  switch(node->kind){
-  case AST_NUM:treenumber(cs, node, type);break;
-  case AST_LVNAME:treelvalue(cs, node);break;
-  case AST_BINOP:treebinop(cs, node, type);break;
-  default:break;}
+  case AST_NUM:{treenumber(cs, node, type);break;}
+  case AST_LVNAME:{treelvalue(cs, node);break;}
+  case AST_BINOP:{treebinop(cs, node, type);break;}
+ }
  return;
 }
 
@@ -716,6 +718,7 @@ static void astassignexe(codesState cs, craastdesc *curdesc, int *dl){
  if(value==NULL)
   goto undef;
  assignencode(cs, value, type);
+ op_visualization(cs.bc, cs.vns , cs.tcalls, cs.targs, cs.types);
  undef:
  bc_emit(cs.xm , cs.bc , OP_STORE);
  vnstk_push(cs.xm , cs.vns , curdesc->as.assign.name , (*cs.vnsi));
@@ -797,6 +800,7 @@ static void nodecondiexe(codesState cs, craastdesc *node,
   }
  }
 }
+
 
 /*
 ** Only give ifdesc node's condi desc tree.
@@ -887,7 +891,7 @@ vmState* craC_bytecode_parse(XokMalloc *xm ,
   bc_emit(xm , cs->bc , OP_HALT);
  #define codesvisualization
  #ifdef codesvisualization
- craC_codes_log(cs->bc);
+ //craC_codes_log(cs->bc);
  op_visualization(cs->bc, cs->vns , cs->tcalls, cs->targs, cs->types);
  #endif
  if(strcmp(type, "main")==0){

@@ -18,7 +18,7 @@ int main(){
  //setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
- String *context = open_file("test/test4_if.ce");
+ String *context = open_file("test/test4_if.lua");
  //logc("context",context->str);
  lexState *lexstate = craL_lexexecute(txm, context);
  //#define tsprint
@@ -37,7 +37,7 @@ int main(){
  codesState cs = packagecodestate(xm);
  int dlindex = 0;
  vmState *vmState = craC_bytecode_parse(xm , dl, &cs, "main", &dlindex);
- //craV_execute(xm, vmState);
+ craV_execute(xm, vmState);
  executeError:
  /* free setting struct */
  craP_desclist_free(xm , dl);

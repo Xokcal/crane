@@ -92,14 +92,17 @@ if (a > 10 and b eq 20 or c < 5) {
 ### 4. Loops (while)
 Crane compiles loop logic into backward PC jumps, ensuring zero-overhead iteration.
 
+```c
 int i = 0;
 while (i < 10) {
     print("Loop iteration:", i);
     i = i + 1;
 }
+```
 ### 🔗 Roadmap: The Ultimate C Bridge
 Crane's primary goal is to become the ultimate embeddable script for C applications. The upcoming core features focus on C-FFI (Foreign Function Interface):
 
+```text
 ☑ Arithmetic expressions and variable assignment
 ☑ Control flow (if / else with short-circuit logic)
 ☑ Loops (while)
@@ -107,3 +110,4 @@ Crane's primary goal is to become the ultimate embeddable script for C applicati
 □ C-FFI: Pass and receive pointers/structs seamlessly
 □ Function definitions and Call Stack (function)
 □ Memory Arena & custom Garbage Collection
+```

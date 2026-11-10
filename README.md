@@ -42,7 +42,7 @@ Execution Result
 
 ### 🚀 Quick Start
 Write your first Crane program in hello.ce. Notice how clean the syntax is:
-```text
+```c
 -- Clean variable declarations and arithmetic
 int a = 3 * 2;
 int b = 9 * 2 + 8;
@@ -68,7 +68,7 @@ Crane's syntax is designed to be immediately readable to anyone coming from C, J
 ### 1. Variables & Types
 Explicit typing ensures predictable memory behavior when interfacing with C.
 
-```text
+```c
 int a = 10;
 string name = "Crane";
 ```
@@ -76,14 +76,14 @@ string name = "Crane";
 ### 2. Expressions & Precedence
 Full support for standard arithmetic operators with strict operator precedence and parentheses.
 
-```text
+```c
 int result = (10 + 20) * 3 - 4 / 2;
 ```
 
 ### 3. Conditional Statements (if)
 Crane supports highly optimized if statements. Under the hood, conditions are evaluated using short-circuit evaluation, generating JMP_TRUE and JMP_FALSE bytecodes.
 
-```text
+```c
 if (a > 10 and b eq 20 or c < 5) {
     print("Condition met!");
 }
@@ -92,7 +92,7 @@ if (a > 10 and b eq 20 or c < 5) {
 ### 4. Loops (while)
 Crane compiles loop logic into backward PC jumps, ensuring zero-overhead iteration.
 
-```text
+```c
 int i = 0;
 while (i < 10) {
     print("Loop iteration:", i);

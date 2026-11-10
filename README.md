@@ -1,5 +1,3 @@
-<div align="center">
-
 <img src="./assets/logo.svg" width="230" height="200" alt="Crane Logo" />
 
 # 🦅 Crane Programming Language

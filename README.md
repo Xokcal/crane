@@ -26,18 +26,6 @@ Crane was born to solve a specific engineering problem: **Bridging the gap betwe
 
 Crane operates through a classic, single-pass compilation pipeline, translating high-level syntax directly into highly optimized bytecode.
 
-```text
-Source Code (.ce) 
-  ↓ [Lexer] 
-Token Stream 
-  ↓ [Parser] 
-Abstract Syntax Tree (AST) 
-  ↓ [Code Generator] 
-Bytecode + Constant Pool 
-  ↓ [Virtual Machine] 
-Execution Result
-```
-
 ### 🚀 Quick Start
 Write your first Crane program in hello.ce. Notice how clean the syntax is:
 ```c
@@ -82,9 +70,12 @@ int result = (10 + 20) * 3 - 4 / 2;
 Crane supports highly optimized if statements. Under the hood, conditions are evaluated using short-circuit evaluation, generating JMP_TRUE and JMP_FALSE bytecodes.
 
 ```c
-if (a > 10 and b eq 20 or c < 5) {
-    print("Condition met!");
+int qwertyuiop = 90 + 1;
+int cranepreviewDRC = 79 - 1;
+if(qwertyuiop leq 90 or cranepreviewDRC geq 79){ -- <= : >=
+    print("91!!", " && ", "78!!");
 }
+print("craneif calculate logic quit.");
 ```
 
 ### 4. Loops (while)

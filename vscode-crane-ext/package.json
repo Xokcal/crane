@@ -1,0 +1,32 @@
+{
+  "name": "crane-language",
+  "displayName": "Crane Language",
+  "description": "Crane 语法高亮和图标",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.64.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "crane",
+        "aliases": ["Crane", "crane"],
+        "extensions": [".ce"],
+        "icon": {
+          "light": "./crane.svg",
+          "dark": "./crane.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "crane",
+        "scopeName": "source.crane",
+        "path": "./crane.tmLanguage.json"
+      }
+    ]
+  }
+}

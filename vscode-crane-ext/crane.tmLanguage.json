@@ -1,0 +1,61 @@
+{
+  "scopeName": "source.crane",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#keywords" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#operators" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "match": "--.*$",
+          "name": "comment.line.double-dash.crane"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "match": "\\$(int|float|string|long|void|char|double)\\b",
+          "name": "storage.type.crane"
+        },
+        {
+          "match": "\\$(if__|else__|while__|loop__|back|break|continue)\\b",
+          "name": "keyword.control.crane"
+        },
+        {
+          "match": "\\$(fnc__|union|struct|pack__|combine|Cgetf|ansfnc)\\b",
+          "name": "keyword.other.crane"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "begin": "\"",
+          "end": "\"",
+          "name": "string.quoted.double.crane"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "match": "\\b\\d+(\\.\\d+)?\\b",
+          "name": "constant.numeric.crane"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "match": "::|:=|eq|geq|leq|gt|lt|and|or|\\+|-|\\*|/|=|<|>",
+          "name": "keyword.operator.crane"
+        }
+      ]
+    }
+  }
+}

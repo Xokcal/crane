@@ -2,6 +2,8 @@
 
 <img src="./assets/logo.svg" width="230" height="200" alt="Crane Logo" />
 
+</div>
+
 # 🦅 Crane Programming Language
 
 <p align="center">
@@ -28,22 +30,9 @@ Crane was born to solve a specific engineering problem: **Bridging the gap betwe
 
 Crane operates through a classic, single-pass compilation pipeline, translating high-level syntax directly into highly optimized bytecode.
 
-```text
-Source Code (.ce) 
-  ↓ [Lexer] 
-Token Stream 
-  ↓ [Parser] 
-Abstract Syntax Tree (AST) 
-  ↓ [Code Generator] 
-Bytecode + Constant Pool 
-  ↓ [Virtual Machine] 
-Execution Result
-```
-
 ### 🚀 Quick Start
 Write your first Crane program in hello.ce. Notice how clean the syntax is:
-```text
-crane
+```c
 -- Clean variable declarations and arithmetic
 int a = 3 * 2;
 int b = 9 * 2 + 8;
@@ -69,7 +58,7 @@ Crane's syntax is designed to be immediately readable to anyone coming from C, J
 ### 1. Variables & Types
 Explicit typing ensures predictable memory behavior when interfacing with C.
 
-```text
+```c
 int a = 10;
 string name = "Crane";
 ```
@@ -77,23 +66,26 @@ string name = "Crane";
 ### 2. Expressions & Precedence
 Full support for standard arithmetic operators with strict operator precedence and parentheses.
 
-```text
+```c
 int result = (10 + 20) * 3 - 4 / 2;
 ```
 
 ### 3. Conditional Statements (if)
 Crane supports highly optimized if statements. Under the hood, conditions are evaluated using short-circuit evaluation, generating JMP_TRUE and JMP_FALSE bytecodes.
 
-```text
-if (a > 10 and b eq 20 or c < 5) {
-    print("Condition met!");
+```c
+int qwertyuiop = 90 + 1;
+int cranepreviewDRC = 79 - 1;
+if(qwertyuiop leq 90 or cranepreviewDRC geq 79){ -- <= : >=
+    print("91!!", " && ", "78!!");
 }
+print("craneif calculate logic quit.");
 ```
 
 ### 4. Loops (while)
 Crane compiles loop logic into backward PC jumps, ensuring zero-overhead iteration.
 
-```text
+```c
 int i = 0;
 while (i < 10) {
     print("Loop iteration:", i);
@@ -103,6 +95,7 @@ while (i < 10) {
 ### 🔗 Roadmap: The Ultimate C Bridge
 Crane's primary goal is to become the ultimate embeddable script for C applications. The upcoming core features focus on C-FFI (Foreign Function Interface):
 
+```text
 ☑ Arithmetic expressions and variable assignment
 ☑ Control flow (if / else with short-circuit logic)
 ☑ Loops (while)
@@ -110,3 +103,4 @@ Crane's primary goal is to become the ultimate embeddable script for C applicati
 □ C-FFI: Pass and receive pointers/structs seamlessly
 □ Function definitions and Call Stack (function)
 □ Memory Arena & custom Garbage Collection
+```

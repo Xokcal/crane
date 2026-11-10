@@ -43,7 +43,6 @@ Execution Result
 ### 🚀 Quick Start
 Write your first Crane program in hello.ce. Notice how clean the syntax is:
 ```text
-crane
 -- Clean variable declarations and arithmetic
 int a = 3 * 2;
 int b = 9 * 2 + 8;

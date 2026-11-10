@@ -384,8 +384,9 @@ static int unkeycallexemain(XokMalloc *xm, ParseFactor *pf,
 
 /*
 ** Unkey tackle hasvar execute, if is '=' judge is hasvar.
-** Assume function unkey_desc def desc self address is 0X001, craastdesc**desc accept
-** out desc address and assign to out desc address's value is new desc(make_hasvar).
+** Assume function unkey_desc def desc self address is 0X001, craastdesc 
+** **desc accept out desc address and assign to out desc address's value
+** is new desc(make_hasvar).
 */
 static void unkeyhasvarexe(XokMalloc *xm, ParseFactor *pf,
             desclist *dl, craastdesc **desc, char *unkey){
@@ -535,7 +536,6 @@ static craastdesc *ifdesc(XokMalloc *xm,
  craastdesc *ifdesc = make_ifdesc(xm, condi, ifblock);
  /* {..} content parse tree by use craP_parsedesc() */
  pf->curr = craP_parsedesc(xm, ts, ifblock->treelist, pf->curr);
- if(ifdesc->kind == AST_IF){log("is IF__");}
  return ifdesc;
 }
 
@@ -548,11 +548,9 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx){
  ParseFactor pf = {ts , curidx};
  /* Ast parse executor main while */
  while(pf.curr < ts->count){
-  log("loop");
   /* Noted: very loop entry switch match pf's curr have selfadd,
    inner function get GRAM token need back. */
   String *t = pf.tokens->lextokens[pf.curr++]->token;
-  log(t->str);
   switch(tokentype(t)){
    case GRAM_UNKEY:{
      craastdesc *cd = unkeydesc(xm , &pf, dl);
@@ -563,9 +561,7 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx){
    }
    case GRAM_IF:{
      craastdesc *r = ifdesc(xm, &pf, ts);
-     if(r->kind == AST_IF){log("R is IF");}
      pushdl(xm, dl, r);
-     log("if end");
     break;
    }
    case GRAM_NOTE:{
@@ -588,6 +584,5 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx){
    }
   }
  }
-
 }
 

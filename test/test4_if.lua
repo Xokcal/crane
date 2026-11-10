@@ -1,20 +1,33 @@
-int a1 = 1314 - 2 * 1;
+int base = 100;
+int level = 4;
+int score = base * 2 + level * 5 - 10 / 2;
+print("Init score:", score);
 
-if(a + 2 - 2 < 10 or a2 > 1 and a3 + 9 eq 19 or 4 eq 9){
-    print("hello", "crane if!!");
-    print("call 2 if inner", 1432);
-    int d1 = 290;
-    print("d1=",d1);
+if (score > 200) {
+    print("Level 1: High Score!");
+    int bonus = score * 2; 
+    print("Bonus in block:", bonus);
+    if(score < 201){
+        print("score > 201");
+    }
+    print("if1 end");
 }
-int a2 = 10 - 32 * 12;
-if(3 > 8 and a2 > 10 and a2 > 5 or a2 eq 1){
-    print("en second if");
-    int if2 = 23 * 21 * 2;
-    print("if2=", if2);
-    print("a2=",a2);
+print("out if1");
+
+if (score > 200) {
+    print("Level 1: High Score!");
+    int bonus = score * 2; 
+    print("Bonus in block:", bonus);
+    if(score > 201){
+        print("score > 201");
+        if(score geq 205){
+            print("score geq 205");
+            print("score=", score);
+            if(score eq 215){
+                print("score eq 215");
+            }
+        }
+    }
+    print("if1 end");
 }
-
-int a3 = 11 - 78 * 3;
-
-print("out");
-print("out a2=",a2);
+print("out if1");

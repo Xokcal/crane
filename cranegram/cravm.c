@@ -6,6 +6,7 @@
 #include "cgm_gramma.h"
 #include "cracom.h"
 #include "craobject.h"
+#include "types.h"
 
 long vmhashcode(const char *s){
  long len = strlen(s);
@@ -253,14 +254,66 @@ opcallexecute(vmState *vm, int *error)
  codenext(vm);
 }
 
+
+static int cmpexe(value v1, value v2, char *cmp){
+ if(v1.type == TYPE_INT && v2.type == TYPE_INT){
+  if(strcmp(cmp, ">")==0)return v1.v.i > v2.v.i;
+  if(strcmp(cmp, "<")==0)return v1.v.i < v2.v.i;
+  if(strcmp(cmp, "eq")==0)return v1.v.i == v2.v.i;
+  if(strcmp(cmp, "geq")==0)return v1.v.i >= v2.v.i;
+  if(strcmp(cmp, "leq")==0)return v1.v.i <= v2.v.i;
+  return 0;
+ }
+}
+
+
 void craV_execute(XokMalloc *xm , vmState *vm){
  vm->map = newvmap(xm);
  int error = 0;
  int *codes = vm->bc->codes;
+ Istack *condistack = newIstack(xm);
  while(vm->ci < vm->bc->count){
   if(error == 1)
    goto vmterminal;
   vmswitch(getcode(vm)){
+   vmcase(OP_CONDI){
+    codenext(vm);
+    codenext(vm);
+    vmbreak;
+   }
+   vmcase(OP_CMP){
+    codenext(vm);
+    value v1 = vm->vs[vm->sp - 2];
+    value v2 = vm->vs[vm->sp - 1];
+    char *cmptype = get_codesv(vm);
+    int r = cmpexe(v1, v2, cmptype);
+    pushI(condistack, r);
+    clear_sp(vm);
+    codenext(vm);
+    vmbreak;
+   }
+   vmcase(OP_JMP){
+    codenext(vm);
+    vm->ci = getcode(vm);
+    vmbreak;
+   }
+   vmcase(OP_JMP_TRUE){
+    codenext(vm);
+    int pop = popI(condistack);
+    if(pop == 1){
+     vm->ci = getcode(vm);
+    }else codenext(vm);
+    clear_sp(vm);
+    vmbreak;
+   }
+   vmcase(OP_JMP_FALSE){
+    codenext(vm);
+    if(popI(condistack) != 1){
+     vm->ci = getcode(vm);
+    }else codenext(vm);
+    clear_sp(vm);
+    vmbreak;
+   }
    vmcase(OP_CALL){
     opcallexecute(vm, &error);
     vmbreak;

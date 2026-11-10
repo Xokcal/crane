@@ -18,7 +18,7 @@ int main(){
  //setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
- String *context = open_file("test/test4_if.lua");
+ String *context = open_file("test/test4_if4.lua");
  //logc("context",context->str);
  lexState *lexstate = craL_lexexecute(txm, context);
  //#define tsprint

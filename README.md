@@ -2,75 +2,111 @@
 
 <img src="./assets/logo.svg" width="230" height="200" alt="Crane Logo" />
 
-  <h1>Crane</h1>
-  <img alt="Language" src="https://img.shields.io/badge/language-C-blue.svg?style=flat-square" />
+# 🦅 Crane Programming Language
 
-  <p><b>A lightweight programming language and stack-based Virtual Machine written from scratch in pure C.</b></p>
-  
-  <p>
-    <img alt="Language" src="https://img.shields.io/badge/language-C-blue.svg?style=flat-square" />
-    <img alt="VM" src="https://img.shields.io/badge/VM-Stack--Based-brightgreen.svg?style=flat-square" />
-    <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-Zero-orange.svg?style=flat-square" />
-    <img alt="License" src="https://img.shields.io/badge/license-MIT-green.svg?style=flat-square" />
-  </p>
-</div>
+<p align="center">
+  <i>A minimalist scripting language built from scratch in pure C, designed for zero-overhead C integration.</i>
+</p>
 
----
+<p align="center">
+  <img src="https://img.shields.io/badge/language-C-blue.svg" alt="Language">
+  <img src="https://img.shields.io/badge/dependencies-zero-brightgreen.svg" alt="Dependencies">
+  <img src="https://img.shields.io/badge/status-Active-brightgreen.svg" alt="Status">
+</p>
 
-**Crane** is a self-contained, lightweight scripting language implementation built entirely from scratch in pure C. 
+## 💡 Why Crane?
 
-Unlike modern languages that heavily rely on third-party infrastructure like LLVM or parser generators like Lex/Yacc, Crane provides a complete, end-to-end view of how programming languages actually work under the hood. From raw source code to lexical analysis, recursive descent parsing, Abstract Syntax Tree (AST), bytecode generation, and final execution in a stack-based Virtual Machine—**everything is hand-crafted**.
+The modern software ecosystem has plenty of heavy, JIT-compiled, and framework-loaded languages. **Crane** takes the opposite approach. 
 
-## ✨ Core Features
+Crane was born to solve a specific engineering problem: **Bridging the gap between complex C/C++ systems and lightweight scripting, without sacrificing performance or safety.**
 
-- 🛠️ **Hand-written Frontend**: A custom Lexer and a robust Recursive Descent Parser.
-- 🏷️ **Tagged Union Value System**: Native support for multiple data types (`int`, `float`, `string`, etc.) using a `Tagged Union` architecture, ensuring runtime type safety.
-- 📦 **Constant Pool Architecture**: Decouples instruction streams (Codes) from actual data. Real values are stored in a constant pool, keeping the bytecode array extremely compact.
-- ⚙️ **Stack-based Virtual Machine**: A high-performance VM core driven by a `while` + `switch` dispatch loop, featuring an operand stack and local variable slots.
-- 🚀 **Zero Dependencies**: Extremely lightweight. Only requires a standard C compiler to build.
+- **Zero-Overhead C Integration**: Crane is not just *written* in C; it is designed to *embed* and *call* C directly. It acts as the perfect, lightweight "glue" for your high-performance C engines, game engines, or embedded systems.
+- **Minimalist & Intuitive Syntax**: Forget boilerplate. Crane provides a clean, expressive syntax that gets out of your way, letting you write logic faster.
+- **Turing Complete & Self-Contained**: Built entirely from scratch (Lexer, Parser, AST, Bytecode, VM) with **zero external dependencies**. No Garbage Collection pauses, no bloated standard libraries—just pure, predictable execution.
 
 ## 🏗️ Architecture
 
+Crane operates through a classic, single-pass compilation pipeline, translating high-level syntax directly into highly optimized bytecode.
+
 ```text
-Source Code (.cr) 
-  ↓ [Lexer]
+Source Code (.ce) 
+  ↓ [Lexer] 
 Token Stream 
-  ↓ [Parser]
+  ↓ [Parser] 
 Abstract Syntax Tree (AST) 
-  ↓ [Code Generator]
+  ↓ [Code Generator] 
 Bytecode + Constant Pool 
-  ↓ [Virtual Machine]
+  ↓ [Virtual Machine] 
 Execution Result
 ```
 
-## Write some code
-```cr
+### 🚀 Quick Start
+Write your first Crane program in hello.ce. Notice how clean the syntax is:
+```text
+crane
+-- Clean variable declarations and arithmetic
 int a = 3 * 2;
 int b = 9 * 2 + 8;
-int c = 6 + 1 * 2;
-int d = 7 - 1 + 2 * 2 / 2;
 
+-- Native C-style function calls
 print("hello crane!!", 13, a);
 print(b);
-```
 
-## Expected Output
+-- Short-circuit logic, compiled directly to JMP instructions
+if (a > 5 and b < 30) {
+    print("Logic works perfectly!");
+}
+```
+Compile and run the VM:
+
+```bash
+gcc cranegram/*.c tool/*/*.c -o main.exe
+./main.exe hello.ce
+```
+### ⚙️ Language Syntax (Current Implementation)
+Crane's syntax is designed to be immediately readable to anyone coming from C, JS, or Python.
+
+### 1. Variables & Types
+Explicit typing ensures predictable memory behavior when interfacing with C.
+
 ```text
-   ___ ___    _   _  _ ___ 
-  / __| _ \  /_\ | \| | __|
- | (__|   / / _ \| .` | _| 
-  \___|_|_\/_/ \_\_|\_|___|
-
-Crane Compiler & VM
-Version: 1.0.0
-Build:   Oct 22 2026 11:08:28
-Author:  Xokcal
-Platform: Windows x86_64 (GCC)
-
-Welcome to Crane interactive terminal.
-Type your code to execute, or input 'h' for help, 'q' to quit.
-
-result a = 6
-result b = 26
-hello crane!! 13 6 
+int a = 10;
+string name = "Crane";
 ```
+
+### 2. Expressions & Precedence
+Full support for standard arithmetic operators with strict operator precedence and parentheses.
+
+```text
+int result = (10 + 20) * 3 - 4 / 2;
+```
+
+### 3. Conditional Statements (if)
+Crane supports highly optimized if statements. Under the hood, conditions are evaluated using short-circuit evaluation, generating JMP_TRUE and JMP_FALSE bytecodes.
+
+```text
+if (a > 10 and b eq 20 or c < 5) {
+    print("Condition met!");
+}
+```
+
+### 4. Loops (while)
+Crane compiles loop logic into backward PC jumps, ensuring zero-overhead iteration.
+
+```text
+int i = 0;
+while (i < 10) {
+    print("Loop iteration:", i);
+    i = i + 1;
+}
+```
+### 🔗 Roadmap: The Ultimate C Bridge
+Crane's primary goal is to become the ultimate embeddable script for C applications. The upcoming core features focus on C-FFI (Foreign Function Interface):
+
+☑ Arithmetic expressions and variable assignment
+☑ Control flow (if / else with short-circuit logic)
+☑ Loops (while)
+□ C-FFI: Directly import and call C functions (.so / .dll)
+□ C-FFI: Pass and receive pointers/structs seamlessly
+□ Function definitions and Call Stack (function)
+□ Memory Arena & custom Garbage Collection

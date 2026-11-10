@@ -672,7 +672,6 @@ static void treenumber(codesState cs, craastdesc *node, char *type){
  v_type_insert(type , &v , &node->as.num);
  bc_emit(cs.xm, cs.bc, OP_PUSH);
  bc_emit(cs.xm , cs.bc , cs.bc->v_count);
- logi("value", v.v.i);
  /* push struct value stack */
  bc_add_constant(cs.xm, cs.bc , v);
 }
@@ -693,7 +692,6 @@ static void treelvalue(codesState cs, craastdesc *node){
 static void treebinop(codesState cs, craastdesc *node, char *type){
  assignencode(cs, node->as.binop.left, type);
  assignencode(cs, node->as.binop.right, type);
- log(node->as.binop.calcsign);
  signemit(cs.xm, node->as.binop.calcsign, cs.bc);
 }
 
@@ -898,6 +896,5 @@ vmState* craC_bytecode_parse(XokMalloc *xm ,
   return vm_create(xm, cs->bc, cs->vns,
   cs->types, cs->targs, cs->tcalls, 2500000);
  }
- else{}
 }
 

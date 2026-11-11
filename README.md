@@ -4,9 +4,8 @@
 
 </div>
 
-# 🦅 Crane Programming Language
-
 <p align="center">
+  # 🦅 Crane Programming Language
   <i>A minimalist scripting language built from scratch in pure C, designed for zero-overhead C integration.</i>
 </p>
 

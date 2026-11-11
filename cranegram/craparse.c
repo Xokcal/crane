@@ -68,6 +68,7 @@ static int tokentype(String *s){
  if(compare(s , "-"))return GRAM_NOTE;
  if(compare(s , "if"))return GRAM_IF;
  if(compare(s , "}"))return GRAM_BLOCK_END;
+ if(compare(s , "while"))return GRAM_WHILE;
  if(!iscranekeys(s->str))return GRAM_UNKEY;
  return GRAM_EMPTY;
 }
@@ -126,6 +127,19 @@ static inline pavstate pavstate_init(XokMalloc *xm,ParseFactor *pf){
  pavstate pavs; pavs.xm = xm;
  pavs.pf = pf; pavs.root = NULL;
  return pavs;
+}
+
+
+/*
+** About condition tree parse and block parse assemble by type.
+*/
+static void condiblockassemble(XokMalloc *xm, craastdesc *condi,
+          Tblock *ifblock, cragramtype type, craastdesc **tree){
+ switch(type){
+  case GRAM_IF: *tree = make_cbdesc(xm, condi, ifblock, GRAM_IF);break;
+  case GRAM_WHILE: *tree = make_cbdesc(xm, condi, ifblock, GRAM_IF);break;
+  default: *tree = make_cbdesc(xm, condi, ifblock, GRAM_UNKEY);break;
+ }
 }
 
 
@@ -475,7 +489,7 @@ static craastdesc *cmpdescexe(XokMalloc *xm, ParseFactor *pf){
 ** If condition parse ast tree factor and mid combine function.
 ** Tackle high condition priority condition sign and continous tree create.
 */
-static craastdesc *ifcondimid(XokMalloc *xm, ParseFactor *pf){
+static craastdesc *condidescmid(XokMalloc *xm, ParseFactor *pf){
   /* Return cmpdescexe() compare tree result current is condition sign*/
  craastdesc *l = cmpdescexe(xm, pf);
  /* Reach 'and' condition sign continous
@@ -498,45 +512,48 @@ static craastdesc *ifcondimid(XokMalloc *xm, ParseFactor *pf){
 ** if condition tree main execute function and condition 
 ** low priroity execute factor
 */
-static craastdesc *ifcondimain(XokMalloc *xm, ParseFactor *pf){
- craastdesc *l = ifcondimid(xm, pf);  /* Desc l is main desc */
- /* In ifcondimid has continous combine 'and' 
+static craastdesc *condidescmain(XokMalloc *xm, ParseFactor *pf){
+ craastdesc *l = condidescmid(xm, pf);  /* Desc l is main desc */
+ /* In condidescmid has continous combine 'and' 
  condition,  next only is 'or' and entry */
  while(strcmp(pfcurstr(pf), "or")==0){
   char *condic = pfcurstr(pf);  /* Store this condition sign */
   pfnext(pf); accept_empty(pf);
-  /* Again use function ifcondimid(), judge next whitehr
+  /* Again use function condidescmid(), judge next whitehr
    is 'and', if is.. continous combine and return to r*/
-  craastdesc *r = ifcondimid(xm, pf);  
+  craastdesc *r = condidescmid(xm, pf);  
   l = make_condi(xm, condic, l, r);  /* Combine r and l, and 
   judge next condition sign whither is 'or', because condition 
-  sign 'and' hav been combine by previous ifcondimid() */
+  sign 'and' hav been combine by previous condidescmid() */
  }
  return l;
 }
 
 
 /*
-** If key main execute, by ifcondimain(), block()... function tackle to desc tree.
+** If key main execute, by condidescmain(), block()... function tackle to desc tree.
+** Used to contain condition and block grammar.
 */
-static craastdesc *ifdesc(XokMalloc *xm, 
-         ParseFactor *pf, lexState *ts){
+static craastdesc *condiblockdesc(XokMalloc *xm,
+ParseFactor *pf,lexState *ts, cragramtype type){
  accept_empty(pf);  /* Ensure current token not is empty */
  accept(pf, "(");  /* Current token probably is '(' and eat */
  accept_empty(pf);  /* Current is authentic content */
- /* First execute if comdition tree */
- craastdesc *condi = ifcondimain(xm, pf);/* Parse if condition desc 
+ /* First execute comdition tree */
+ craastdesc *condi = condidescmain(xm, pf);/* Parse if condition desc 
  tree, tokesn is "(" when entry, and out this function token is ")" */
  pfnext(pf); accept_empty(pf);
  /* Eat "{" judge current whither is this token */
  accept(pf, "{"); accept_empty(pf);
  /* Tblock use to record "{..}" inner content tree */
  Tblock *ifblock = newTblock(xm);
- /* Ifdesc use to record condition tree and {..} content*/
- craastdesc *ifdesc = make_ifdesc(xm, condi, ifblock);
+ /* Use  to record condition tree and {..} content*/
+ craastdesc *tree;
+ condiblockassemble(xm, condi, ifblock, type, &tree);
  /* {..} content parse tree by use craP_parsedesc() */
- pf->curr = craP_parsedesc(xm, ts, ifblock->treelist, pf->curr);
- return ifdesc;
+ pf->curr = craP_parsedesc(
+  xm, ts, ifblock->treelist, pf->curr);
+ return tree;
 }
 
 
@@ -560,7 +577,8 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx){
     break;
    }
    case GRAM_IF:{
-     craastdesc *r = ifdesc(xm, &pf, ts);
+     craastdesc *r = 
+     condiblockdesc(xm, &pf, ts, GRAM_IF);
      pushdl(xm, dl, r);
     break;
    }
@@ -570,6 +588,12 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx){
     break;
    }
    case GRAM_EMPTY:{
+    break;
+   }
+   case GRAM_WHILE:{
+     craastdesc *r = 
+     condiblockdesc(xm, &pf, ts, GRAM_WHILE);
+     pushdl(xm, dl, r);
     break;
    }
    case GRAM_BLOCK_END:{  /* Reach "}" toekn judge is

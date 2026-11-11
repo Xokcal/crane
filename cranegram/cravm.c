@@ -238,7 +238,7 @@ opcallexecute(vmState *vm, int *error)
     Tparam tp = vm->tempargs[i];
     switch(tp.pty)
     {
-     case PRM_STRING:prints(tp.originstr);
+     case PRM_STRING: prints(tp.originstr);
      break;
      case PRM_NUMBER:prmnumberP(tp,error);
      break;

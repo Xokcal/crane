@@ -11,6 +11,7 @@
 typedef struct craastdesc craastdesc;
 typedef struct Tblock Tblock;
 typedef struct desclist desclist;
+typedef enum craasttype craasttype;
 
 typedef struct Istack{
  int stack[200];
@@ -34,8 +35,8 @@ craastdesc *make_cmp(XokMalloc *xokmalloc, char *cmpc,
                 craastdesc *left , craastdesc *right);
 craastdesc *make_condi(XokMalloc *xokmalloc, char *cmpc,
                 craastdesc *left , craastdesc *right);
-craastdesc *make_ifdesc(XokMalloc *xokmalloc,
-           craastdesc *condi, Tblock *block);
+craastdesc *make_cbdesc(XokMalloc *xokmalloc, craastdesc *condi,
+                               Tblock *block, craasttype type);
 /* desclist func */
 desclist *craP_desclist_create(XokMalloc *xm, int init_size);
 void craP_desclist_free(XokMalloc *xm, desclist *dl);

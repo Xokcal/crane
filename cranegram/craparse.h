@@ -88,7 +88,8 @@ typedef enum cragramtype{
   GRAM_UNKEY,     /* [6]origin token is 'unkey' */
   GRAM_NOTE,      /* [7]origin token is '-' judge behind is '--' note */
   GRAM_IF,        /* [8]origin token is 'if' */
-  GRAM_BLOCK_END  /* [9]origin token is "}" use to return */
+  GRAM_BLOCK_END, /* [9]origin token is "}" use to return */
+  GRAM_WHILE      /* [10]origin token is 'while' loop key */
 }cragramtype;
 
 /* signed ast descibtion grammar tree type */
@@ -105,7 +106,8 @@ typedef enum craasttype{
   AST_HASVAR,       /* [9]AST type has def variable */
   AST_CONDI,        /* [10]AST type condition logic */
   AST_CMP,          /* [11]AST type compare condition */
-  AST_IF            /* [12]AST type if desc tree */
+  AST_IF,           /* [12]AST type if desc tree */
+  AST_WHILE         /* [13]ASR type while loop tree */
 }craasttype;
 
 /* define param type like: {("hello", count, 10086, 3.1415)} */

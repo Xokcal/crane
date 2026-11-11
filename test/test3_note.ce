@@ -7,3 +7,4 @@ print("i=", i);
 -- is ok!!!
 i = i * i - i + 2 * 3; -- is very ok.
 print("i2=",i);
+

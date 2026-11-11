@@ -15,7 +15,7 @@
 
 int main(){
  starttime;
- //setvbuf(stdout, NULL, _IOFBF, 1 << 20);
+ setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
  String *context = open_file("test/test4_if4.lua");
@@ -36,6 +36,7 @@ int main(){
   goto executeError;
  codesState cs = packagecodestate(xm);
  int dlindex = 0;
+ log("en code");
  vmState *vmState = craC_bytecode_parse(xm , dl, &cs, "main", &dlindex);
  craV_execute(xm, vmState);
  executeError:

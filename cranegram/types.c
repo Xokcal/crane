@@ -103,11 +103,12 @@ craastdesc *make_condi(XokMalloc *xokmalloc, char *cmpc,
 }
 
 
-craastdesc *make_ifdesc(XokMalloc *xokmalloc,
-           craastdesc *condi, Tblock *block){
+craastdesc *make_cbdesc(XokMalloc *xokmalloc, craastdesc *condi,
+                               Tblock *block, craasttype type){
  craastdesc *node = (craastdesc *)
  xalloc_XokMalloc(xokmalloc , sizeof(craastdesc));
- node->kind = AST_IF;
+ if(type == GRAM_IF) node->kind = AST_IF;
+ else if(type == GRAM_WHILE) node->kind = AST_WHILE;
  node->as.ifdesc.condi = condi;
  node->as.ifdesc.block = block;
  return node;

@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include "../tool/String/String.h"
 #include "../tool/log/log.h"
+#include "cracom.h"
+#include "cralex.h"
 
 String *open_file(char *URL) {
  FILE *file = fopen(URL, "rb");
@@ -20,7 +22,7 @@ String *open_file(char *URL) {
  fread(buffer, 1, file_size, file);
  buffer[file_size] = '\0';
  fclose(file);
- String *tokens = create_string(buffer); 
+ String *tokens = create_string(buffer);
  free(buffer);
  return tokens;
 }

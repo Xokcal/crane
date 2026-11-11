@@ -7,6 +7,7 @@
 #include "cravm.h"
 #include "craobject.h"
 #include "types.h"
+#include "cracom.h"
 
 #define TYPES_DEFAULT_SIZE 300
 #define TYPES_GROW_FACTOR  2
@@ -716,7 +717,6 @@ static void astassignexe(codesState cs, craastdesc *curdesc, int *dl){
  if(value==NULL)
   goto undef;
  assignencode(cs, value, type);
- op_visualization(cs.bc, cs.vns , cs.tcalls, cs.targs, cs.types);
  undef:
  bc_emit(cs.xm , cs.bc , OP_STORE);
  vnstk_push(cs.xm , cs.vns , curdesc->as.assign.name , (*cs.vnsi));
@@ -844,10 +844,12 @@ static void ifdescexe(codesState *cs, craastdesc *curdesc, int *dlindex){
  /* temp record current 'OP_JMP' instructction in codes index */
  int ifjmpoutindex = cs->bc->count;
  bc_emit(cs->xm, cs->bc, 0);
- /* All 'or' stack revise to current codes index,
+ /* All 'or' stack update to current codes index,
   because current bc index is entry if block first instruction index */
  while(orstack->count > 0)
   cs->bc->codes[popI(orstack)] = cs->bc->count;
+ while(andtstack->count > 0)
+ cs->bc->codes[popI(andtstack)] = cs->bc->count;
  /* Use craC_bytecode_parse() execute ifdesc block tree. */
  int blockdl = 0;
  craC_bytecode_parse(
@@ -887,7 +889,7 @@ vmState* craC_bytecode_parse(XokMalloc *xm ,
  }
  if(strcmp(type, "main")==0)
   bc_emit(xm , cs->bc , OP_HALT);
- #define codesvisualization
+ //#define codesvisualization
  #ifdef codesvisualization
  //craC_codes_log(cs->bc);
  op_visualization(cs->bc, cs->vns , cs->tcalls, cs->targs, cs->types);

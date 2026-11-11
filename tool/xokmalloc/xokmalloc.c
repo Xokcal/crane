@@ -3,7 +3,7 @@
 #include "xokmalloc.h"
 #include "../../cranegram/cralex.h"
 
-#define MEMPOOL_SIZE 100 * 1024 * 1024
+#define MEMPOOL_SIZE 100 * 1024 * 1024 * 5
 
 XokMalloc *
 create_XokMalloc()

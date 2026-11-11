@@ -6,6 +6,9 @@
 
 <p align="center">
   # 🦅 Crane Programming Language
+</p>
+
+<p align="center">
   <i>A minimalist scripting language built from scratch in pure C, designed for zero-overhead C integration.</i>
 </p>
 

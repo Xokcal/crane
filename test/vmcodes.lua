@@ -5,10 +5,15 @@ PUSH             0
 STORE            count
 TYPE             int
 VAR              count
-PUSH             10000
+PUSH             100000
 CMP              <
-JMP_TRUE         22
-JMP              38
+CONDI            and
+JMP_FALSE        32
+VAR              a
+PUSH             5000
+CMP              <
+JMP_TRUE         32
+JMP              48
 VAR              a
 PUSH             3
 ADD              +
@@ -18,6 +23,28 @@ PUSH             1
 ADD              +
 REASSIGN         count
 JMP              12
+LOAD             "quit while!!"
+CALL             print
+LOAD             "a="
+LOAD             a
+CALL             print
+LOAD             "count="
+LOAD             count
+CALL             print
+VAR              count
+PUSH             0
+CMP              >
+JMP_TRUE         74
+JMP              90
+VAR              a
+PUSH             1
+SUB              -
+REASSIGN         a
+VAR              count
+PUSH             2
+SUB              -
+REASSIGN         count
+JMP              64
 LOAD             "quit while!!"
 CALL             print
 LOAD             "a="

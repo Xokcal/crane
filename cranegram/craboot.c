@@ -33,14 +33,18 @@ int main(){
  XokMalloc *xm = create_XokMalloc();
  Hashmap *hmap = create_hashmap(); /* gloab variable*/
  desclist *dl = craP_desclist_create(xm , 1); /* tree list */
- parsecode = craP_parsedesc(xm , lexstate , dl, 0, "main", NULL);  /*  AST main parse */
+ parsecode = craP_parsedesc(
+ xm , lexstate , dl, 0, "main", NULL);  /*  AST main parse */
  craL_lexstatefree(lexstate);
  if(parsecode == errorcode)
   goto executeError;
  codesState cs = packagecodestate(xm);
  int dlindex = 0;
- vmState *vmState = craC_bytecode_parse(xm , dl, &cs, "main", &dlindex);
- op_visualization(vmState->bc, vmState->vns, vmState->tcalls, vmState->targs, vmState->tys);
+ vmState *vmState = craC_bytecode_parse(
+ xm , dl, &cs, "main", &dlindex);
+ op_visualization(
+ vmState->bc, vmState->vns, vmState->tcalls, 
+ vmState->targs, vmState->tys);
  craV_execute(xm, vmState);
  executeError:
  /* free setting struct */

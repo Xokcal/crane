@@ -96,4 +96,6 @@ int bc_add_constant(XokMalloc *xm, bytecode *bc, value v);
 const char* typetostr(vartype type);
 void assignencode(codesState cs, craastdesc *node, char *type);
 codesState packagecodestate(XokMalloc *xm);
+void op_visualization(bytecode *bc, varnamestk *vns,
+ Tcalls *tcalls, Targs *targs, Ttypes *types);
 #endif

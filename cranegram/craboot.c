@@ -13,13 +13,16 @@
 #include "cravm.h"
 #include "cracom.h"
 
+#define test4_if4 "test/test4_if4.lua"
+#define test5_while "test/test5_while.lua"
+
 int main(){
  starttime;
  setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
- String *context = open_file("test/test4_if4.lua");
- //logc("context",context->str);
+ String *context = open_file(test5_while);
+ craCM_show(context->str);
  lexState *lexstate = craL_lexexecute(txm, context);
  //#define tsprint
  #ifdef tsprint
@@ -30,14 +33,14 @@ int main(){
  XokMalloc *xm = create_XokMalloc();
  Hashmap *hmap = create_hashmap(); /* gloab variable*/
  desclist *dl = craP_desclist_create(xm , 1); /* tree list */
- parsecode = craP_parsedesc(xm , lexstate , dl, 0);  /*  AST main parse */
+ parsecode = craP_parsedesc(xm , lexstate , dl, 0, "main", NULL);  /*  AST main parse */
  craL_lexstatefree(lexstate);
  if(parsecode == errorcode)
   goto executeError;
  codesState cs = packagecodestate(xm);
  int dlindex = 0;
- log("en code");
  vmState *vmState = craC_bytecode_parse(xm , dl, &cs, "main", &dlindex);
+ op_visualization(vmState->bc, vmState->vns, vmState->tcalls, vmState->targs, vmState->tys);
  craV_execute(xm, vmState);
  executeError:
  /* free setting struct */

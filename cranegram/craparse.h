@@ -79,17 +79,18 @@ typedef struct value value;
 typedef struct lexState lexState;
 
 typedef enum cragramtype{
-  GRAM_INT,       /* [0]origin token is 'int' */
-  GRAM_STRING,    /* [1]origin token is 'string' */
-  GRAM_FLOAT,     /* [2]origin token is 'float' */
-  GRAM_PRINTF,    /* [3]origin token is 'printf' */
-  GRAM_EMPTY,     /* [4]origin token is 'empty' */
-  GRAM_VAR,       /* [5]origin token is 'variable' */
-  GRAM_UNKEY,     /* [6]origin token is 'unkey' */
-  GRAM_NOTE,      /* [7]origin token is '-' judge behind is '--' note */
-  GRAM_IF,        /* [8]origin token is 'if' */
-  GRAM_BLOCK_END, /* [9]origin token is "}" use to return */
-  GRAM_WHILE      /* [10]origin token is 'while' loop key */
+  GRAM_INT,          /* [0]origin token is 'int' */
+  GRAM_STRING,       /* [1]origin token is 'string' */
+  GRAM_FLOAT,        /* [2]origin token is 'float' */
+  GRAM_PRINTF,       /* [3]origin token is 'printf' */
+  GRAM_EMPTY,        /* [4]origin token is 'empty' */
+  GRAM_VAR,          /* [5]origin token is 'variable' */
+  GRAM_UNKEY,        /* [6]origin token is 'unkey' */
+  GRAM_NOTE,         /* [7]origin token is '-' judge behind is '--' note */
+  GRAM_IF,           /* [8]origin token is 'if' */
+  GRAM_BLOCK_END,    /* [9]origin token is "}" use to return */
+  GRAM_WHILE,        /* [10]origin token is 'while' loop key */
+  GRAM_BLOCK_START   /* [11]origin token is "}" */
 }cragramtype;
 
 /* signed ast descibtion grammar tree type */
@@ -205,8 +206,8 @@ typedef struct Tblock{
  long count;
 }Tblock;
 
-/* crane ast parse main funtion, xokMalloc is memory pool */
-int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx);
+int craP_parsedesc(XokMalloc *xm, lexState *ts, desclist *dl,
+                  int curidx, char *type, desclist *maindl);
 desclist *craP_desclist_create(XokMalloc *xm, int init_size);
 void craP_desclist_free(XokMalloc *xm, desclist *dl);
 int craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree);

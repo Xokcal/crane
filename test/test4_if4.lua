@@ -107802,6 +107802,9 @@ print("craneif calculate logic quit.");
 int qwertyuiop = 90 + 1;
 int cranepreviewDRC = 79 - 1;
 if(qwertyuiop leq 90 or cranepreviewDRC leq 79){ -- <= : >=
+    if(qwertyuiop eq 91){
+        print("second if entry is success!!");
+    }
     print("91!!", " && ", "78!!");
 }
 print("craneif calculate logic quit.");

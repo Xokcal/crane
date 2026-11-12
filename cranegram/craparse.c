@@ -137,7 +137,7 @@ static void condiblockassemble(XokMalloc *xm, craastdesc *condi,
           Tblock *ifblock, cragramtype type, craastdesc **tree){
  switch(type){
   case GRAM_IF: *tree = make_cbdesc(xm, condi, ifblock, GRAM_IF);break;
-  case GRAM_WHILE: *tree = make_cbdesc(xm, condi, ifblock, GRAM_IF);break;
+  case GRAM_WHILE: *tree = make_cbdesc(xm, condi, ifblock, GRAM_WHILE);break;
   default: *tree = make_cbdesc(xm, condi, ifblock, GRAM_UNKEY);break;
  }
 }
@@ -402,15 +402,18 @@ static int unkeycallexemain(XokMalloc *xm, ParseFactor *pf,
 ** **desc accept out desc address and assign to out desc address's value
 ** is new desc(make_hasvar).
 */
-static void unkeyhasvarexe(XokMalloc *xm, ParseFactor *pf,
-            desclist *dl, craastdesc **desc, char *unkey){
+static void unkeyhasvarexe(XokMalloc *xm, ParseFactor *pf, desclist *dl, 
+          craastdesc **desc, char *unkey, desclist *maindl, char *type){
  if(!strcmp(pfcurstr(pf), "=")){
   accept(pf, "=");  /* current is function unkey_desc entry by
   judge after unkey token, authentic content is next. */
   pavstate ps = pavstate_init(xm , pf);
   /* Parse reassign binop after '='. */
   craastdesc *v = parsevaluemain(ps);
-  craastdesc *target = findvardesc(dl, unkey);
+  craastdesc *target;  /* Record variable point target */
+  if(strcmp(type, "main")==0)
+    target = findvardesc(dl, unkey);
+  else target = findvardesc(maindl, unkey);
   if(target==NULL)return;
   *desc = make_hasvar(
   xm, v, unkey, target->as.assign.type);
@@ -424,18 +427,18 @@ static void unkeyhasvarexe(XokMalloc *xm, ParseFactor *pf,
 ** special tackle, unkey not is key, and not is queto, parenthesee,
 ** .., so overall call these is'unkey'.
 */
-static craastdesc* unkeydesc(XokMalloc *xm, 
-            ParseFactor *pf, desclist *dl){
+static craastdesc* unkeydesc(XokMalloc *xm, ParseFactor *pf,
+                 desclist *dl, desclist *maindl, char *type){
  pfback(pf);  /* Current pf is slip key,
  pf need back to previous index get varibale key */
  craastdesc *desc; /* Overall desc node */
  /* str tool, convenient to tackle str */
  String *t = create_string("");        
- char *unkey = strdup(pfcurstr(pf)); /* Store function name */
+ char *unkey = strdup(pfcurstr(pf)); /* Store unkey name */
  pfnext(pf); /* Next is {'(', '++', '--', "+=", '-=', ...}, 
  judge unkey specific type  */
  accept_empty(pf);
- unkeyhasvarexe(xm, pf, dl, &desc, unkey);
+ unkeyhasvarexe(xm, pf, dl, &desc, unkey, maindl, type);
  int code = unkeycallexemain(xm, pf, &desc, unkey, t);
  strfree(t); /* priroity free String, then return */
  if(code == errorcode)return NULL;
@@ -534,8 +537,8 @@ static craastdesc *condidescmain(XokMalloc *xm, ParseFactor *pf){
 ** If key main execute, by condidescmain(), block()... function tackle to desc tree.
 ** Used to contain condition and block grammar.
 */
-static craastdesc *condiblockdesc(XokMalloc *xm,
-ParseFactor *pf,lexState *ts, cragramtype type){
+static craastdesc *condiblockdesc(XokMalloc *xm, ParseFactor *pf,
+                   lexState *ts, cragramtype type, desclist *dl){
  accept_empty(pf);  /* Ensure current token not is empty */
  accept(pf, "(");  /* Current token probably is '(' and eat */
  accept_empty(pf);  /* Current is authentic content */
@@ -552,7 +555,7 @@ ParseFactor *pf,lexState *ts, cragramtype type){
  condiblockassemble(xm, condi, ifblock, type, &tree);
  /* {..} content parse tree by use craP_parsedesc() */
  pf->curr = craP_parsedesc(
-  xm, ts, ifblock->treelist, pf->curr);
+  xm, ts, ifblock->treelist, pf->curr, "block", dl);
  return tree;
 }
 
@@ -560,7 +563,8 @@ ParseFactor *pf,lexState *ts, cragramtype type){
 /*
 ** Crane parse ast main execute.
 */
-int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx){
+int craP_parsedesc(XokMalloc *xm, lexState *ts, desclist *dl,
+                  int curidx, char *type, desclist *maindl){
   /* Package tokens and index(curr) */
  ParseFactor pf = {ts , curidx};
  /* Ast parse executor main while */
@@ -570,15 +574,17 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx){
   String *t = pf.tokens->lextokens[pf.curr++]->token;
   switch(tokentype(t)){
    case GRAM_UNKEY:{
-     craastdesc *cd = unkeydesc(xm , &pf, dl);
+    craastdesc *cd;
+    if(strcmp(type, "main")==0)
+     cd = unkeydesc(xm , &pf, dl, dl, "main");
+    else cd = unkeydesc(xm , &pf, dl, maindl, "block");
      pushdl(xm, dl, cd);
-     if(cd == NULL)
-      return errorcode;
+     if(cd == NULL)return errorcode;
     break;
    }
    case GRAM_IF:{
      craastdesc *r = 
-     condiblockdesc(xm, &pf, ts, GRAM_IF);
+     condiblockdesc(xm, &pf, ts, GRAM_IF, dl);
      pushdl(xm, dl, r);
     break;
    }
@@ -592,7 +598,7 @@ int craP_parsedesc(XokMalloc *xm , lexState *ts , desclist *dl, int curidx){
    }
    case GRAM_WHILE:{
      craastdesc *r = 
-     condiblockdesc(xm, &pf, ts, GRAM_WHILE);
+     condiblockdesc(xm, &pf, ts, GRAM_WHILE, dl);
      pushdl(xm, dl, r);
     break;
    }

@@ -8,6 +8,10 @@
 #define craCM_error(line,error) \
  printf("\n%s: %s: line:%d \033[31merror\033[0m: %s\n", __FILE__, __TIME__, (line), (error))
 
+#define craCM_show(show) \
+ printf("[crane origin code show]:\n\033[36m%s\033[0m\n", (show));
+
+
 #define addchar(s,c) combine_tail_char((s),(c));
 
 #define addstr(s,n) combine_tail((s), (n));

@@ -251,8 +251,7 @@ op_codeparse(int op, int preop, int *opi, String *s, bytecode *bc,
 }
 
 
-static void
-op_visualization(bytecode *bc, varnamestk *vns,
+void op_visualization(bytecode *bc, varnamestk *vns,
  Tcalls *tcalls, Targs *targs, Ttypes *types){
  String *s = create_string("");
  int opi = 0;
@@ -803,7 +802,7 @@ static void nodecondiexe(codesState cs, craastdesc *node,
 /*
 ** Only give ifdesc node's condi desc tree.
 */
-static void ifcondiexe(codesState cs, craastdesc *node,
+static void condiexe(codesState cs, craastdesc *node,
                    Istack *andtstack, Istack *orstack){
  if(node->kind == AST_CMP){
   assignencode(cs, node->as.binop.left, "int");
@@ -813,14 +812,14 @@ static void ifcondiexe(codesState cs, craastdesc *node,
   bc_emit(cs.xm , cs.bc , (*cs.vnsi)++);
  }
  if(node->kind == AST_CONDI){
-  ifcondiexe(cs, node->as.binop.left, andtstack, orstack);
+  condiexe(cs, node->as.binop.left, andtstack, orstack);
   /* record condition node like 'and' 'or', and
    judge use 'OP_JMP_FALSE' or 'OP_JMP_TRUE' */
   bc_emit(cs.xm, cs.bc, OP_CONDI);
   vnstk_push(cs.xm , cs.vns , node->as.binop.calcsign , (*cs.vnsi));
   bc_emit(cs.xm , cs.bc , (*cs.vnsi)++);
   nodecondiexe(cs, node, andtstack, orstack);
-  ifcondiexe(
+  condiexe(
   cs, node->as.binop.right, andtstack, orstack);
  }
 }
@@ -831,10 +830,13 @@ static void ifcondiexe(codesState cs, craastdesc *node,
 ** and if block main parse function don's shared int *dlindex, 
 ** so need alone transfor tree list count.
 */
-static void ifdescexe(codesState *cs, craastdesc *curdesc, int *dlindex){
+static void condiblockdescexe(codesState *cs, craastdesc *curdesc,
+                                  int *dlindex, craasttype type){
  Istack *andtstack = newIstack(cs->xm);
  Istack *orstack = newIstack(cs->xm);
- ifcondiexe(*cs, curdesc->as.ifdesc.condi, andtstack, orstack);
+ long startidx;
+ if(type == AST_WHILE) startidx = cs->bc->count;
+ condiexe(*cs, curdesc->as.ifdesc.condi, andtstack, orstack);
  /* Push orstack judge end 'or' logic again */
  bc_emit(cs->xm, cs->bc, OP_JMP_TRUE);
  pushI(orstack, cs->bc->count);
@@ -855,6 +857,11 @@ static void ifdescexe(codesState *cs, craastdesc *curdesc, int *dlindex){
  craC_bytecode_parse(
  cs->xm, curdesc->as.ifdesc.block->treelist, 
  cs, "block", &blockdl);
+ if(type == AST_WHILE){
+  bc_emit(cs->xm, cs->bc, OP_JMP);
+  bc_emit(cs->xm, cs->bc, startidx);
+ }
+ /* Recoed jmp out to while after AST_WHILE OP_JMP */
  cs->bc->codes[ifjmpoutindex] = cs->bc->count;
  (*dlindex)++;
 }
@@ -869,19 +876,23 @@ vmState* craC_bytecode_parse(XokMalloc *xm ,
   craastdesc *curdesc = dl->desclist[(*dlindex)];
   switch(curdesc->kind){
    case AST_HASVAR:{
-    asthasvarexe(*cs, curdesc, dlindex);
+     asthasvarexe(*cs, curdesc, dlindex);
     break;
    }
    case AST_ASSIGN:{
-    astassignexe(*cs, curdesc, dlindex);
+     astassignexe(*cs, curdesc, dlindex);
     break;
    }
    case AST_CALL:{
-    astcallexe(*cs, curdesc, dlindex);
+     astcallexe(*cs, curdesc, dlindex);
     break;
    }
    case AST_IF:{
-    ifdescexe(cs, curdesc, dlindex);
+     condiblockdescexe(cs, curdesc, dlindex, AST_IF);
+    break;
+   }
+   case AST_WHILE:{
+     condiblockdescexe(cs, curdesc, dlindex, AST_WHILE);
     break;
    }
    default:break;
@@ -889,11 +900,6 @@ vmState* craC_bytecode_parse(XokMalloc *xm ,
  }
  if(strcmp(type, "main")==0)
   bc_emit(xm , cs->bc , OP_HALT);
- //#define codesvisualization
- #ifdef codesvisualization
- //craC_codes_log(cs->bc);
- op_visualization(cs->bc, cs->vns , cs->tcalls, cs->targs, cs->types);
- #endif
  if(strcmp(type, "main")==0){
   return vm_create(xm, cs->bc, cs->vns,
   cs->types, cs->targs, cs->tcalls, 2500000);

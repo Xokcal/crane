@@ -69,7 +69,7 @@ craastdesc *make_lvalue(XokMalloc *xokmalloc , char *name){
 }
 
 craastdesc *make_hasvar(XokMalloc *xokmalloc
-      , craastdesc *value, char *name, char *type){
+,craastdesc *value, char *name, char *type){
  craastdesc *node = (craastdesc *)
  xalloc_XokMalloc(xokmalloc , sizeof(craastdesc));
  node->kind = AST_HASVAR;

@@ -602,8 +602,9 @@ int craP_parsedesc(XokMalloc *xm, lexState *ts, desclist *dl,
      pushdl(xm, dl, r);
     break;
    }
-   case GRAM_BLOCK_END:{  /* Reach "}" toekn judge is
-   "{..}" terminal, use craP_parsedesc() should return */
+   case GRAM_BLOCK_END:{  /* Reach "}" 
+    toekn judge is "{..}" terminal, use 
+    craP_parsedesc() should return */
     return pf.curr;
    }
    case GRAM_VAR:{

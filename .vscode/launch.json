@@ -1,7 +1,20 @@
 {
     "version": "0.2.0",
     "configurations": [
-        
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "Test",
+            "projectName": "crane_e9d58030"
+        },
+        {
+            "type": "java",
+            "name": "test1",
+            "request": "launch",
+            "mainClass": "test1",
+            "projectName": "crane_e9d58030"
+        },
         {
             "name": "GDB",
             "type": "cppdbg",

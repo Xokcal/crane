@@ -402,9 +402,8 @@ static int unkeycallexemain(XokMalloc *xm, ParseFactor *pf,
 ** **desc accept out desc address and assign to out desc address's value
 ** is new desc(make_hasvar).
 */
-static void unkeyhasvarexe(XokMalloc *xm, ParseFactor *pf,
-             desclist *dl, craastdesc **desc, char *unkey, 
-                           desclist *maindl, char *type){
+static void unkeyhasvarexe(XokMalloc *xm, ParseFactor *pf, desclist *dl, 
+         craastdesc **desc, char *unkey, desclist *maindl, char *type){
  if(!strcmp(pfcurstr(pf), "=")){
   accept(pf, "=");  /* current is function unkey_desc entry by
   judge after unkey token, authentic content is next. */

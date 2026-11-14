@@ -33,6 +33,10 @@
 
 #define strcomcat(s, s2) combine_tail((s), (s2))
 
+/* ****************** code common ********************* */
+#define blocktreelist(node) \
+ (node)->as.ifdesc.block->treelist
+
 
 /*
 ** by struct vartype convert to char* origin type
@@ -785,6 +789,30 @@ static void condiexe(codesState cs, craastdesc *node,
 }
 
 
+static void condiendexecute(codesState *cs, 
+     int *ifjmpoutindex, Istack *orstack){
+ bc_emit(cs->xm, cs->bc, OP_JMP_TRUE);
+ pushI(orstack, cs->bc->count);
+ bc_emit(cs->xm, cs->bc, 0);
+ /* If all condition not match, JMP to if out */
+ bc_emit(cs->xm, cs->bc, OP_JMP);
+ /* temp record current 'OP_JMP' instructction in codes index */
+ (*ifjmpoutindex) = cs->bc->count;
+ bc_emit(cs->xm, cs->bc, 0);
+}
+
+
+static void swrapcondilogicstack(codesState *cs, 
+           Istack *andtstack, Istack *orstack){
+ /* All 'or' stack update to current codes index,
+  because current bc index is entry if block first instruction index */
+ while(orstack->count > 0)
+  cs->bc->codes[popI(orstack)] = cs->bc->count;
+ while(andtstack->count > 0)
+ cs->bc->codes[popI(andtstack)] = cs->bc->count;
+}
+
+
 /*
 ** AST_IF code parse main executor, because if outer parse main function
 ** and if block main parse function don's shared int *dlindex, 
@@ -795,27 +823,14 @@ static void condiblockdescexe(codesState *cs, craastdesc *curdesc,
  Istack *andtstack = newIstack(cs->xm);
  Istack *orstack = newIstack(cs->xm);
  long startidx;
+ int ifjmpoutindex;
  if(type == AST_WHILE) startidx = cs->bc->count;
  condiexe(*cs, curdesc->as.ifdesc.condi, andtstack, orstack);
- /* Push orstack judge end 'or' logic again */
- bc_emit(cs->xm, cs->bc, OP_JMP_TRUE);
- pushI(orstack, cs->bc->count);
- bc_emit(cs->xm, cs->bc, 0);
- /* If all condition not match, JMP to if out */
- bc_emit(cs->xm, cs->bc, OP_JMP);
- /* temp record current 'OP_JMP' instructction in codes index */
- int ifjmpoutindex = cs->bc->count;
- bc_emit(cs->xm, cs->bc, 0);
- /* All 'or' stack update to current codes index,
-  because current bc index is entry if block first instruction index */
- while(orstack->count > 0)
-  cs->bc->codes[popI(orstack)] = cs->bc->count;
- while(andtstack->count > 0)
- cs->bc->codes[popI(andtstack)] = cs->bc->count;
+ condiendexecute(cs, &ifjmpoutindex, orstack);
+ swrapcondilogicstack(cs, andtstack, orstack);
  /* Use craC_bytecode_parse() execute ifdesc block tree. */
  int blockdl = 0;
- craC_bytecode_parse(
- cs->xm, curdesc->as.ifdesc.block->treelist, 
+ craC_bytecode_parse(cs->xm, blocktreelist(curdesc),
  cs, "block", &blockdl);
  if(type == AST_WHILE){
   bc_emit(cs->xm, cs->bc, OP_JMP);

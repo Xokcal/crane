@@ -109,6 +109,7 @@ op_comcatop(int op, String *s)
  if(op==14)strcomcat(s,"JMP");
  if(op==15)strcomcat(s,"CMP");
  if(op==16)strcomcat(s,"CONDI");
+ if(op==17)strcomcat(s,"SADD");
 }
 
 static void
@@ -246,6 +247,14 @@ op_codeparse(int op, int preop, int *opi, String *s, bytecode *bc,
  }
  if(preop==16){
   op_calcblank(17, 5, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s,(vns->vn[op]));
+  strclear(blank);
+  strfree(blank);
+  return 0;
+ }
+ if(preop==17){
+  op_calcblank(17, 4, blank);
   strcomcat(s, blank->str);
   strcomcat(s,(vns->vn[op]));
   strclear(blank);
@@ -868,6 +877,15 @@ vmState* craC_bytecode_parse(XokMalloc *xm ,
    }
    case AST_WHILE:{
      condiblockdescexe(cs, curdesc, dlindex, AST_WHILE);
+    break;
+   }
+   case AST_SELFADD:{
+    log("en code");
+     bc_emit(xm, cs->bc, OP_INT_SADD);
+     vnstk_push(cs->xm , cs->vns , 
+     curdesc->as.varname, (*cs->vnsi));
+     bc_emit(cs->xm , cs->bc , (*cs->vnsi)++);
+     (*dlindex)++;
     break;
    }
    default:break;

@@ -108,7 +108,8 @@ typedef enum craasttype{
   AST_CONDI,        /* [10]AST type condition logic */
   AST_CMP,          /* [11]AST type compare condition */
   AST_IF,           /* [12]AST type if desc tree */
-  AST_WHILE         /* [13]ASR type while loop tree */
+  AST_WHILE,        /* [13]AST type while loop tree */
+  AST_SELFADD       /* [14]AST type self add*/
 }craasttype;
 
 /* define param type like: {("hello", count, 10086, 3.1415)} */

@@ -421,25 +421,40 @@ static void unkeyhasvarexe(XokMalloc *xm, ParseFactor *pf, desclist *dl,
 }
 
 
+/*
+** Unkey is self add, judge whither next token is '+' and make tree.
+*/
+static void unkeyselfadd(XokMalloc *xm, ParseFactor *pf, 
+                      craastdesc **desc, char *varname){
+ if(!strcmp(pfcurstr(pf), "+")){
+  /* Slip current token '+' reach next '+' */
+  accept(pf, "+"); accept_empty(pf);
+  *desc = make_selfadd(xm, varname);  /* Record and create 
+  selfadd node tree */
+  /* Reach '+' next token, could is ';' */
+  accept(pf, "+"); accept_empty(pf);
+ }
+}
+
 /* 
 ** Unkey about like function, selfadd, selfsub,..,the unkey need 
 ** special tackle, unkey not is key, and not is queto, parenthesee,
 ** .., so overall call these is'unkey'.
 */
 static craastdesc* unkeydesc(XokMalloc *xm, ParseFactor *pf,
-                 desclist *dl, desclist *maindl, char *type){
+                desclist *dl, desclist *maindl, char *type){
  pfback(pf);  /* Current pf is slip key,
  pf need back to previous index get varibale key */
  craastdesc *desc; /* Overall desc node */
  /* str tool, convenient to tackle str */
  String *t = create_string("");        
  char *unkey = strdup(pfcurstr(pf)); /* Store unkey name */
- pfnext(pf); /* Next is {'(', '++', '--', "+=", '-=', ...}, 
- judge unkey specific type  */
- accept_empty(pf);
+ pfnext(pf); accept_empty(pf);/* Next is {'(', '++', '--', 
+ "+=", '-=', ...}, judge unkey specific type  */
+ unkeyselfadd(xm, pf, &desc, unkey);  /* Unkey is self add  */
  unkeyhasvarexe(xm, pf, dl, &desc, unkey, maindl, type);
  int code = unkeycallexemain(xm, pf, &desc, unkey, t);
- strfree(t); /* priroity free String, then return */
+ strfree(t); /* Priroity free String, then return */
  if(code == errorcode)return NULL;
  return desc;
 }

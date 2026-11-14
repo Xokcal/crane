@@ -297,6 +297,14 @@ void craV_execute(XokMalloc *xm , vmState *vm){
     vm->ci = getcode(vm);
     vmbreak;
    }
+   vmcase(OP_INT_SADD){
+    codenext(vm);
+    char *varname = get_codesv(vm);
+    value *v = getvmap(vm->map, varname);
+    v->v.i = v->v.i + 1;
+    codenext(vm);
+    vmbreak;
+   }
    vmcase(OP_JMP_TRUE){
     codenext(vm);
     int pop = popI(condistack);

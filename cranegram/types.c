@@ -19,6 +19,14 @@ craastdesc *make_var(XokMalloc *xokmalloc , char *name){
  return node;
 }
 
+craastdesc *make_selfadd(XokMalloc *xokmalloc , char *name){
+ craastdesc *node = (craastdesc *)
+ xalloc_XokMalloc(xokmalloc , sizeof(craastdesc));
+ node->kind = AST_SELFADD;
+ node->as.varname = strdup(name);  /* remember free node name */
+ return node;
+}
+
 craastdesc* make_num(XokMalloc *xokMalloc ,  int n){
  craastdesc *node = (craastdesc *)
  xalloc_XokMalloc(xokMalloc , sizeof(craastdesc));

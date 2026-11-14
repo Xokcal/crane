@@ -29,7 +29,8 @@ typedef enum opcode{
  OP_JMP_TRUE,      /* [13]behind 'or', if stack is '1' entry */
  OP_JMP,           /* [14]jump to specified vm index */
  OP_CMP,           /* [15]compare vm stack twe value */
- OP_CONDI          /* [16]condition logic sign store */
+ OP_CONDI,         /* [16]condition logic sign store */
+ OP_INT_SADD       /* [17]has define variable self add */
 }opcode; 
 
 /*

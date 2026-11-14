@@ -37,6 +37,7 @@ craastdesc *make_condi(XokMalloc *xokmalloc, char *cmpc,
                 craastdesc *left , craastdesc *right);
 craastdesc *make_cbdesc(XokMalloc *xokmalloc, craastdesc *condi,
                                Tblock *block, craasttype type);
+craastdesc *make_selfadd(XokMalloc *xokmalloc , char *name);
 /* desclist func */
 desclist *craP_desclist_create(XokMalloc *xm, int init_size);
 void craP_desclist_free(XokMalloc *xm, desclist *dl);

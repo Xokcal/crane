@@ -2,7 +2,8 @@ int a = 1;
 int c = 0;
 a++;
 print("self add a=",a);
-while(c < 9999999){
+while(c leq 29){
+    a = a + a;
     c++;
     -- print("while c=",c);
 }

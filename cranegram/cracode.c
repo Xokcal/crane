@@ -860,27 +860,31 @@ vmState* craC_bytecode_parse(XokMalloc *xm ,
   craastdesc *curdesc = dl->desclist[(*dlindex)];
   switch(curdesc->kind){
    case AST_HASVAR:{
-     asthasvarexe(*cs, curdesc, dlindex);
+     asthasvarexe(
+      *cs, curdesc, dlindex);
     break;
    }
    case AST_ASSIGN:{
-     astassignexe(*cs, curdesc, dlindex);
+     astassignexe(
+      *cs, curdesc, dlindex);
     break;
    }
    case AST_CALL:{
-     astcallexe(*cs, curdesc, dlindex);
+     astcallexe(
+      *cs, curdesc, dlindex);
     break;
    }
    case AST_IF:{
-     condiblockdescexe(cs, curdesc, dlindex, AST_IF);
+     condiblockdescexe(
+      cs, curdesc, dlindex, AST_IF);
     break;
    }
    case AST_WHILE:{
-     condiblockdescexe(cs, curdesc, dlindex, AST_WHILE);
+     condiblockdescexe(
+      cs, curdesc, dlindex, AST_WHILE);
     break;
    }
    case AST_SELFADD:{
-    log("en code");
      bc_emit(xm, cs->bc, OP_INT_SADD);
      vnstk_push(cs->xm , cs->vns , 
      curdesc->as.varname, (*cs->vnsi));

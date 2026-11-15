@@ -210,6 +210,7 @@ opstore_executor(XokMalloc *xm, vmState *vm, char *storetype)
  v.v.i = get_stack_res(vm);
  v.type = TYPE_INT;
  pushvmap(xm, vm->map, v);
+ value *r = getvmap(vm->map, "a");
  //#define vmprint
  #ifdef vmprint
  value *r = vmvslots_pop(vm , v.vname);
@@ -242,7 +243,7 @@ opcallexecute(vmState *vm, int *error)
      break;
      case PRM_NUMBER:prmnumberP(tp,error);
      break;
-     case PRM_VAR:prmvarP(tp, vm)
+     case PRM_VAR:prmvarP(tp, vm);
      break;
      default:break;
     }

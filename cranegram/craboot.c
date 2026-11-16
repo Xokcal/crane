@@ -16,20 +16,33 @@
 #define test4_if4 "test/test4_if4.lua"
 #define test5_while "test/test5_while.lua"
 
-int main(){
+int mai(){
  starttime;
  setvbuf(stdout, NULL, _IOFBF, 1 << 20);
+ int a = 0;
+ while(a < 9999999){
+  //printf("a=%d\n",a);
+  a++;
+ }
+ printf("end a=%d\n",a);
+ endtime;
+}
+
+int main(){
+ starttime;
+ //setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
  String *context = open_file(test5_while);
  craCM_show(context->str);
  lexState *lexstate = craL_lexexecute(txm, context);
- //#define tsprint
+ #define tsprint
  #ifdef tsprint
  for(int i = 0; i < lexstate->count ; i++){
   logc("token" , lexstate->lextokens[i]->token->str);
  }
  #endif
+ logi("count out", lexstate->count);
  XokMalloc *xm = create_XokMalloc();
  Hashmap *hmap = create_hashmap(); /* gloab variable*/
  desclist *dl = craP_desclist_create(xm , 1); /* tree list */
@@ -43,7 +56,7 @@ int main(){
  vmState *vmState = craC_bytecode_parse(
  xm , dl, &cs, "main", &dlindex);
  op_visualization(
- vmState->bc, vmState->vns, vmState->tcalls, 
+ vmState->bc, vmState->vns, vmState->tcalls,
  vmState->targs, vmState->tys);
  craV_execute(xm, vmState);
  executeError:

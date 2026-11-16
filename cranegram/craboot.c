@@ -30,26 +30,24 @@ int mai(){
 
 int main(){
  starttime;
- //setvbuf(stdout, NULL, _IOFBF, 1 << 20);
+ setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
  String *context = open_file(test5_while);
  craCM_show(context->str);
  lexState *lexstate = craL_lexexecute(txm, context);
- #define tsprint
+ //#define tsprint
  #ifdef tsprint
  for(int i = 0; i < lexstate->count ; i++){
   logc("token" , lexstate->lextokens[i]->token->str);
  }
  #endif
- logi("count out", lexstate->count);
- //craL_lexstatefree(lexstate);
  XokMalloc *xm = create_XokMalloc();
  Hashmap *hmap = create_hashmap(); /* gloab variable*/
  desclist *dl = craP_desclist_create(xm , 1); /* tree list */
  parsecode = craP_parsedesc(
  xm , lexstate , dl, 0, "main", NULL);  /*  AST main parse */
- 
+ craL_lexstatefree(lexstate);
  if(parsecode == errorcode)
   goto executeError;
  codesState cs = packagecodestate(xm);

@@ -15,7 +15,7 @@ LOAD             "self add a="
 LOAD             a
 CALL             print
 VAR              c
-PUSH             100000000
+PUSH             200000010
 CMP              <
 JMP_TRUE         42
 JMP              46
@@ -25,5 +25,20 @@ LOAD             c
 CALL             print
 LOAD             "a="
 LOAD             a
+CALL             print
+VAR              c
+PUSH             199999997
+CMP              >
+JMP_TRUE         66
+JMP              79
+LOAD             c
+CALL             print
+VAR              c
+PUSH             1
+SUB              -
+REASSIGN         c
+JMP              56
+LOAD             "endc = "
+LOAD             c
 CALL             print
 EXIT

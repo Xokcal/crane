@@ -40,8 +40,10 @@ void craL_lexstatefree(lexState *lex){
   logc("lex t", lex->lextokens[i]->token->str);
   strfree(lex->lextokens[i]->token);
  }
+ log("lex === ");
  lex->lextokens = NULL;
  lex = NULL;
+ log("lex end");
 }
 
 

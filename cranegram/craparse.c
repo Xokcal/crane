@@ -574,8 +574,6 @@ static craastdesc *condiblockdesc(XokMalloc *xm, ParseFactor *pf,
  /* {..} content parse tree by use craP_parsedesc() */
  pf->curr = craP_parsedesc(xm, ts, condiblock->treelist,
  pf->curr, "block", dl, condiblock);
- logi("__count__", condiblock->varcount);
- logc("__varname__", condiblock->varname[0]);
  return tree;
 }
 
@@ -629,11 +627,9 @@ int craP_parsedesc(XokMalloc *xm, lexState *ts, desclist *dl,
     return pf.curr;
    }
    case GRAM_VAR:{
-    log("en var");
      craastdesc *vd = 
      vardesc(xm , &pf , t, block);
      pushdl(xm , dl , vd);
-     log("out");
     break;
    }
   }

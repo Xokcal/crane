@@ -55,6 +55,7 @@ void pushvmap(XokMalloc *xm, vmap *map, value v){
   return;
 }
 
+
 value* getvmap(vmap *map, const char *n){
  long code = vmhashcode(n);
  vmapnode *root = &map->map[code];
@@ -66,6 +67,33 @@ value* getvmap(vmap *map, const char *n){
  }
  return NULL;
 }
+
+
+void delvmap(vmap *map, const char *n){
+ long code = vmhashcode(n);
+ vmapnode *root = &map->map[code];
+ if(root->next == NULL && strcmp(root->v.vname, n)==0){
+  map->map[code].v.vname = NULL;
+  map->map[code].v.vtype = NULL;
+  map->map[code].next = NULL;
+  return;
+ }
+ long i = 0;
+ vmapnode *up = root;
+ while(root->next != NULL){
+  if(strcmp(root->v.vname, n)==0){
+   if(i == 0){
+    map->map[code] = *root->next;
+    return;
+   }
+   up->next = root->next;
+   return;
+  }
+  up = root;
+  root = root->next;
+ }
+}
+
 
 inline void vm_free(XokMalloc *xm, vmState *v){
  if (!v) return;

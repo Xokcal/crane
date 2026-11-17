@@ -152,6 +152,7 @@ long vmhashcode(const char *s);
 vmap *newvmap(XokMalloc *xm);
 void pushvmap(XokMalloc *xm, vmap *map, value v);
 value* getvmap(vmap *map, const char *n);
+void delvmap(vmap *map, const char *n);
 vmState *vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns,
   Ttypes *tys, Targs *Targs, Tcalls *tcalls, int size);
 void vm_free(XokMalloc *xm, vmState *v);

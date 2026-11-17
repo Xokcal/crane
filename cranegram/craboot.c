@@ -26,12 +26,26 @@ int mai(){
   a++;
  }
  printf("end a=%d\n",a);
+ XokMalloc *x = create_XokMalloc();
+ vmap *map = newvmap(x);
+ value q;
+ q.vname = "wo";
+ pushvmap(x, map, q);
+ value *g = getvmap(map, "wo");
+ logc("g name", g->vname);
+ delvmap(map, "wo");
+ log("deled");
+ value *r = getvmap(map, "wo");
+ logc("after del", g->vname);
+ pushvmap(x, map, q);
+ value *y = getvmap(map, "wo");
+ logc("repush", y->vname);
  endtime;
 }
 
 int main(){
  starttime;
- //setvbuf(stdout, NULL, _IOFBF, 1 << 20);
+ setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
  String *context = open_file(test5_while2);

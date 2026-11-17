@@ -193,9 +193,31 @@ int craP_desclist_expand(XokMalloc *xm, desclist *dl){
 */
 Tblock *newTblock(XokMalloc *xm){
  Tblock *block = (Tblock*)xalloc_XokMalloc(xm, sizeof(Tblock));
+ block->varname = (char**)xalloc_XokMalloc(xm, 16 * sizeof(char*));
  block->treelist = craP_desclist_create(xm, 16);
  block->count = 0;
+ block->varcount = 0;
+ block->varlen = 16;
  return block;
+}
+
+void blockpushvar(XokMalloc *xm, Tblock *block, char *name){
+ if(block == NULL)return;
+ log("en push");
+ log("why??");
+ if(block->varcount >= block->varlen){
+  log("en exp");
+  long newlen = block->varlen * 2;
+  char **newarr = (char**)xalloc_XokMalloc(xm, newlen * sizeof(char*));
+  memcpy(newarr, block->varname, block->varcount * sizeof(char*));
+  block->varlen = newlen;
+  block->varname = newarr;
+ }
+ log("en auth");
+ logi("i", block->varcount);
+ block->varname[block->varcount++] = name;
+ log("out push");
+ return;
 }
 
 /*

@@ -15,6 +15,7 @@
 
 #define test4_if4 "test/test4_if4.lua"
 #define test5_while "test/test5_while.lua"
+#define test5_while2 "test/test5_while2.lua"
 
 int mai(){
  starttime;
@@ -30,10 +31,10 @@ int mai(){
 
 int main(){
  starttime;
- setvbuf(stdout, NULL, _IOFBF, 1 << 20);
+ //setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
- String *context = open_file(test5_while);
+ String *context = open_file(test5_while2);
  craCM_show(context->str);
  lexState *lexstate = craL_lexexecute(txm, context);
  //#define tsprint
@@ -46,7 +47,7 @@ int main(){
  Hashmap *hmap = create_hashmap(); /* gloab variable*/
  desclist *dl = craP_desclist_create(xm , 1); /* tree list */
  parsecode = craP_parsedesc(
- xm , lexstate , dl, 0, "main", NULL);  /*  AST main parse */
+ xm , lexstate , dl, 0, "main", NULL, NULL);  /*  AST main parse */
  craL_lexstatefree(lexstate);
  if(parsecode == errorcode)
   goto executeError;

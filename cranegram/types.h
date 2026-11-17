@@ -45,6 +45,7 @@ int craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree);
 int craP_desclist_expand(XokMalloc *xm, desclist *dl);
 /* Tblock func*/
 Tblock *newTblock(XokMalloc *xm);
+void blockpushvar(XokMalloc *xm, Tblock *block, char *name);
 /* Istack func */
 Istack *newIstack(XokMalloc *xm);
 void pushI(Istack *stack, int i);

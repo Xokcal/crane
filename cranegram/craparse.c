@@ -274,14 +274,18 @@ static craastdesc* parsevaluemain(pavstate ps){
 ** Variable parse to expdesc main function.
 ** About differ variable type, and differ variable garmmar express type.
 */
-static craastdesc* vardesc(XokMalloc *xm, ParseFactor *pf, String *t){
+static craastdesc* vardesc(XokMalloc *xm, ParseFactor *pf, 
+                              String *t, Tblock *block){
+ pfback(pf);  /* Back to up token is 'type' */
  String *type = create_string(t->str);
- accept(pf , acptkint);  /* Int type var */
- accept_empty(pf);  /* Throught empty to variable name */
- String *name = craP_pf_currtoken(pf);
- pfnext(pf);
+ pfnext(pf); accept_empty(pf);  /* Reach next token is variable name */
+ String *name = create_string(pfcurstr(pf));  /* This String* whither need free??? */
+ /* Current variable name storage to block varname array,
+ ** can judget this block have how much local variable, 
+ ** and clear by recorded variable name */
+ blockpushvar(xm, block, name->str);
+ pfnext(pf); accept_empty(pf);  /* Throught empty to '=' */
  craastdesc* var = make_var(xm , name->str);  /* Variable's name */
- accept_empty(pf);  /* Throught empty to '=' */
  int isequ = accept(pf , "=");  /* Judge '=' */
  if(!isequ){  /* If isEqu not's true , declare is 'int a;' */
   craastdesc *undefinevar = 
@@ -447,7 +451,7 @@ static craastdesc* unkeydesc(XokMalloc *xm, ParseFactor *pf,
  pf need back to previous index get varibale key */
  craastdesc *desc; /* Overall desc node */
  /* str tool, convenient to tackle str */
- String *t = create_string("");        
+ String *t = create_string("");
  char *unkey = strdup(pfcurstr(pf)); /* Store unkey name */
  pfnext(pf); accept_empty(pf);/* Next is {'(', '++', '--', 
  "+=", '-=', ...}, judge unkey specific type  */
@@ -563,13 +567,15 @@ static craastdesc *condiblockdesc(XokMalloc *xm, ParseFactor *pf,
  /* Eat "{" judge current whither is this token */
  accept(pf, "{"); accept_empty(pf);
  /* Tblock use to record "{..}" inner content tree */
- Tblock *ifblock = newTblock(xm);
+ Tblock *condiblock = newTblock(xm);
  /* Use  to record condition tree and {..} content*/
  craastdesc *tree;
- condiblockassemble(xm, condi, ifblock, type, &tree);
+ condiblockassemble(xm, condi, condiblock, type, &tree);
  /* {..} content parse tree by use craP_parsedesc() */
- pf->curr = craP_parsedesc(
-  xm, ts, ifblock->treelist, pf->curr, "block", dl);
+ pf->curr = craP_parsedesc(xm, ts, condiblock->treelist,
+ pf->curr, "block", dl, condiblock);
+ logi("__count__", condiblock->varcount);
+ logc("__varname__", condiblock->varname[0]);
  return tree;
 }
 
@@ -578,7 +584,8 @@ static craastdesc *condiblockdesc(XokMalloc *xm, ParseFactor *pf,
 ** Crane parse ast main execute.
 */
 int craP_parsedesc(XokMalloc *xm, lexState *ts, desclist *dl,
-                  int curidx, char *type, desclist *maindl){
+    int curidx, char *type, desclist *maindl, Tblock *block){
+ log("en");
   /* Package tokens and index(curr) */
  ParseFactor pf = {ts , curidx};
  /* Ast parse executor main while */
@@ -622,9 +629,11 @@ int craP_parsedesc(XokMalloc *xm, lexState *ts, desclist *dl,
     return pf.curr;
    }
    case GRAM_VAR:{
+    log("en var");
      craastdesc *vd = 
-     vardesc(xm , &pf , t);
+     vardesc(xm , &pf , t, block);
      pushdl(xm , dl , vd);
+     log("out");
     break;
    }
   }

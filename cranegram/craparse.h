@@ -204,11 +204,14 @@ typedef struct pavstate{
 
 typedef struct Tblock{
  desclist *treelist;
+ long varcount;
+ long varlen;
+ char **varname;
  long count;
 }Tblock;
 
 int craP_parsedesc(XokMalloc *xm, lexState *ts, desclist *dl,
-                  int curidx, char *type, desclist *maindl);
+    int curidx, char *type, desclist *maindl, Tblock *block);
 desclist *craP_desclist_create(XokMalloc *xm, int init_size);
 void craP_desclist_free(XokMalloc *xm, desclist *dl);
 int craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree);

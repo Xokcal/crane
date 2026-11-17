@@ -34,16 +34,11 @@ static inline lexState* newlexstate(XokMalloc *xm){
 ** release struct lexState, main task is free struct String* token.
 */
 void craL_lexstatefree(lexState *lex){
- log("en lex"); logi("count", lex->count);
- log("will");
  for(long i = 0; i < lex->count; i++){
-  logc("lex t", lex->lextokens[i]->token->str);
   strfree(lex->lextokens[i]->token);
  }
- log("lex === ");
  lex->lextokens = NULL;
  lex = NULL;
- log("lex end");
 }
 
 

@@ -73,16 +73,20 @@ void delvmap(vmap *map, const char *n){
  long code = vmhashcode(n);
  vmapnode *root = &map->map[code];
  if(root->next == NULL && strcmp(root->v.vname, n)==0){
+  /* Because struct can't equal NULL, so need every field equal NULL.
+  ** other unessential filed template don't equal NULL */
   map->map[code].v.vname = NULL;
   map->map[code].v.vtype = NULL;
   map->map[code].next = NULL;
   return;
  }
- long i = 0;
- vmapnode *up = root;
+ long i = 0;  /* Record node while assign time */
+ vmapnode *up = root;  /* Record previous node 
+ so than it's easier to up link current node next node */
  while(root->next != NULL){
   if(strcmp(root->v.vname, n)==0){
    if(i == 0){
+    /* Map array record root.next value(unpoint) */
     map->map[code] = *root->next;
     return;
    }
@@ -318,6 +322,13 @@ void craV_execute(XokMalloc *xm , vmState *vm){
     int r = cmpexe(v1, v2, cmptype);
     pushI(condistack, r);
     clear_sp(vm);
+    codenext(vm);
+    vmbreak;
+   }
+   vmcase(OP_CLEAR_VAR){
+    codenext(vm);
+    char *name = get_codesv(vm);
+    delvmap(vm->map, name);
     codenext(vm);
     vmbreak;
    }

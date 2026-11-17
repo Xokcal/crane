@@ -203,20 +203,14 @@ Tblock *newTblock(XokMalloc *xm){
 
 void blockpushvar(XokMalloc *xm, Tblock *block, char *name){
  if(block == NULL)return;
- log("en push");
- log("why??");
  if(block->varcount >= block->varlen){
-  log("en exp");
   long newlen = block->varlen * 2;
   char **newarr = (char**)xalloc_XokMalloc(xm, newlen * sizeof(char*));
   memcpy(newarr, block->varname, block->varcount * sizeof(char*));
   block->varlen = newlen;
   block->varname = newarr;
  }
- log("en auth");
- logi("i", block->varcount);
  block->varname[block->varcount++] = name;
- log("out push");
  return;
 }
 

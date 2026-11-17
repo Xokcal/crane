@@ -45,7 +45,7 @@ int mai(){
 
 int main(){
  starttime;
- setvbuf(stdout, NULL, _IOFBF, 1 << 20);
+ //setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
  String *context = open_file(test5_while2);

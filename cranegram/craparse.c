@@ -440,6 +440,7 @@ static void unkeyselfadd(XokMalloc *xm, ParseFactor *pf,
  }
 }
 
+
 /* 
 ** Unkey about like function, selfadd, selfsub,..,the unkey need 
 ** special tackle, unkey not is key, and not is queto, parenthesee,
@@ -583,7 +584,6 @@ static craastdesc *condiblockdesc(XokMalloc *xm, ParseFactor *pf,
 */
 int craP_parsedesc(XokMalloc *xm, lexState *ts, desclist *dl,
     int curidx, char *type, desclist *maindl, Tblock *block){
- log("en");
   /* Package tokens and index(curr) */
  ParseFactor pf = {ts , curidx};
  /* Ast parse executor main while */

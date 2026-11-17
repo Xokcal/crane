@@ -8,14 +8,23 @@ VAR              count
 PUSH             10
 CMP              <
 JMP_TRUE         22
-JMP              53
+JMP              69
 LOAD             "a="
 LOAD             a
 CALL             print
 SADD             count
-PUSH             3
+PUSH             30
 STORE            c
 TYPE             int
+VAR              count
+VAR              c
+PUSH             2
+MUL              *
+ADD              +
+REASSIGN         count
+LOAD             "[1] count = "
+LOAD             count
+CALL             print
 VAR              a
 VAR              c
 ADD              +
@@ -28,8 +37,8 @@ JMP              12
 VAR              count
 PUSH             11
 CMP              <
-JMP_TRUE         63
-JMP              91
+JMP_TRUE         79
+JMP              107
 SADD             count
 PUSH             4
 STORE            d
@@ -43,10 +52,7 @@ TYPE             int
 CLEAR            d
 CLEAR            v
 CLEAR            i
-JMP              53
-LOAD             "while end c="
-LOAD             c
-CALL             print
+JMP              69
 LOAD             "end while a="
 LOAD             a
 CALL             print

@@ -691,6 +691,11 @@ void assignencode(codesState cs, craastdesc *node, char *type){
 }
 
 
+/*
+** Bytecode parse assign tree main execute, parse tree binop,
+** store varibale name,  store variable type,... Note: 'OP_TYPE' 
+** after 'OP_STORE'.
+*/
 static void astassignexe(codesState cs, craastdesc *curdesc, int *dl){
  craastdesc *value = curdesc->as.assign.value; /* get desc assign 
  value tree, just go parse tree to codes */
@@ -702,17 +707,12 @@ static void astassignexe(codesState cs, craastdesc *curdesc, int *dl){
  bc_emit(cs.xm , cs.bc , OP_STORE);
  vnstk_push(cs.xm , cs.vns , curdesc->as.assign.name , (*cs.vnsi));
  bc_emit(cs.xm , cs.bc , (*cs.vnsi)++); /* variable name index */
- // char *type = curdesc->as.assign.type;
- types_push(cs.xm , cs.types , type); /* variable type store Ttype arrays */
+ /* variable type store Ttype arrays */
+ types_push(cs.xm , cs.types , type); 
  /* need store variable type, like:{[STORE : a]->[int]} 
  when STORE variable name opinstruct is end !!! */
  bc_emit(cs.xm, cs.bc, OP_TYPE);
  bc_emit(cs.xm , cs.bc , (*cs.t_idx)++);
- //#define v1v2
- #ifdef v1v2
- logi("bc.values.v[1]" , bc->values[0].v.i);
- logi("bc.values.v[2]" , bc->values[1].v.i);
- #endif
  (*dl)++;
 }
 
@@ -744,6 +744,10 @@ static void astcallexe(codesState cs, craastdesc *desc, int *dl){
 }
 
 
+/*
+** AST tackle has record variable execute, by parse instruction
+** 'OP_STORE_HASVAR' let vitual machine update this variable value.
+*/
 static void asthasvarexe(codesState cs, craastdesc *desc, int *dl){
  char *type = desc->as.hasvar.type;
  assignencode(cs, desc->as.hasvar.value, type);
@@ -755,6 +759,11 @@ static void asthasvarexe(codesState cs, craastdesc *desc, int *dl){
 }
 
 
+/*
+** Node condition tree parse main execute, tackle logic 'and', 'or' tree,
+** compare tree, binop value tree.   Record orstack in vm index, backfill
+** andstack index(this index is 'and' 'or' continous and next first 'or' code index).
+*/
 static void nodecondiexe(codesState cs, craastdesc *node,
                     Istack *andtstack, Istack *orstack){
  if(strcmp(node->as.binop.calcsign, "and")==0){
@@ -782,7 +791,9 @@ static void nodecondiexe(codesState cs, craastdesc *node,
 
 
 /*
-** Only give ifdesc node's condi desc tree.
+** Only give condiblock node's condition tree, contain logic code parse
+** ('or', 'and'), cmpare logic code parse('>', '<', 'eq', 'leq', 'geq',..)
+** logic stack backfill index collection.
 */
 static void condiexe(codesState cs, craastdesc *node,
                    Istack *andtstack, Istack *orstack){
@@ -798,7 +809,8 @@ static void condiexe(codesState cs, craastdesc *node,
   /* record condition node like 'and' 'or', and
    judge use 'OP_JMP_FALSE' or 'OP_JMP_TRUE' */
   bc_emit(cs.xm, cs.bc, OP_CONDI);
-  vnstk_push(cs.xm , cs.vns , node->as.binop.calcsign , (*cs.vnsi));
+  vnstk_push(
+  cs.xm , cs.vns , node->as.binop.calcsign , (*cs.vnsi));
   bc_emit(cs.xm , cs.bc , (*cs.vnsi)++);
   nodecondiexe(cs, node, andtstack, orstack);
   condiexe(
@@ -807,8 +819,14 @@ static void condiexe(codesState cs, craastdesc *node,
 }
 
 
-static void condiendexecute(codesState *cs, 
-     int *ifjmpoutindex, Istack *orstack){
+/*
+** Condition tree bytecode parse end, need to insert code 'OP_JMP_TRUE' and
+** 'OP_JMP', because assume only have one compare logic, don't have 'and','or',.. logi sign,
+** so this condition equal end is 'or', only is ture pass condtion entry block,
+** if unpass, JMP to block outer.
+*/
+static void condiendexecute(codesState *cs, int *ifjmpoutindex,
+                                              Istack *orstack){
  bc_emit(cs->xm, cs->bc, OP_JMP_TRUE);
  pushI(orstack, cs->bc->count);
  bc_emit(cs->xm, cs->bc, 0);
@@ -820,6 +838,10 @@ static void condiendexecute(codesState *cs,
 }
 
 
+/*
+** Parsed condition tree, has record 'or' and 'and' stack index, and
+** Swrap vm record logic index to JMP number.
+*/
 static void swrapcondilogicstack(codesState *cs, 
            Istack *andtstack, Istack *orstack){
  /* All 'or' stack update to current codes index,
@@ -831,18 +853,28 @@ static void swrapcondilogicstack(codesState *cs,
 }
 
 
+/*
+** Block content if have new variable need clear when reach this block 
+** conetnt end.   Record block new variable, and push struct Tblock variable
+** name array by AST parse.   Every time vitual machine execute bytecode
+** to block end, delete record variable in vm vhashmap.    Because bytecode
+** every is persistent clear end need-clear varibale, so don't worry struct 
+** varnamestk every clear can expand memery.
+*/
 static void cleartempvarcode(codesState *cs, craastdesc *curdesc){
  for(int i = 0; i < curdesc->as.ifdesc.block->varcount; i++){
   bc_emit(cs->xm, cs->bc, OP_CLEAR_VAR);
-  vnstk_push(cs->xm , cs->vns , curdesc->as.ifdesc.block->varname[i] , (*cs->vnsi));
+  vnstk_push(
+  cs->xm , cs->vns ,curdesc->as.ifdesc.block->varname[i],(*cs->vnsi));
   bc_emit(cs->xm , cs->bc , (*cs->vnsi)++);
  }
 }
 
+
 /*
 ** AST_IF code parse main executor, because if outer parse main function
-** and if block main parse function don's shared int *dlindex, 
-** so need alone transfor tree list count.
+** and if block main parse function don's shared int *dlindex, so need alone
+** transfor tree list count.
 */
 static void condiblockdescexe(codesState *cs, craastdesc *curdesc,
                                   int *dlindex, craasttype type){
@@ -856,8 +888,8 @@ static void condiblockdescexe(codesState *cs, craastdesc *curdesc,
  swrapcondilogicstack(cs, andtstack, orstack);
  /* Use craC_bytecode_parse() execute condidesc block tree. */
  int blockdl = 0;
- craC_bytecode_parse(cs->xm, blocktreelist(curdesc),
- cs, "block", &blockdl);
+ craC_bytecode_parse(
+ cs->xm, blocktreelist(curdesc),cs, "block", &blockdl);
  /* Parse clear block temp varibale instruction when reach block end */
  cleartempvarcode(cs, curdesc);
  if(type == AST_WHILE){
@@ -871,10 +903,10 @@ static void condiblockdescexe(codesState *cs, craastdesc *curdesc,
 
 
 /*
-** bytecode parse main execute.
+** 
 */
-vmState* craC_bytecode_parse(XokMalloc *xm ,
- desclist *dl, codesState *cs, char *type, int *dlindex){
+vmState* craC_bytecode_parse(XokMalloc *xm ,desclist *dl,
+              codesState *cs, char *type, int *dlindex){
  while((*dlindex) < dl->count){
   craastdesc *curdesc = dl->desclist[(*dlindex)];
   switch(curdesc->kind){
@@ -905,8 +937,8 @@ vmState* craC_bytecode_parse(XokMalloc *xm ,
    }
    case AST_SELFADD:{
      bc_emit(xm, cs->bc, OP_INT_SADD);
-     vnstk_push(cs->xm , cs->vns , 
-     curdesc->as.varname, (*cs->vnsi));
+     vnstk_push(
+     cs->xm , cs->vns, curdesc->as.varname, (*cs->vnsi));
      bc_emit(cs->xm , cs->bc , (*cs->vnsi)++);
      (*dlindex)++;
     break;
@@ -917,8 +949,9 @@ vmState* craC_bytecode_parse(XokMalloc *xm ,
  if(strcmp(type, "main")==0)
   bc_emit(xm , cs->bc , OP_HALT);
  if(strcmp(type, "main")==0){
-  return vm_create(xm, cs->bc, cs->vns,
-  cs->types, cs->targs, cs->tcalls, 2500000);
+  return vm_create(
+  xm, cs->bc, cs->vns, cs->types,
+  cs->targs, cs->tcalls, 2500000);
  }
 }
 

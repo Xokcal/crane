@@ -110,6 +110,7 @@ op_comcatop(int op, String *s)
  if(op==15)strcomcat(s,"CMP");
  if(op==16)strcomcat(s,"CONDI");
  if(op==17)strcomcat(s,"SADD");
+ if(op==18)strcomcat(s,"CLEAR");
 }
 
 static void
@@ -255,6 +256,14 @@ op_codeparse(int op, int preop, int *opi, String *s, bytecode *bc,
  }
  if(preop==17){
   op_calcblank(17, 4, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s,(vns->vn[op]));
+  strclear(blank);
+  strfree(blank);
+  return 0;
+ }
+ if(preop==18){ // clear
+  op_calcblank(17, 5, blank);
   strcomcat(s, blank->str);
   strcomcat(s,(vns->vn[op]));
   strclear(blank);
@@ -822,6 +831,14 @@ static void swrapcondilogicstack(codesState *cs,
 }
 
 
+static void cleartempvarcode(codesState *cs, craastdesc *curdesc){
+ for(int i = 0; i < curdesc->as.ifdesc.block->varcount; i++){
+  bc_emit(cs->xm, cs->bc, OP_CLEAR_VAR);
+  vnstk_push(cs->xm , cs->vns , curdesc->as.ifdesc.block->varname[i] , (*cs->vnsi));
+  bc_emit(cs->xm , cs->bc , (*cs->vnsi)++);
+ }
+}
+
 /*
 ** AST_IF code parse main executor, because if outer parse main function
 ** and if block main parse function don's shared int *dlindex, 
@@ -837,10 +854,12 @@ static void condiblockdescexe(codesState *cs, craastdesc *curdesc,
  condiexe(*cs, curdesc->as.ifdesc.condi, andtstack, orstack);
  condiendexecute(cs, &ifjmpoutindex, orstack);
  swrapcondilogicstack(cs, andtstack, orstack);
- /* Use craC_bytecode_parse() execute ifdesc block tree. */
+ /* Use craC_bytecode_parse() execute condidesc block tree. */
  int blockdl = 0;
  craC_bytecode_parse(cs->xm, blocktreelist(curdesc),
  cs, "block", &blockdl);
+ /* Parse clear block temp varibale instruction when reach block end */
+ cleartempvarcode(cs, curdesc);
  if(type == AST_WHILE){
   bc_emit(cs->xm, cs->bc, OP_JMP);
   bc_emit(cs->xm, cs->bc, startidx);

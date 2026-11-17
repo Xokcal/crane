@@ -8,7 +8,7 @@ VAR              count
 PUSH             10
 CMP              <
 JMP_TRUE         22
-JMP              51
+JMP              53
 LOAD             "a="
 LOAD             a
 CALL             print
@@ -23,12 +23,13 @@ REASSIGN         a
 LOAD             "2a="
 LOAD             a
 CALL             print
+CLEAR            c
 JMP              12
 VAR              count
 PUSH             11
 CMP              <
-JMP_TRUE         61
-JMP              83
+JMP_TRUE         63
+JMP              91
 SADD             count
 PUSH             4
 STORE            d
@@ -39,7 +40,10 @@ TYPE             int
 PUSH             90
 STORE            i
 TYPE             int
-JMP              51
+CLEAR            d
+CLEAR            v
+CLEAR            i
+JMP              53
 LOAD             "while end c="
 LOAD             c
 CALL             print

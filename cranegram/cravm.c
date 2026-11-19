@@ -65,6 +65,9 @@ value* getvmap(vmap *map, const char *n){
   }
   root = root->next;
  }
+ craCM_error(0, 
+  "variable effective domain is unfind");
+ exit(1);
  return NULL;
 }
 

@@ -113,8 +113,7 @@ op_comcatop(int op, String *s)
  if(op==18)strcomcat(s,"CLEAR");
 }
 
-static void
-op_calcblank(int max, int self, String *s)
+static void op_calcblank(int max, int self, String *s)
 {for(int i=self;i<max;i++)strcomcat(s, " ");}
 
 static int

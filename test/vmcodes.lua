@@ -53,6 +53,9 @@ CLEAR            d
 CLEAR            v
 CLEAR            i
 JMP              69
+LOAD             "d="
+LOAD             d
+CALL             print
 LOAD             "end while a="
 LOAD             a
 CALL             print

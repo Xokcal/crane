@@ -16,4 +16,5 @@ while(count < 11){
  int v = 5;
  int i = 90;
 }
+print("d=",d);
 print("end while a=",a);

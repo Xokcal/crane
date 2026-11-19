@@ -45,11 +45,11 @@ int mai(){
 
 int main(){
  starttime;
- //setvbuf(stdout, NULL, _IOFBF, 1 << 20);
+ setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
  String *context = open_file(test5_while2);
- craCM_show(context->str);
+ //craCM_show(context->str);
  lexState *lexstate = craL_lexexecute(txm, context);
  //#define tsprint
  #ifdef tsprint
@@ -62,7 +62,6 @@ int main(){
  desclist *dl = craP_desclist_create(xm , 1); /* tree list */
  parsecode = craP_parsedesc(
  xm , lexstate , dl, 0, "main", NULL, NULL);  /*  AST main parse */
- craL_lexstatefree(lexstate);
  if(parsecode == errorcode)
   goto executeError;
  codesState cs = packagecodestate(xm);
@@ -76,6 +75,7 @@ int main(){
  executeError:
  /* free setting struct */
  craP_desclist_free(xm , dl);
+ craL_lexstatefree(lexstate);
  free_XokMalloc(xm);
  free_XokMalloc(txm);
  endtime;

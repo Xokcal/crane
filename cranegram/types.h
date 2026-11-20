@@ -12,6 +12,8 @@ typedef struct craastdesc craastdesc;
 typedef struct Tblock Tblock;
 typedef struct desclist desclist;
 typedef enum craasttype craasttype;
+typedef enum Etype Etype;
+typedef struct Fnargs Fnargs;
 
 typedef struct Istack{
  int stack[200];
@@ -38,8 +40,8 @@ craastdesc *make_condi(XokMalloc *xokmalloc, char *cmpc,
 craastdesc *make_cbdesc(XokMalloc *xokmalloc, craastdesc *condi,
                                Tblock *block, craasttype type);
 craastdesc *make_selfadd(XokMalloc *xokmalloc , char *name);
-craastdesc *make_fndesc(XokMalloc *xokmalloc, craastdesc *condi,
-              Etype type,Fnargs *args,char *name,Tblock *block);
+craastdesc *make_fndesc(XokMalloc *xokmalloc, Etype type,
+                 Fnargs *args,char *name,Tblock *block);
 /* desclist func */
 desclist *craP_desclist_create(XokMalloc *xm, int init_size);
 void craP_desclist_free(XokMalloc *xm, desclist *dl);

@@ -41,8 +41,7 @@ static int iscondisign(char *n){
 
 
 /*
-** find has store to desclist assign craastdesc by variable name. 
-*/
+** Find has store to desclist assign craastdesc by variable name. */
 static craastdesc *findvardesc(desclist *dl, char *name){
  for(int i = 0; i < dl->count; i++){
   if(!strcmp(dl->desclist[i]->as.assign.name, name)){
@@ -54,8 +53,7 @@ static craastdesc *findvardesc(desclist *dl, char *name){
 
 
 /*
-** token convert enum asttype, return to tree parse switch. 
-*/
+** Token convert enum asttype, return to tree parse switch. */
 static int tokentype(String *s){
  if(compare(s, "int")||compare(s, "float")
  ||compare(s, "double")||compare(s, "char")
@@ -69,14 +67,26 @@ static int tokentype(String *s){
  if(compare(s , "if"))return GRAM_IF;
  if(compare(s , "}"))return GRAM_BLOCK_END;
  if(compare(s , "while"))return GRAM_WHILE;
+ if(compare(s , "fn"))return GRAM_FN;
  if(!iscranekeys(s->str))return GRAM_UNKEY;
  return GRAM_EMPTY;
 }
 
+/*
+** String token convert to Etype type, nice to use base data type. */
+static Etype strtypetoEtype(char *s){
+ if(strcmp(s, "int")==0)return TY_INT;
+ if(strcmp(s, "string")==0)return TY_STRING;
+ if(strcmp(s, "float")==0)return TY_FLOAT;
+ if(strcmp(s, "double")==0)return TY_DOUBLE;
+ if(strcmp(s, "dlong")==0)return TY_DLONG;
+ if(strcmp(s, "long")==0)return TY_LONG;
+ if(strcmp(s, "char")==0)return TY_CHAR;
+}
+
 
 /*
-** judge string whither is number: isnumber return 1, nonumber return 0.
-*/
+** Judge string whither is number: isnumber return 1, nonumber return 0. */
 static int isnumber(const char *str){
  if (str == NULL || *str == '\0') return 0;
  while (*str != '\0') {
@@ -110,8 +120,7 @@ static void accept_empty(ParseFactor *pf){
 
 
 /* 
-** test whither have next like: {args, assign, ..}
-*/
+** Test whither have next like: {args, assign, ..} */
 static inline int testnext(ParseFactor *pf , char *s){
  accept_empty(pf); /* check current pf not is empty key */
  int bl = strcmp(pfcurstr(pf), s) == 0 ? 1 : 0;
@@ -121,8 +130,7 @@ static inline int testnext(ParseFactor *pf , char *s){
 
 
 /* 
-** packgae xm, parsefactor, root to assign number tree tackle. 
-*/
+** Packgae xm, parsefactor, root to assign number tree tackle. */
 static inline pavstate pavstate_init(XokMalloc *xm,ParseFactor *pf){
  pavstate pavs; pavs.xm = xm;
  pavs.pf = pf; pavs.root = NULL;
@@ -131,8 +139,7 @@ static inline pavstate pavstate_init(XokMalloc *xm,ParseFactor *pf){
 
 
 /*
-** About condition tree parse and block parse assemble by type.
-*/
+** About condition tree parse and block parse assemble by type. */
 static void condiblockassemble(XokMalloc *xm, craastdesc *condi,
           Tblock *ifblock, cragramtype type, craastdesc **tree){
  switch(type){
@@ -144,8 +151,7 @@ static void condiblockassemble(XokMalloc *xm, craastdesc *condi,
 
 
 /*
-** check ast assign tree node detailed data and value.
-*/
+** Check ast assign tree node detailed data and value. */
 static void print_ast(craastdesc *node, int depth){
  if (!node) {
   printf("%*s(null)\n", depth * 2, "");
@@ -193,8 +199,7 @@ static String *linecontext(ParseFactor *pf, long line){
 
 
 /*
-** Variable is undefine status, parse to not have assign value's expdesc.
-*/
+** Variable is undefine status, parse to not have assign value's expdesc. */
 static inline craastdesc* undefvardesc(XokMalloc *xm 
                      , String *name , String *type){
 return make_assign(xm , name->str , NULL , type->str);
@@ -580,6 +585,58 @@ static craastdesc *condiblockdesc(XokMalloc *xm, ParseFactor *pf,
 
 
 /*
+** Function args parse, by do-while loop judge param number, and record to
+** struct Fnargs, Fnargs inner authentic record array is Tparam[50], every
+** param parse to Tparam varibale and copy to Tparam[50].
+*/
+static Fnargs *fnargsparse(XokMalloc *xm, ParseFactor *pf){
+  /* 
+  ** Init Fnargs and argscount, nice to record and return. */
+ Fnargs *fnargs = (Fnargs*)xalloc_XokMalloc(xm, sizeof(Fnargs));
+ long argscount = 0;
+ do{Tparam member;  /* Init struct Tparam unpoint type */
+  member.etype = strtypetoEtype(pfcurstr(pf));  /* Record Tparam type */
+  pfnext(pf); accept_empty(pf);  /* Reach param name */
+  member.originstr = strdup(pfcurstr(pf));  /* Record param name */
+  pfnext(pf); accept_empty(pf);  /* Reach ',' or ')' and judge whither exit */
+  /* 
+  ** Record Tparam, and every recorda Tparam count add one */
+  fnargs->args[argscount++] = member;
+}while(strcmp(pfcurstr(pf), ",")==0);
+ fnargs->args_count = argscount;
+ return fnargs;  /* Curren token reach ')' */
+}
+
+
+/*
+** Function ast desc tree parse main, record function return type, args,
+** function name, Tblock, and assemble to desc make_fndesc();
+*/
+static craastdesc *fnmaindesc(XokMalloc *xm, ParseFactor *pf,
+                                lexState *ts, desclist *dl){
+ accept_empty(pf);  /* Ensure current not is empty */
+ Etype fntype = strtypetoEtype(pfcurstr(pf));  /* Record fn type */
+ pfnext(pf); accept_empty(pf);  /* Reach fn name */
+ char *fnname = pfcurstr(pf);  /* Record fn name */
+ pfnext(pf); accept_empty(pf);  /* Reach '(' */
+ accept(pf, "("); accept_empty(pf);  /* Reach first param */
+ Fnargs *fnargs = fnargsparse(xm, pf);  /* Parse function args and accept */
+ /* 
+ ** Because ')', '{' '\n', '\ ',.. all not is key, so 
+ ** than can direct use parsemian() get Tblock */
+ Tblock *block = newTblock(xm);  /* Create new Tblock */
+ pf->curr = craP_parsedesc(  /* By  collcect Tblock content */
+  xm, ts, block->treelist, pf->curr, "block", dl, block);
+ /* 
+ ** Assemble make fndesc and return tree */
+ craastdesc *fndesc = make_fndesc(  
+  xm, fntype, fnargs, fnname, block);
+ return fndesc;
+}
+
+
+
+/*
 ** Crane parse ast main execute.
 */
 int craP_parsedesc(XokMalloc *xm, lexState *ts, desclist *dl,
@@ -588,36 +645,46 @@ int craP_parsedesc(XokMalloc *xm, lexState *ts, desclist *dl,
  ParseFactor pf = {ts , curidx};
  /* Ast parse executor main while */
  while(pf.curr < ts->count){
-  /* Noted: very loop entry switch match pf's curr have selfadd,
-   inner function get GRAM token need back. */
-  String *t = pf.tokens->lextokens[pf.curr++]->token;
+  /* Noted: very loop entry switch match pf's curr have
+  selfadd, inner function get GRAM token need back. */
+  String *t = parsemaingettoken(pf);
   switch(tokentype(t)){
    case GRAM_UNKEY:{
     craastdesc *cd;
     if(strcmp(type, "main")==0)
-     cd = unkeydesc(xm , &pf, dl, dl, "main");
-    else cd = unkeydesc(xm , &pf, dl, maindl, "block");
+     cd = unkeydesc(
+      xm , &pf, dl, dl, "main");
+    else cd = unkeydesc(
+      xm , &pf, dl, maindl, "block");
      pushdl(xm, dl, cd);
      if(cd == NULL)return errorcode;
     break;
    }
    case GRAM_IF:{
      craastdesc *r = 
-     condiblockdesc(xm, &pf, ts, GRAM_IF, dl);
+     condiblockdesc(
+     xm, &pf, ts, GRAM_IF, dl);
      pushdl(xm, dl, r);
     break;
    }
    case GRAM_NOTE:{
-     int code = notedesc(&pf);
+     int code =notedesc(&pf);
      if(code)return errorcode;
     break;
    }
    case GRAM_EMPTY:{
     break;
    }
+   case GRAM_FN:{
+    craastdesc *r =fnmaindesc(
+    xm, &pf, ts, dl);
+    pushdl(xm, dl, r);
+    break;
+   }
    case GRAM_WHILE:{
      craastdesc *r = 
-     condiblockdesc(xm, &pf, ts, GRAM_WHILE, dl);
+     condiblockdesc(
+     xm, &pf, ts, GRAM_WHILE, dl);
      pushdl(xm, dl, r);
     break;
    }

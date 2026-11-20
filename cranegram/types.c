@@ -122,13 +122,13 @@ craastdesc *make_cbdesc(XokMalloc *xokmalloc, craastdesc *condi,
  return node;
 }
 
-craastdesc *make_fndesc(XokMalloc *xokmalloc, craastdesc *condi,
-              Etype type,Fnargs *args,char *name,Tblock *block){
+craastdesc *make_fndesc(XokMalloc *xokmalloc, Etype type,
+                 Fnargs *args,char *name,Tblock *block){
  craastdesc *node = (craastdesc *)
  xalloc_XokMalloc(xokmalloc , sizeof(craastdesc));
  node->kind = AST_FUNC;
  node->as.funcdesc.args = args;
- node->as.funcdesc.fnname = name;
+ node->as.funcdesc.fnname = strdup(name);
  node->as.funcdesc.returntype = type;
  node->as.funcdesc.block = block;
  return node;

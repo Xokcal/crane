@@ -75,6 +75,9 @@
 #define pushdl(xm, dl, t)\
  craP_desclist_push((xm) , (dl) , (t));
 
+#define parsemaingettoken(pf) \
+pf.tokens->lextokens[pf.curr++]->token
+
 typedef struct value value;
 typedef struct lexState lexState;
 
@@ -90,7 +93,8 @@ typedef enum cragramtype{
   GRAM_IF,           /* [8]origin token is 'if' */
   GRAM_BLOCK_END,    /* [9]origin token is "}" use to return */
   GRAM_WHILE,        /* [10]origin token is 'while' loop key */
-  GRAM_BLOCK_START   /* [11]origin token is "}" */
+  GRAM_BLOCK_START,  /* [11]origin token is "}" */
+  GRAM_FN            /* [12]origin token is "fn" */  
 }cragramtype;
 
 /* Signed ast descibtion grammar tree type */
@@ -109,8 +113,7 @@ typedef enum craasttype{
   AST_CMP,          /* [11]AST type compare condition */
   AST_IF,           /* [12]AST type if desc tree */
   AST_WHILE,        /* [13]AST type while loop tree */
-  AST_SELFADD,      /* [14]AST type self add*/
-  AST_FUNC          /* [15]AST type function */
+  AST_SELFADD       /* [14]AST type self add*/
 }craasttype;
 
 /* Define param type like: {("hello", count, 10086, 3.1415)} */
@@ -135,6 +138,7 @@ typedef enum Etype{
 typedef struct Tparam{
  paramtype pty;
  char *originstr;
+ Etype etype;
 }Tparam;
 
 typedef struct Fnargs{
@@ -185,7 +189,7 @@ typedef struct craastdesc{
   struct funcdesc{
     char *fnname;          /* function name */
     Fnargs *args;           /* function args array data */
-    Etype *returntype;     /* function return type */
+    Etype returntype;     /* function return type */
     struct Tblock *block;  /* function main content block */
   }funcdesc;
  } as;

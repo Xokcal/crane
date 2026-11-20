@@ -320,8 +320,7 @@ static void stringargs(ParseFactor *pf, craastdesc *desc, String *t){
    pfnext(pf);
   }/* Current pf.token is double parenthesee,
   need slip the token by pfnext() later */
-  Tparam tp;
-  tp.pty = PRM_STRING;
+  Tparam tp; tp.pty = PRM_STRING;
   tp.originstr = strdup(t->str);
   /* Tparam tp push desc func args, and selfadd argsi. */
   callpushargs(desc, tp);  /* Tparam assign
@@ -376,8 +375,7 @@ static int unkeycallexe(ParseFactor *pf, craastdesc *desc
    singletokenargs(pf , desc);
   }while(testnext(pf, ","));  /* If have one or more args, at least 
   loop one time, have ',' execute next args and selfadd pf.curr. */
-  if(accept(pf , ";"))
-   return successcode;
+  if(accept(pf , ";"))return successcode;
   craCM_error(craC_tokencurline(pf),
    "function not have end: \";\" ");
   return errorcode;

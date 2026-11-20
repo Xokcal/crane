@@ -12,7 +12,7 @@
 #include "../tool/xokmalloc/xokmalloc.h"
 #include "cracom.h"
 
-#define LEX_TOKENS_SIZE 3000000
+#define LEX_TOKENS_SIZE 4000000
 
 #define newlextoken(xm)\
 (lextoken*)xalloc_XokMalloc((xm), sizeof(lextoken));

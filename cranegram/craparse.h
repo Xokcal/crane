@@ -93,7 +93,7 @@ typedef enum cragramtype{
   GRAM_BLOCK_START   /* [11]origin token is "}" */
 }cragramtype;
 
-/* signed ast descibtion grammar tree type */
+/* Signed ast descibtion grammar tree type */
 typedef enum craasttype{
   AST_VAR,          /* [0]AST type variable */
   AST_NUM,          /* [1]AST type number */
@@ -109,33 +109,51 @@ typedef enum craasttype{
   AST_CMP,          /* [11]AST type compare condition */
   AST_IF,           /* [12]AST type if desc tree */
   AST_WHILE,        /* [13]AST type while loop tree */
-  AST_SELFADD       /* [14]AST type self add*/
+  AST_SELFADD,      /* [14]AST type self add*/
+  AST_FUNC          /* [15]AST type function */
 }craasttype;
 
-/* define param type like: {("hello", count, 10086, 3.1415)} */
+/* Define param type like: {("hello", count, 10086, 3.1415)} */
 typedef enum paramtype{
  PRM_STRING,    /* [0]param type 'string' */
  PRM_VAR,       /* [1]param type 'variable' */
  PRM_NUMBER     /* [2]param type 'number' */
 }paramtype;
 
+/* Crane overall data type, use to judge various type */
+typedef enum Etype{
+ TY_INT,         /* data type 'int' */
+ TY_STRING,      /* data type 'string' */
+ TY_FLOAT,       /* data type 'float' */
+ TY_DOUBLE,      /* data type 'double' */
+ TY_LONG,        /* data type 'long' */
+ TY_DLONG,       /* data type 'long long' */
+ TY_CHAR,        /* data type 'char' */
+ TY_VOID         /* data type 'void' */
+}Etype;
+
 typedef struct Tparam{
  paramtype pty;
  char *originstr;
 }Tparam;
 
+typedef struct Fnargs{
+ Tparam args[50];
+ long args_count;
+}Fnargs;
+
 typedef struct craastdesc{
- craasttype kind;   /* ast's kind */
+ craasttype kind;   /* Ast's kind */
  union{
   /*
-  ** varname: store is variable token, like: {int i = 1; i++;} the 'a++' 
+  ** Varname: store is variable token, like: {int i = 1; i++;} the 'a++' 
   ** 'a' is need to stored variable or {int b = 13; int a = b + 1;} 
   ** 'b + 1' can parse to struct desc.var and struct desc.num
   */
-  char *varname;   /* ast's variable name */
-  char *lvname;    /* left value name like: {int a = v * 3;}  'v' is lvname */
+  char *varname;   /* Ast's variable name */
+  char *lvname;    /* Left value name like: {int a = v * 3;}  'v' is lvname */
   /*
-  ** num: store variable token is number comdition
+  ** Num: store variable token is number comdition
   */
   int num;
   struct binop{
@@ -164,6 +182,12 @@ typedef struct craastdesc{
     struct craastdesc *condi;  /* if condition tree */
     struct Tblock *block;  /* if main content block */
   }ifdesc;
+  struct funcdesc{
+    char *fnname;          /* function name */
+    Fnargs *args;           /* function args array data */
+    Etype *returntype;     /* function return type */
+    struct Tblock *block;  /* function main content block */
+  }funcdesc;
  } as;
 }craastdesc;
 

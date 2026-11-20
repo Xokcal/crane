@@ -8,7 +8,37 @@ VAR              count
 PUSH             10
 CMP              <
 JMP_TRUE         22
-JMP              69
+JMP              128
+PUSH             23
+PUSH             8
+PUSH             2
+DIV              /
+ADD              +
+STORE            o
+TYPE             int
+VAR              o
+PUSH             1
+CMP              >
+JMP_TRUE         44
+JMP              67
+LOAD             "o="
+LOAD             o
+CALL             print
+VAR              o
+PUSH             1
+ADD              +
+STORE            ty
+TYPE             int
+LOAD             "ty="
+LOAD             ty
+CALL             print
+CLEAR            ty
+LOAD             "while o="
+LOAD             o
+CALL             print
+LOAD             "while ty="
+LOAD             ty
+CALL             print
 LOAD             "a="
 LOAD             a
 CALL             print
@@ -32,13 +62,14 @@ REASSIGN         a
 LOAD             "2a="
 LOAD             a
 CALL             print
+CLEAR            o
 CLEAR            c
 JMP              12
 VAR              count
 PUSH             11
 CMP              <
-JMP_TRUE         79
-JMP              107
+JMP_TRUE         138
+JMP              166
 SADD             count
 PUSH             4
 STORE            d
@@ -52,10 +83,7 @@ TYPE             int
 CLEAR            d
 CLEAR            v
 CLEAR            i
-JMP              69
-LOAD             "d="
-LOAD             d
-CALL             print
+JMP              128
 LOAD             "end while a="
 LOAD             a
 CALL             print

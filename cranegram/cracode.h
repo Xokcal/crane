@@ -31,8 +31,13 @@ typedef enum opcode{
  OP_CMP,           /* [15]compare vm stack twe value */
  OP_CONDI,         /* [16]condition logic sign store */
  OP_INT_SADD,      /* [17]has define variable self add */
- OP_CLEAR_VAR      /* [18]clear block variable */
-}opcode; 
+ OP_CLEAR_VAR,     /* [18]clear block variable */
+ OP_PARAM_LOAD,    /* [19]load functin param value */
+ OP_RET,           /* [20]return to call code after use function */
+ OP_FNNAME,        /* [21]store functino name */
+ OP_FNCODE,        /* [22]store function code */
+ OP_STORE_RET      /* [23]store call ret code */
+}opcode;
 
 /*
 ** package codes execution args

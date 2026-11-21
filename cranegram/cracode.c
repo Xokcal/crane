@@ -111,6 +111,11 @@ op_comcatop(int op, String *s)
  if(op==16)strcomcat(s,"CONDI");
  if(op==17)strcomcat(s,"SADD");
  if(op==18)strcomcat(s,"CLEAR");
+ if(op==19)strcomcat(s,"PARAM_LOAD");
+ if(op==20)strcomcat(s,"RET");
+ if(op==21)strcomcat(s,"FNNAME");
+ if(op==22)strcomcat(s,"FNCODE");
+ if(op==23)strcomcat(s,"STORE_RET");
 }
 
 static void op_calcblank(int max, int self, String *s)
@@ -177,7 +182,7 @@ op_codeparse(int op, int preop, int *opi, String *s, bytecode *bc,
  if(preop==8){
   op_calcblank(17, 4, blank);
   strcomcat(s, blank->str);
-  if(targs->args[op].pty==PRM_STRING){
+  if(targs->args[op].pty == PRM_STRING){
    strcomcat(s, "\"");
    strcomcat(s, targs->args[op].originstr);
    strcomcat(s, "\"");
@@ -269,6 +274,49 @@ op_codeparse(int op, int preop, int *opi, String *s, bytecode *bc,
   strfree(blank);
   return 0;
  }
+ if(preop==19){ //param_load
+  op_calcblank(17, 10, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s,(vns->vn[op]));
+  strclear(blank);
+  strfree(blank);
+  return 0;
+ }
+ if(preop==20){ //ret
+  op_calcblank(17, 3, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s, "RET");
+  strfree(blank);
+  return 1;
+ }
+ if(preop==21){ //fnname
+  op_calcblank(17, 6, blank);
+  strcomcat(s, blank->str);
+  strcomcat(s,(vns->vn[op]));
+  strclear(blank);
+  strfree(blank);
+  return 0;
+ }
+ if(preop==22){ //fncode
+  op_calcblank(17, 6, blank);
+  strcomcat(s, blank->str);
+  char buf[32];
+  snprintf(buf,sizeof(buf), "%d", op);
+  char *p = buf;
+  strcomcat(s, p);
+  strfree(blank);
+  return 0;
+ }
+ if(preop==23){ //store_ret
+  op_calcblank(17, 9, blank);
+  strcomcat(s, blank->str);
+  char buf[32];
+  snprintf(buf,sizeof(buf), "%d", op);
+  char *p = buf;
+  strcomcat(s, p);
+  strfree(blank);
+  return 0;
+ }
 }
 
 
@@ -289,7 +337,7 @@ void op_visualization(bytecode *bc, varnamestk *vns,
   }
   else{ // j = 0
    op_comcatop(op, s);
-   if(op==1||op==2||op==3||op==4){
+   if(op==1||op==2||op==3||op==4||op==20){
     int curop = bc->codes[opi];
     int conver = op_codeparse(op, op, &opi,
     s, bc, vns, tcalls, targs, types);
@@ -729,16 +777,13 @@ static void astcallexe(codesState cs, craastdesc *desc, int *dl){
   targs_push(cs.xm, cs.targs, getcallargs(desc, argsi));
   argsi++;
  }
+ bc_emit(cs.xm, cs.bc, OP_STORE_RET);
+ bc_emit(cs.xm, cs.bc, cs.bc->count + 3);
  bc_emit(cs.xm, cs.bc, OP_CALL);
  bc_emit(cs.xm, cs.bc, (*cs.tcallsi)++);
  tcalls_push(cs.xm, cs.tcalls, getcallfname(desc));
  /* current codes like: { op_load:[p1],
   op_load:[p2], op_call:[call] } */
- //#define targsP
- #ifdef targsP
- for(int i=0;i<targs->count;i++)
-  logc("vm_Targs",targs->args[i].originstr);
- #endif
  (*dl)++;
 }
 
@@ -860,11 +905,10 @@ static void swrapcondilogicstack(codesState *cs,
 ** every is persistent clear end need-clear varibale, so don't worry struct 
 ** varnamestk every clear can expand memery.
 */
-static void cleartempvarcode(codesState *cs, craastdesc *curdesc){
- for(int i = 0; i < curdesc->as.ifdesc.block->varcount; i++){
+static void cleartempvarcode(codesState *cs, Tblock *block){
+ for(int i = 0; i < block->varcount; i++){
   bc_emit(cs->xm, cs->bc, OP_CLEAR_VAR);
-  vnstk_push(
-  cs->xm , cs->vns ,curdesc->as.ifdesc.block->varname[i],(*cs->vnsi));
+  vnstk_push(cs->xm , cs->vns , block->varname[i],(*cs->vnsi));
   bc_emit(cs->xm , cs->bc , (*cs->vnsi)++);
  }
 }
@@ -890,13 +934,56 @@ static void condiblockdescexe(codesState *cs, craastdesc *curdesc,
  craC_bytecode_parse(
  cs->xm, blocktreelist(curdesc),cs, "block", &blockdl);
  /* Parse clear block temp varibale instruction when reach block end */
- cleartempvarcode(cs, curdesc);
+ cleartempvarcode(cs, curdesc->as.ifdesc.block);
  if(type == AST_WHILE){
   bc_emit(cs->xm, cs->bc, OP_JMP);
   bc_emit(cs->xm, cs->bc, startidx);
  }
  /* Recoed jmp out to while after AST_WHILE OP_JMP */
  cs->bc->codes[ifjmpoutindex] = cs->bc->count;
+ (*dlindex)++;
+}
+
+
+static void loadfuncargsexe(codesState *cs, craastdesc *node){
+ /* ** Load function args. */
+ for(int i = 0; i < node->as.funcdesc.args->args_count; i++){
+  bc_emit(cs->xm,cs->bc, OP_PARAM_LOAD);
+  vnstk_push(cs->xm , cs->vns , 
+  node->as.funcdesc.args->args[i].originstr, (*cs->vnsi));
+  bc_emit(cs->xm , cs->bc , (*cs->vnsi)++);
+ }
+}
+
+
+/*
+** AST_FUNC execute main function, parse function a string of code.
+** About function store nam & code parse, args load parse, Tblock parse,
+** clear variable parse,... and OP_JMP is slip to function outer content,
+** OP_RET is back to function call code.
+*/
+static void astfuncexe(codesState *cs, craastdesc *node, int *dlindex){
+ /* ** Priority store OP_FNNAME function name. */
+ bc_emit(cs->xm, cs->bc, OP_FNNAME);
+ vnstk_push(cs->xm , cs->vns , node->as.funcdesc.fnname, (*cs->vnsi));
+ bc_emit(cs->xm , cs->bc , (*cs->vnsi)++);
+ /* ** Store function slip code. */
+ bc_emit(cs->xm, cs->bc, OP_FNCODE);
+ /* ** Because current OP_FNCODE next have OP_JMP yet so this + 2. */
+ bc_emit(cs->xm, cs->bc, cs->bc->count + 2);
+ bc_emit(cs->xm, cs->bc, OP_JMP);
+ long slipfnindex = (cs->bc->count)++;
+ /* ** Load function args. */
+ loadfuncargsexe(cs, node);
+ /* Use craC_bytecode_parse() execute condidesc block tree. */
+ int blockdl = 0;
+ craC_bytecode_parse(
+  cs->xm, node->as.funcdesc.block->treelist, cs, "block", &blockdl);
+ cleartempvarcode(cs, node->as.funcdesc.block);
+ /* ** Store oprate OP_RET return to has record call code */
+ bc_emit(cs->xm, cs->bc, OP_RET);
+ /* ** Backfill codes slipfnindex index code */
+ cs->bc->codes[slipfnindex] = cs->bc->count;
  (*dlindex)++;
 }
 
@@ -909,6 +996,10 @@ vmState* craC_bytecode_parse(XokMalloc *xm ,desclist *dl,
  while((*dlindex) < dl->count){
   craastdesc *curdesc = dl->desclist[(*dlindex)];
   switch(curdesc->kind){
+   case AST_FUNC:{
+    astfuncexe(cs, curdesc, dlindex);
+    break;
+   }
    case AST_HASVAR:{
      asthasvarexe(
       *cs, curdesc, dlindex);
@@ -945,8 +1036,9 @@ vmState* craC_bytecode_parse(XokMalloc *xm ,desclist *dl,
    default:break;
   }
  }
- if(strcmp(type, "main")==0)
+ if(strcmp(type, "main")==0){
   bc_emit(xm , cs->bc , OP_HALT);
+ }
  if(strcmp(type, "main")==0){
   return vm_create(
   xm, cs->bc, cs->vns, cs->types,

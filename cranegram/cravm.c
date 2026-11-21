@@ -307,6 +307,7 @@ static int cmpexe(value v1, value v2, char *cmp){
 void craV_execute(XokMalloc *xm , vmState *vm){
  vm->map = newvmap(xm);
  int error = 0;
+ long ret = 0;
  int *codes = vm->bc->codes;
  Istack *condistack = newIstack(xm);
  while(vm->ci < vm->bc->count){
@@ -339,6 +340,12 @@ void craV_execute(XokMalloc *xm , vmState *vm){
    vmcase(OP_JMP){
     codenext(vm);
     vm->ci = getcode(vm);
+    vmbreak;
+   }
+   vmcase(OP_STORE_RET){
+    codenext(vm);
+    ret = getcode(vm);
+    codenext(vm);
     vmbreak;
    }
    vmcase(OP_INT_SADD){

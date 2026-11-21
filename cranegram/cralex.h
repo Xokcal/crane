@@ -101,7 +101,7 @@ typedef struct HAJIGA_ATM{
 }HAJIGA_ATM;
 
 void craL_lexstatefree(lexState *lex);
-int issinglekeys(const char c);
-int iscranekeys(const char *s);
+int craL_issinglekeys(const char c);
+int craL_iscranekeys(const char *s);
 lexState *craL_lexexecute(XokMalloc *txm, String *origin_file_string);
 #endif //CRANEC_CGM_PARSE_H

@@ -1,6 +1,7 @@
 int a = 10;
-int b = 20 + 1 * 2 / 3;
+print(a);
 
-fn int add(int a , int b){
- print(a + b);
+fn int add(int oer){
+ int a = 80;
+ print(a);
 }

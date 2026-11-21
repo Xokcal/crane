@@ -16,6 +16,7 @@
 #define test4_if4 "test/test4_if4.lua"
 #define test5_while "test/test5_while.lua"
 #define test5_while2 "test/test5_while2.lua"
+#define test6_func1 "test/test6_func1.lua"
 
 int mai(){
  starttime;
@@ -45,10 +46,10 @@ int mai(){
 
 int main(){
  starttime;
- setvbuf(stdout, NULL, _IOFBF, 1 << 20);
+ //setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
- String *context = open_file(test5_while2);
+ String *context = open_file(test6_func1);
  //craCM_show(context->str);
  lexState *lexstate = craL_lexexecute(txm, context);
  //#define tsprint

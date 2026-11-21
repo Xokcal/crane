@@ -68,7 +68,7 @@ static int tokentype(String *s){
  if(compare(s , "}"))return GRAM_BLOCK_END;
  if(compare(s , "while"))return GRAM_WHILE;
  if(compare(s , "fn"))return GRAM_FN;
- if(!iscranekeys(s->str))return GRAM_UNKEY;
+ if(!craL_iscranekeys(s->str))return GRAM_UNKEY;
  return GRAM_EMPTY;
 }
 
@@ -341,7 +341,7 @@ static void singletokenargs(ParseFactor *pf, craastdesc *desc){
   /*Function issinglekeys() args is char type 
  and pfcurstr() result is char*, so judge whither 
  is ',' or singlesign use result[0] first char. */
- if(issinglekeys(pfcurstr(pf)[0]))return; 
+ if(craL_issinglekeys(pfcurstr(pf)[0]))return; 
  Tparam tp;
  /* single string param about 'number', 'variable', 'enum', ..
  judge store param type by condition judgement. */
@@ -622,6 +622,8 @@ static craastdesc *fnmaindesc(XokMalloc *xm, ParseFactor *pf,
  /* 
  ** Because ')', '{' '\n', '\ ',.. all not is key, so 
  ** than can direct use parsemian() get Tblock */
+ accept(pf, ")"); accept_empty(pf);  /* Slip the ')' */
+ accept(pf, "{"); accept_empty(pf);  /* Slip the '{' */
  Tblock *block = newTblock(xm);  /* Create new Tblock */
  pf->curr = craP_parsedesc(  /* By  collcect Tblock content */
   xm, ts, block->treelist, pf->curr, "block", dl, block);

@@ -45,7 +45,7 @@ void craL_lexstatefree(lexState *lex){
 /*
 ** by ASCLL code to judge whether char c is single sign.
 */
-int issinglekeys(const char c){
+int craL_issinglekeys(const char c){
  unsigned int ccode = ((int) c);
  if(ccode >= 128)return 0;
  int i = (int)ascllcode[ccode];
@@ -61,7 +61,7 @@ int issinglekeys(const char c){
 /*
 ** judge char* s whether is crane key. 
 */
-int iscranekeys(const char *s){
+int craL_iscranekeys(const char *s){
  for(int i = 0; i < CRANE_KEY_COUNT; i++){
   if(strcmp(s, cranekeys[i])==0)return 1;
   }
@@ -88,7 +88,7 @@ lexState *craL_lexexecute(XokMalloc *xm, String *o){
    default:
     break;
   }
-  if(issinglekeys(o->str[cnum])){
+  if(craL_issinglekeys(o->str[cnum])){
    if(temp->length > 0){
     lextoken *tempt = newlextoken(xm);
     tempt->line = line;

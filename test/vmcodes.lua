@@ -1,10 +1,16 @@
+PUSH             100086
+STORE            u
+TYPE             int
 FNNAME           pint
-FNCODE           6
-JMP              17
+FNCODE           12
+JMP              29
 PARAM_LOAD       oer
 TYPE             int
+LOAD             "en pint"
+CALL             print
+LOAD             24
+LOAD             "__"
 LOAD             oer
-STORE_RET        16
 CALL             print
 RET              RET
 PUSH             10
@@ -12,9 +18,8 @@ STORE            a
 TYPE             int
 LOAD             "a="
 LOAD             a
-STORE_RET        31
 CALL             print
 LOAD             10
-STORE_RET        37
+STORE_RET        47
 CALL             pint
 EXIT

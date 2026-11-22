@@ -777,8 +777,10 @@ static void astcallexe(codesState cs, craastdesc *desc, int *dl){
   targs_push(cs.xm, cs.targs, getcallargs(desc, argsi));
   argsi++;
  }
+ if(strcmp(desc->as.call.fname, "print")!=0){
  bc_emit(cs.xm, cs.bc, OP_STORE_RET);
  bc_emit(cs.xm, cs.bc, cs.bc->count + 3);
+ }
  bc_emit(cs.xm, cs.bc, OP_CALL);
  bc_emit(cs.xm, cs.bc, (*cs.tcallsi)++);
  tcalls_push(cs.xm, cs.tcalls, getcallfname(desc));

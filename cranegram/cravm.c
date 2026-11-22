@@ -317,6 +317,7 @@ void craV_execute(XokMalloc *xm , vmState *vm){
  long ret = 0;
  int *codes = vm->bc->codes;
  Istack *condistack = newIstack(xm);
+ Istack *retstack = newIstack(xm);
  while(vm->ci < vm->bc->count){
   if(error == 1)
    goto vmterminal;
@@ -345,14 +346,13 @@ void craV_execute(XokMalloc *xm , vmState *vm){
     vmbreak;
    }
    vmcase(OP_JMP){
-    log("enJMP");
     codenext(vm);
     vm->ci = getcode(vm);
     vmbreak;
    }
    vmcase(OP_STORE_RET){
     codenext(vm);
-    ret = getcode(vm);
+    pushI(retstack, getcode(vm));
     codenext(vm);
     vmbreak;
    }
@@ -382,11 +382,10 @@ void craV_execute(XokMalloc *xm , vmState *vm){
     vmbreak;
    }
    vmcase(OP_RET){
-    vm->ci = ret;
+    vm->ci = popI(retstack);
     vmbreak;
    }
    vmcase(OP_PARAM_LOAD){
-    log("enPARAMLOAD");
     codenext(vm);
     char *name = get_codesv(vm);
     codenext(vm);
@@ -405,13 +404,10 @@ void craV_execute(XokMalloc *xm , vmState *vm){
     }
     pushvmap(xm, vm->map, v);
     value *vr = getvmap(vm->map, "oer");
-    logc("vr name=", vr->vname);
-    logi("vr value=",vr->v.i);
     codenext(vm);
     vmbreak;
    }
    vmcase(OP_FNNAME){
-    log("enFNNAME");
     codenext(vm);
     char *name = get_codesv(vm);
     codenext(vm);
@@ -422,8 +418,6 @@ void craV_execute(XokMalloc *xm , vmState *vm){
     v.jmpcode = jmpcode;
     pushvmap(xm, vm->fnmap, v);
     value *vr = getvmap(vm->fnmap, "pint");
-    logc("vr name=", vr->vname);
-    logi("jmp=", vr->jmpcode);
     codenext(vm);
     vmbreak;
    }
@@ -432,7 +426,6 @@ void craV_execute(XokMalloc *xm , vmState *vm){
     vmbreak;
    }
    vmcase(OP_LOAD){
-    log("enLOAD");
     codenext(vm);
     opload_executor(vm);
     loadcount++;

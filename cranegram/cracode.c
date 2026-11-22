@@ -949,9 +949,14 @@ static void loadfuncargsexe(codesState *cs, craastdesc *node){
  /* ** Load function args. */
  for(int i = 0; i < node->as.funcdesc.args->args_count; i++){
   bc_emit(cs->xm,cs->bc, OP_PARAM_LOAD);
-  vnstk_push(cs->xm , cs->vns , 
+  vnstk_push(cs->xm , cs->vns ,
   node->as.funcdesc.args->args[i].originstr, (*cs->vnsi));
   bc_emit(cs->xm , cs->bc , (*cs->vnsi)++);
+  /* ** Load param type. */
+  bc_emit(cs->xm,cs->bc, OP_TYPE);
+  char *type = craP_Etypetostr(node->as.funcdesc.args->args[i].etype);
+  types_push(cs->xm, cs->types, type);
+  bc_emit(cs->xm , cs->bc , (*cs->t_idx)++);
  }
 }
 
@@ -970,7 +975,7 @@ static void astfuncexe(codesState *cs, craastdesc *node, int *dlindex){
  /* ** Store function slip code. */
  bc_emit(cs->xm, cs->bc, OP_FNCODE);
  /* ** Because current OP_FNCODE next have OP_JMP yet so this + 2. */
- bc_emit(cs->xm, cs->bc, cs->bc->count + 2);
+ bc_emit(cs->xm, cs->bc, cs->bc->count + 3);
  bc_emit(cs->xm, cs->bc, OP_JMP);
  long slipfnindex = (cs->bc->count)++;
  /* ** Load function args. */
@@ -1036,8 +1041,15 @@ vmState* craC_bytecode_parse(XokMalloc *xm ,desclist *dl,
    default:break;
   }
  }
+ 
  if(strcmp(type, "main")==0){
   bc_emit(xm , cs->bc , OP_HALT);
+  //#define checkcode
+  #ifdef checkcode
+  for(int i = 0; i < cs->bc->count; i++){
+   logi("code", cs->bc->codes[i]);
+  }
+  #endif
  }
  if(strcmp(type, "main")==0){
   return vm_create(

@@ -136,9 +136,9 @@ typedef enum Etype{
 }Etype;
 
 typedef struct Tparam{
- paramtype pty;
- char *originstr;
- Etype etype;
+ paramtype pty;    /* param data type */
+ char *originstr;  /* origin string content */
+ Etype etype;      /* data type */
 }Tparam;
 
 typedef struct Fnargs{
@@ -244,4 +244,5 @@ desclist *craP_desclist_create(XokMalloc *xm, int init_size);
 void craP_desclist_free(XokMalloc *xm, desclist *dl);
 int craP_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree);
 int craP_desclist_expand(XokMalloc *xm, desclist *dl);
+char *craP_Etypetostr(Etype type);
 #endif

@@ -94,7 +94,7 @@ typedef struct Tcalls{
 }Tcalls;
 
 vmState* craC_bytecode_parse(XokMalloc *xm ,desclist *dl, 
-                    codesState *cs, char *type, int *dlindex);
+                codesState *cs, char *type, int *dlindex);
 bytecode *bc_create(XokMalloc *xm, int init_size);
 void bc_free(XokMalloc *xm, bytecode *bc);
 int bc_expand(XokMalloc *xm, bytecode *bc);

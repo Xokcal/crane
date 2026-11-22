@@ -117,6 +117,7 @@ typedef struct vmap{
 
 typedef struct vmState{
  vmap *map;
+ vmap *fnmap;
  Tcalls *tcalls; /* call name stack */
  Targs *targs; /* codes parse store all targs */
  /* struct bc: 

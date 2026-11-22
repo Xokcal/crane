@@ -63,8 +63,7 @@ int main(){
  desclist *dl = craP_desclist_create(xm , 1); /* tree list */
  parsecode = craP_parsedesc(
  xm , lexstate , dl, 0, "main", NULL, NULL);  /*  AST main parse */
- if(parsecode == errorcode)
-  goto executeError;
+ if(parsecode == errorcode) goto executeError;
  codesState cs = packagecodestate(xm);
  int dlindex = 0;
  vmState *vmState = craC_bytecode_parse(

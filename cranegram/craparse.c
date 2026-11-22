@@ -57,31 +57,45 @@ static craastdesc *findvardesc(desclist *dl, char *name){
 static int tokentype(String *s){
  if(compare(s, "int")||compare(s, "float")
  ||compare(s, "double")||compare(s, "char")
- ||compare(s, "long"))return GRAM_VAR;
- if(compare(s , " "))return GRAM_EMPTY;
- if(compare(s , "\n"))return GRAM_EMPTY;
- if(compare(s , "\r"))return GRAM_EMPTY;
- if(compare(s , ";"))return GRAM_EMPTY;
- if(compare(s , "print"))return GRAM_UNKEY;
- if(compare(s , "-"))return GRAM_NOTE;
- if(compare(s , "if"))return GRAM_IF;
- if(compare(s , "}"))return GRAM_BLOCK_END;
- if(compare(s , "while"))return GRAM_WHILE;
- if(compare(s , "fn"))return GRAM_FN;
- if(!craL_iscranekeys(s->str))return GRAM_UNKEY;
+ ||compare(s, "long"))         return GRAM_VAR;
+ if(compare(s , " "))          return GRAM_EMPTY;
+ if(compare(s , "\n"))         return GRAM_EMPTY;
+ if(compare(s , "\r"))         return GRAM_EMPTY;
+ if(compare(s , ";"))          return GRAM_EMPTY;
+ if(compare(s , "print"))      return GRAM_UNKEY;
+ if(compare(s , "-"))          return GRAM_NOTE;
+ if(compare(s , "if"))         return GRAM_IF;
+ if(compare(s , "}"))          return GRAM_BLOCK_END;
+ if(compare(s , "while"))      return GRAM_WHILE;
+ if(compare(s , "fn"))         return GRAM_FN;
+ if(!craL_iscranekeys(s->str)) return GRAM_UNKEY;
  return GRAM_EMPTY;
 }
 
 /*
 ** String token convert to Etype type, nice to use base data type. */
 static Etype strtypetoEtype(char *s){
- if(strcmp(s, "int")==0)return TY_INT;
- if(strcmp(s, "string")==0)return TY_STRING;
- if(strcmp(s, "float")==0)return TY_FLOAT;
- if(strcmp(s, "double")==0)return TY_DOUBLE;
- if(strcmp(s, "dlong")==0)return TY_DLONG;
- if(strcmp(s, "long")==0)return TY_LONG;
- if(strcmp(s, "char")==0)return TY_CHAR;
+ if(strcmp(s, "int")==0)    return TY_INT;
+ if(strcmp(s, "string")==0) return TY_STRING;
+ if(strcmp(s, "float")==0)  return TY_FLOAT;
+ if(strcmp(s, "double")==0) return TY_DOUBLE;
+ if(strcmp(s, "dlong")==0)  return TY_DLONG;
+ if(strcmp(s, "long")==0)   return TY_LONG;
+ if(strcmp(s, "char")==0)   return TY_CHAR;
+}
+
+
+char *craP_Etypetostr(Etype type){
+ switch(type){
+  case TY_INT:    return "int";
+  case TY_STRING: return "string";
+  case TY_FLOAT:  return "float";
+  case TY_DOUBLE: return "double";
+  case TY_DLONG:  return "dlong";
+  case TY_LONG:   return "long";
+  case TY_CHAR:   return "char";
+  default:        return "unknown"; // 极其重要：防止未定义行为
+ }
 }
 
 

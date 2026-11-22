@@ -28,6 +28,7 @@ typedef struct value{
  char *vname; /* variable name string value */
  char *vtype; /* authentic variable type,
  like: {int, double, long, float, string} */
+ long jmpcode;  /* record function jump code */
  union
  {
    int        i;     /* authentic variable type 'int' */

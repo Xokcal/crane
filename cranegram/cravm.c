@@ -284,9 +284,13 @@ opcallexecute(vmState *vm, int *error)
      default:break;
     }
    }
+   println;
   }
+ }else{
+  value *vr = getvmap(vm->fnmap, callname);
+  vm->ci = vr->jmpcode;
+  return;
  }
- println;
  vm->tempargsi = 0;
  codenext(vm);
 }
@@ -306,6 +310,9 @@ static int cmpexe(value v1, value v2, char *cmp){
 
 void craV_execute(XokMalloc *xm , vmState *vm){
  vm->map = newvmap(xm);
+ vm->fnmap = newvmap(xm);
+ int loadcount = 0;
+ int hasload = 0;
  int error = 0;
  long ret = 0;
  int *codes = vm->bc->codes;
@@ -338,6 +345,7 @@ void craV_execute(XokMalloc *xm , vmState *vm){
     vmbreak;
    }
    vmcase(OP_JMP){
+    log("enJMP");
     codenext(vm);
     vm->ci = getcode(vm);
     vmbreak;
@@ -373,13 +381,61 @@ void craV_execute(XokMalloc *xm , vmState *vm){
     clear_sp(vm);
     vmbreak;
    }
+   vmcase(OP_RET){
+    vm->ci = ret;
+    vmbreak;
+   }
+   vmcase(OP_PARAM_LOAD){
+    log("enPARAMLOAD");
+    codenext(vm);
+    char *name = get_codesv(vm);
+    codenext(vm);
+    codenext(vm);
+    char *type = get_stack_type(vm);
+    value v;
+    v.vname = name;
+    v.vtype = type;
+    Tparam tp = vm->tempargs[hasload++];
+    if(tp.pty == PRM_NUMBER){
+     String *t = create_string(tp.originstr);
+     int *i = str_convert_int(t);
+     v.v.i = *i;
+     free(i);
+     strfree(t);
+    }
+    pushvmap(xm, vm->map, v);
+    value *vr = getvmap(vm->map, "oer");
+    logc("vr name=", vr->vname);
+    logi("vr value=",vr->v.i);
+    codenext(vm);
+    vmbreak;
+   }
+   vmcase(OP_FNNAME){
+    log("enFNNAME");
+    codenext(vm);
+    char *name = get_codesv(vm);
+    codenext(vm);
+    codenext(vm);
+    long jmpcode = getcode(vm);
+    value v;
+    v.vname = name;
+    v.jmpcode = jmpcode;
+    pushvmap(xm, vm->fnmap, v);
+    value *vr = getvmap(vm->fnmap, "pint");
+    logc("vr name=", vr->vname);
+    logi("jmp=", vr->jmpcode);
+    codenext(vm);
+    vmbreak;
+   }
    vmcase(OP_CALL){
     opcallexecute(vm, &error);
     vmbreak;
    }
    vmcase(OP_LOAD){
+    log("enLOAD");
     codenext(vm);
     opload_executor(vm);
+    loadcount++;
     codenext(vm);
     vmbreak;
    }

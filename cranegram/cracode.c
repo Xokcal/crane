@@ -337,6 +337,9 @@ void op_visualization(bytecode *bc, varnamestk *vns,
   }
   else{ // j = 0
    op_comcatop(op, s);
+   /* 
+   ** If instruction is single OP(need't match next code) 
+   ** need add code number to if!! */
    if(op==1||op==2||op==3||op==4||op==20){
     int curop = bc->codes[opi];
     int conver = op_codeparse(op, op, &opi,

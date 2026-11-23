@@ -246,12 +246,6 @@ opstore_executor(XokMalloc *xm, vmState *vm, char *storetype)
  v.v.i = get_stack_res(vm);
  v.type = TYPE_INT;
  pushvmap(xm, vm->map, v);
- //#define vmprint
- #ifdef vmprint
- value *r = vmvslots_pop(vm , v.vname);
- log(importancelogsign);
- logi("\n" , r->v.i);
- #endif
  clear_sp(vm);
 }
 
@@ -383,6 +377,7 @@ void craV_execute(XokMalloc *xm , vmState *vm){
    vmcase(OP_RET){
     vm->ci = popI(retstack);
     hasload = 0;
+    vm->tempargsi = 0;
     vmbreak;
    }
    vmcase(OP_PARAM_LOAD){
@@ -401,11 +396,13 @@ void craV_execute(XokMalloc *xm , vmState *vm){
      v.v.i = *i;
      free(i);
      strfree(t);
+    }if(tp.pty == PRM_VAR){
+      value *prmv = getvmap(vm->map, tp.originstr);
+      v.v.i = prmv->v.i;
     }
-    logi("v value", v.v.i);
     pushvmap(xm, vm->map, v);
-    vm->tempargsi = 0;
     codenext(vm);
+    vm->tempargsi = 0;
     vmbreak;
    }
    vmcase(OP_FNNAME){

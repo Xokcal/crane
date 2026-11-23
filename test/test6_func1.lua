@@ -1,8 +1,13 @@
-int c = 91 * 8 - 78 / 4;
-fn void lll(int args){print("lll args=", args);}
-fn void zzz(int args){print("zzz args=", args);}
-print("c=",c);
-int a = 31;
-print("a=",a);
-lll(21);
-zzz(91);
+int e = 9;
+int pi = 3 * e * 3;
+
+fn void calc(int p, int r){
+ print("p=",p);
+ print("r=",r);
+ int circle = p * r;
+ circle = circle + 16;
+ print("circle = ",circle);
+}
+
+calc(pi, 10);
+calc(e, 23);

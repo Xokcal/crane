@@ -17,7 +17,7 @@
 ** sign or low priority sign.
 */
 static int ishighprioritysign(char *n){
- for(int i = 0 ;i  <HIGH_PRI_SIGN_SIZE; i++){
+ for(int i = 0 ; i < HIGH_PRI_SIGN_SIZE; i++){
   if(strcmp(n, highprisign[i])==0)return 1;
  }
  return 0;
@@ -44,9 +44,10 @@ static int iscondisign(char *n){
 ** Find has store to desclist assign craastdesc by variable name. */
 static craastdesc *findvardesc(desclist *dl, char *name){
  for(int i = 0; i < dl->count; i++){
-  if(!strcmp(dl->desclist[i]->as.assign.name, name)){
-    return dl->desclist[i];
-  }
+  if(dl->desclist[i]->kind != AST_VAR) continue;
+  logi("i", i);
+  int j = strcmp(dl->desclist[i]->as.assign.name, name);
+  if(j == 0){log("find");return dl->desclist[i];}
  }
  return NULL;
 }
@@ -432,9 +433,16 @@ static void unkeyhasvarexe(XokMalloc *xm, ParseFactor *pf, desclist *dl,
   /* Parse reassign binop after '='. */
   craastdesc *v = parsevaluemain(ps);
   craastdesc *target;  /* Record variable point target */
-  if(strcmp(type, "main")==0) target = findvardesc(dl, unkey);
-  else target = findvardesc(maindl, unkey);
-  if(target==NULL)return;
+  log(unkey);
+    craastdesc *r = findvardesc(dl, unkey);
+    if(r == NULL){log("isNULL");}
+    else log("noNULL");
+  craastdesc *dltemp1 = findvardesc(maindl, unkey);
+  if(dltemp1 != NULL){log("[maindl exist]");target = dltemp1;}
+  craastdesc *dltemp2 = findvardesc(dl, unkey);
+  if(dltemp2 != NULL){log("[dl exist]");target = dltemp2;}
+  if(target==NULL){log("[unfind]");return;}
+  log("out");
   *desc = make_hasvar(
   xm, v, unkey, target->as.assign.type);
   free(unkey);
@@ -607,6 +615,7 @@ static Fnargs *fnargsparse(XokMalloc *xm, ParseFactor *pf){
  Fnargs *fnargs = (Fnargs*)xalloc_XokMalloc(xm, sizeof(Fnargs));
  long argscount = 0;
  do{Tparam member;  /* Init struct Tparam unpoint type */
+  accept_empty(pf);  /* Emsure current not is empty */
   member.etype = strtypetoEtype(pfcurstr(pf));  /* Record Tparam type */
   pfnext(pf); accept_empty(pf);  /* Reach param name */
   member.originstr = strdup(pfcurstr(pf));  /* Record param name */
@@ -614,7 +623,8 @@ static Fnargs *fnargsparse(XokMalloc *xm, ParseFactor *pf){
   /* 
   ** Record Tparam, and every recorda Tparam count add one */
   fnargs->args[argscount++] = member;
-}while(strcmp(pfcurstr(pf), ",")==0);
+}while(testnext(pf, ","));  /* Use textnext() to 
+ accept ',' and entry next index */
  fnargs->args_count = argscount;
  return fnargs;  /* Curren token reach ')' */
 }
@@ -643,11 +653,10 @@ static craastdesc *fnmaindesc(XokMalloc *xm, ParseFactor *pf,
   xm, ts, block->treelist, pf->curr, "block", dl, block);
  /* 
  ** Assemble make fndesc and return tree */
- craastdesc *fndesc = make_fndesc(  
+ craastdesc *fndesc = make_fndesc(
   xm, fntype, fnargs, fnname, block);
  return fndesc;
 }
-
 
 
 /*

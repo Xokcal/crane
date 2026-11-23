@@ -67,7 +67,7 @@ value* getvmap(vmap *map, const char *n){
  }
  craCM_error(0,
   "variable effective domain is error or unfind"
-   "this variable[" P_PINK "undefine??" P_DEFUALT "]");
+   " this variable[" P_PINK "undefine??" P_DEFUALT "]", n);
  exit(1);
  return NULL;
 }
@@ -208,7 +208,7 @@ find_value(vmState* vm, char *n, int *error)
   if(!strcmp(n, v.vname))
    return v;
  }
- craCM_error(0,"var not have find!!");
+ craCM_error(0,"var not have find!!",NULL);
  (*error) = 1;
 }
 
@@ -246,7 +246,6 @@ opstore_executor(XokMalloc *xm, vmState *vm, char *storetype)
  v.v.i = get_stack_res(vm);
  v.type = TYPE_INT;
  pushvmap(xm, vm->map, v);
- value *r = getvmap(vm->map, "a");
  //#define vmprint
  #ifdef vmprint
  value *r = vmvslots_pop(vm , v.vname);
@@ -383,6 +382,7 @@ void craV_execute(XokMalloc *xm , vmState *vm){
    }
    vmcase(OP_RET){
     vm->ci = popI(retstack);
+    hasload = 0;
     vmbreak;
    }
    vmcase(OP_PARAM_LOAD){
@@ -402,8 +402,9 @@ void craV_execute(XokMalloc *xm , vmState *vm){
      free(i);
      strfree(t);
     }
+    logi("v value", v.v.i);
     pushvmap(xm, vm->map, v);
-    value *vr = getvmap(vm->map, "oer");
+    vm->tempargsi = 0;
     codenext(vm);
     vmbreak;
    }
@@ -417,7 +418,6 @@ void craV_execute(XokMalloc *xm , vmState *vm){
     v.vname = name;
     v.jmpcode = jmpcode;
     pushvmap(xm, vm->fnmap, v);
-    value *vr = getvmap(vm->fnmap, "pint");
     codenext(vm);
     vmbreak;
    }

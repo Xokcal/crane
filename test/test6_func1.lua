@@ -1,8 +1,8 @@
-int u = 100086;
-fn int pint(int oer){
- print("en pint");
- print(24, "__", oer);
-}
-int a = 10;
+int c = 91 * 8 - 78 / 4;
+fn void lll(int args){print("lll args=", args);}
+fn void zzz(int args){print("zzz args=", args);}
+print("c=",c);
+int a = 31;
 print("a=",a);
-pint(10);
+lll(21);
+zzz(91);

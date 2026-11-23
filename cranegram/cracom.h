@@ -11,8 +11,8 @@
 #define P_PINK "\033[35m"
 
 /* crane error describe log*/
-#define craCM_error(line,error) \
- printf("\n" P_BLUE_GREEN "%s\033[0m: %s\n %d |" P_PINK "   error\033[0m: %s\n", __FILE__, __TIME__, (line), (error))
+#define craCM_error(line,error, text) \
+ printf("\n" P_BLUE_GREEN "%s\033[0m: %s | %s\n %d |" P_PINK "   error\033[0m: %s\n", __FILE__, __TIME__, (text),(line), (error))
 
 #define craCM_show(show) \
  printf("[crane origin code show]:\n\033[36m%s\033[0m\n", (show));

@@ -391,7 +391,7 @@ static int unkeycallexe(ParseFactor *pf, craastdesc *desc
   loop one time, have ',' execute next args and selfadd pf.curr. */
   if(accept(pf , ";"))return successcode;
   craCM_error(craC_tokencurline(pf),
-   "function not have end: \";\" ");
+   "function not have end: \";\" ", NULL);
   return errorcode;
  }
 }
@@ -499,9 +499,9 @@ static int notedesc(ParseFactor *pf){
  String *lineorigincode = linecontext(pf, line);
  linecontext(pf, line);
  /* Tell use error reason. */
- craCM_error(line, "grammar only have single '-' . ");
+ craCM_error(line, "grammar only have single '-' . ", NULL);
  /* Tell reatil error origin code content. */
- craCM_error(getcurline(pf), lineorigincode->str);
+ craCM_error(getcurline(pf), lineorigincode->str, NULL);
  strfree(lineorigincode);  /* Free String* t */
  return 1;
 }

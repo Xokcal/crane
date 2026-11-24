@@ -334,6 +334,7 @@ void craV_execute(XokMalloc *xm , vmState *vm){
     codenext(vm);
     char *name = get_codesv(vm);
     delvmap(vm->map, name);
+    logc("DEL VMAP_________________________", name);
     codenext(vm);
     vmbreak;
    }

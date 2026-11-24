@@ -30,18 +30,26 @@ fn void t4(int t4a){
 }
 t4(412);
 
-fn void t5(int t5a){
- print("t5a=",t5a);
+fn void t5(int t5a, int t5b){
+ print("en t5_____t5a=",t5a);
  int t5t1 = 10;
- while(t5t1 < 24){
-  t5t1 = t5t1 + 5;
+ while(t5t1 < t5a){
+  t5t1 = t5t1 + 1;
+  if(t5t1 eq 50 or t5t1 eq 51){
+   int if1 = 10;
+   print("en if");
+   while(t5t1 < t5b){
+    t5t1 = t5t1 + if1;
+    print("if t5t1=",t5t1);
+   }
+  }
   print("while t5t1=",t5t1);
  }
  print("t5 while is OUT");
 }
-t5(82139);
+t5(100, 80);
 
 int end = 1011;
 print("end=",end);
-
 t1(78);
+t5(200, 180);

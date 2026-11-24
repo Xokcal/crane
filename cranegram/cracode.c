@@ -966,6 +966,17 @@ static void loadfuncargsexe(codesState *cs, craastdesc *node){
 }
 
 
+/* ** Clear function tree args varibale. */
+static void clearfnargs(codesState *cs, craastdesc *node){
+ Fnargs *args = node->as.funcdesc.args;
+ for(int i = 0; i < args->args_count; i++){
+  bc_emit(cs->xm, cs->bc, OP_CLEAR_VAR);
+  vnstk_push(cs->xm , cs->vns , args->args[i].originstr ,(*cs->vnsi));
+  bc_emit(cs->xm , cs->bc , (*cs->vnsi)++);
+ }
+}
+
+
 /*
 ** AST_FUNC execute main function, parse function a string of code.
 ** About function store nam & code parse, args load parse, Tblock parse,
@@ -973,6 +984,7 @@ static void loadfuncargsexe(codesState *cs, craastdesc *node){
 ** OP_RET is back to function call code.
 */
 static void astfuncexe(codesState *cs, craastdesc *node, int *dlindex){
+ int blockdl = 0;  /* Record Tblock dl index */
  /* ** Priority store OP_FNNAME function name. */
  bc_emit(cs->xm, cs->bc, OP_FNNAME);
  vnstk_push(cs->xm , cs->vns , node->as.funcdesc.fnname, (*cs->vnsi));
@@ -986,10 +998,9 @@ static void astfuncexe(codesState *cs, craastdesc *node, int *dlindex){
  /* ** Load function args. */
  loadfuncargsexe(cs, node);
  /* Use craC_bytecode_parse() execute condidesc block tree. */
- int blockdl = 0;
- craC_bytecode_parse(
-  cs->xm, node->as.funcdesc.block->treelist, cs, "block", &blockdl);
- cleartempvarcode(cs, node->as.funcdesc.block);
+ craC_bytecode_parse(cs->xm, node->as.funcdesc.block->treelist, cs, "block", &blockdl);
+ cleartempvarcode(cs, node->as.funcdesc.block);  /* Clear temp variable */
+ clearfnargs(cs, node);  /* Clear function args */
  /* ** Store oprate OP_RET return to has record call code */
  bc_emit(cs->xm, cs->bc, OP_RET);
  /* ** Backfill codes slipfnindex index code */

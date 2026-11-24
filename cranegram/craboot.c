@@ -44,9 +44,15 @@ int mai(){
  endtime;
 }
 
+typedef struct strarray{
+ char *arr[100];
+ long count;
+}strarray;
+
 int main(){
  starttime;
- //setvbuf(stdout, NULL, _IOFBF, 1 << 20);
+ strarray sarr;
+ setvbuf(stdout, NULL, _IOFBF, 1 << 20);
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
  String *context = open_file(test6_func1);

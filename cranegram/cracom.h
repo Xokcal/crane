@@ -6,7 +6,7 @@
 
 #define P_DEFUALT "\033[0m"
 #define P_RED
-#define P_GREEN
+#define P_GREEN "\033[32m"
 #define P_BLUE_GREEN "\033[36m"
 #define P_PINK "\033[35m"
 

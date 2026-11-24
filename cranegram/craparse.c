@@ -44,10 +44,9 @@ static int iscondisign(char *n){
 ** Find has store to desclist assign craastdesc by variable name. */
 static craastdesc *findvardesc(desclist *dl, char *name){
  for(int i = 0; i < dl->count; i++){
-  if(dl->desclist[i]->kind != AST_VAR) continue;
-  logi("i", i);
+  if(dl->desclist[i]->kind != AST_ASSIGN){continue;}
   int j = strcmp(dl->desclist[i]->as.assign.name, name);
-  if(j == 0){log("find");return dl->desclist[i];}
+  if(j == 0){return dl->desclist[i];}
  }
  return NULL;
 }
@@ -435,10 +434,12 @@ static void unkeyhasvarexe(XokMalloc *xm, ParseFactor *pf, desclist *dl,
   craastdesc *target;  /* Record variable point target */
   log(unkey);
   craastdesc *dltemp1 = findvardesc(maindl, unkey);
-  if(dltemp1 != NULL){log("[maindl exist]");target = dltemp1;}
+  if(dltemp1 != NULL){log("***[maindl exist]***");target = dltemp1;}
+  else log("isNULL next");
   craastdesc *dltemp2 = findvardesc(dl, unkey);
-  if(dltemp2 != NULL){log("[dl exist]");target = dltemp2;}
-  if(target==NULL){log("[unfind]");return;}
+  if(dltemp2 != NULL){log("[***dl exist]***");target = dltemp2;}
+  else log("isNULL next");
+  if(target == NULL){log("[unfind]");return;}
   log("out");
   *desc = make_hasvar(
   xm, v, unkey, target->as.assign.type);
@@ -606,7 +607,8 @@ static craastdesc *condiblockdesc(XokMalloc *xm, ParseFactor *pf,
 ** struct Fnargs, Fnargs inner authentic record array is Tparam[50], every
 ** param parse to Tparam varibale and copy to Tparam[50].
 */
-static Fnargs *fnargsparse(XokMalloc *xm, ParseFactor *pf){
+static Fnargs *fnargsparse(XokMalloc *xm,
+          ParseFactor *pf, desclist *dl, desclist *maindl){
   /* 
   ** Init Fnargs and argscount, nice to record and return. */
  Fnargs *fnargs = (Fnargs*)xalloc_XokMalloc(xm, sizeof(Fnargs));
@@ -620,7 +622,9 @@ static Fnargs *fnargsparse(XokMalloc *xm, ParseFactor *pf){
   /* 
   ** Record Tparam, and every recorda Tparam count add one */
   fnargs->args[argscount++] = member;
-}while(testnext(pf, ","));  /* Use textnext() to 
+  /*craastdesc *tree = make_assign(xm, member.originstr, NULL, NULL);
+  pushdl(xm, maindl, tree);*/
+}while(testnext(pf, ","));  /* Use textnext() to
  accept ',' and entry next index */
  fnargs->args_count = argscount;
  return fnargs;  /* Curren token reach ')' */
@@ -631,15 +635,15 @@ static Fnargs *fnargsparse(XokMalloc *xm, ParseFactor *pf){
 ** Function ast desc tree parse main, record function return type, args,
 ** function name, Tblock, and assemble to desc make_fndesc();
 */
-static craastdesc *fnmaindesc(XokMalloc *xm, ParseFactor *pf,
-                                lexState *ts, desclist *dl){
+static craastdesc *fnmaindesc(XokMalloc *xm, ParseFactor *pf, 
+                                 lexState *ts, desclist *dl,desclist *maindl){
  accept_empty(pf);  /* Ensure current not is empty */
  Etype fntype = strtypetoEtype(pfcurstr(pf));  /* Record fn type */
  pfnext(pf); accept_empty(pf);  /* Reach fn name */
  char *fnname = pfcurstr(pf);  /* Record fn name */
  pfnext(pf); accept_empty(pf);  /* Reach '(' */
  accept(pf, "("); accept_empty(pf);  /* Reach first param */
- Fnargs *fnargs = fnargsparse(xm, pf);  /* Parse function args and accept */
+ Fnargs *fnargs = fnargsparse(xm, pf, dl, maindl);  /* Parse function args and accept */
  /* 
  ** Because ')', '{' '\n', '\ ',.. all not is key, so 
  ** than can direct use parsemian() get Tblock */
@@ -670,14 +674,15 @@ int craP_parsedesc(XokMalloc *xm, lexState *ts, desclist *dl,
   String *t = parsemaingettoken(pf);
   switch(tokentype(t)){
    case GRAM_UNKEY:{
+    log("en unkey");
     craastdesc *cd;
     if(strcmp(type, "main")==0)
      cd = unkeydesc(
       xm , &pf, dl, dl, "main");
     else cd = unkeydesc(
       xm , &pf, dl, maindl, "block");
-     pushdl(xm, dl, cd);
-     if(cd == NULL)return errorcode;
+    pushdl(xm, dl, cd);
+    if(cd == NULL)return errorcode;
     break;
    }
    case GRAM_IF:{
@@ -697,7 +702,7 @@ int craP_parsedesc(XokMalloc *xm, lexState *ts, desclist *dl,
    }
    case GRAM_FN:{
     craastdesc *r =fnmaindesc(
-    xm, &pf, ts, dl);
+    xm, &pf, ts, dl,maindl);
     pushdl(xm, dl, r);
     break;
    }
@@ -717,6 +722,7 @@ int craP_parsedesc(XokMalloc *xm, lexState *ts, desclist *dl,
      craastdesc *vd = 
      vardesc(xm , &pf , t, block);
      pushdl(xm , dl , vd);
+     pushdl(xm, maindl, vd);
     break;
    }
   }

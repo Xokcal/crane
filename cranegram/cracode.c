@@ -602,7 +602,7 @@ int bc_emit(XokMalloc *xm, bytecode *bc, int instr){
 int bc_add_constant(XokMalloc *xm, bytecode *bc, value v){
   if (!bc) return -1;
   if (bc->v_count >= bc->v_size)
-      if (!bc_expand(xm, bc)) return -1;
+   if (!bc_expand(xm, bc)) return -1;
   bc->values[bc->v_count] = v;
   return bc->v_count++;
 }

@@ -434,9 +434,6 @@ static void unkeyhasvarexe(XokMalloc *xm, ParseFactor *pf, desclist *dl,
   craastdesc *v = parsevaluemain(ps);
   craastdesc *target;  /* Record variable point target */
   log(unkey);
-    craastdesc *r = findvardesc(dl, unkey);
-    if(r == NULL){log("isNULL");}
-    else log("noNULL");
   craastdesc *dltemp1 = findvardesc(maindl, unkey);
   if(dltemp1 != NULL){log("[maindl exist]");target = dltemp1;}
   craastdesc *dltemp2 = findvardesc(dl, unkey);

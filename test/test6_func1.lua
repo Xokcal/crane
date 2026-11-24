@@ -1,13 +1,10 @@
 int e = 9;
-int pi = 3 * e * 3;
-
-fn void calc(int p, int r){
- print("p=",p);
- print("r=",r);
- int circle = p * r;
- circle = circle + 16;
- print("circle = ",circle);
+fn void OP(int w){
+ int l = 10;
+ print("w=",w);
+ print("l=",l);
+ if(w > 100){
+  print("w < 100 w=",w);
+ }
 }
-
-calc(pi, 10);
-calc(e, 23);
+OP(10086);

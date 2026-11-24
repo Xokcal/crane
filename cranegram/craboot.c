@@ -50,7 +50,7 @@ int main(){
  int parsecode;
  XokMalloc *txm = create_XokMalloc();
  String *context = open_file(test6_func1);
- craCM_show(context->str);
+ //craCM_show(context->str);
  lexState *lexstate = craL_lexexecute(txm, context);
  //#define tsprint
  #ifdef tsprint

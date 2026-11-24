@@ -312,8 +312,7 @@ void craV_execute(XokMalloc *xm , vmState *vm){
  Istack *condistack = newIstack(xm);
  Istack *retstack = newIstack(xm);
  while(vm->ci < vm->bc->count){
-  if(error == 1)
-   goto vmterminal;
+  if(error == 1) goto vmterminal;
   vmswitch(getcode(vm)){
    vmcase(OP_CONDI){
     codenext(vm);
@@ -394,11 +393,13 @@ void craV_execute(XokMalloc *xm , vmState *vm){
      String *t = create_string(tp.originstr);
      int *i = str_convert_int(t);
      v.v.i = *i;
+     v.type = TYPE_INT;  /* Temp record what typw */
      free(i);
      strfree(t);
     }if(tp.pty == PRM_VAR){
       value *prmv = getvmap(vm->map, tp.originstr);
       v.v.i = prmv->v.i;
+      v.type = TYPE_INT;  /* Too */
     }
     pushvmap(xm, vm->map, v);
     codenext(vm);
@@ -432,6 +433,7 @@ void craV_execute(XokMalloc *xm , vmState *vm){
    vmcase(OP_PUSH_VAR){
     codenext(vm);
     oppushvar_executor(vm, &error);
+    value v1 = vm->vs[vm->sp - 1];
     codenext(vm);
     vmbreak;
    }
